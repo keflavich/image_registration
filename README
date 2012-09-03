@@ -1,0 +1,10 @@
+Image Registration Methods for Astronomy
+
+Borrows heavily from
+http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html
+
+and replicates much of the functionality of 
+http://www.astro.ucla.edu/~mperrin/IDL/sources/subreg.pro
+
+and implements 
+http://solarmuri.ssl.berkeley.edu/~welsch/public/software/cross_cor_taylor.pro
