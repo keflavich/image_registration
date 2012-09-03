@@ -33,6 +33,28 @@ def upsample_ft_raw(buf1ft,buf2ft,zoomfac=2):
     
     return CC
 
+def chi2(im1, im2, dx, dy, err=None, upsample=1):
+    """
+    Compute chi^2 between two images after shifting
+    """
+    im1 = np.nan_to_num(im1)
+    im2 = np.nan_to_num(im2)
+    if err is None:
+        err = im2*0 + 1
+
+    if upsample > 1:
+        im1  = upsample_image(im1, upsample_factor=upsample, output_size=im1.shape, )
+        im2s = upsample_image(im2, upsample_factor=upsample, output_size=im2.shape, xshift=-dx*upsample, yshift=-dy*upsample)
+        err = upsample_image(err, upsample_factor=upsample, output_size=im2.shape, xshift=-dx*upsample, yshift=-dy*upsample)
+        #im2s = np.abs(shift(im2, -dx*upsample, -dy*upsample))
+
+    else:
+        im2s = np.abs(shift(im2, -dx, -dy))
+        err = np.abs(shift(err, -dx, -dy))
+
+    return ((im1-im2s)**2/err**2).sum()
+
+
 try:
     import pytest
     import itertools
