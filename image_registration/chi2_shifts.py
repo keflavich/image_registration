@@ -7,7 +7,7 @@ import numpy as np
 
 def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2, verbose=False,
-        return_error=True, return_chi2array=False, max_auto_size=128,
+        return_error=True, return_chi2array=False, max_auto_size=512,
         max_nsig=1.1):
     """
     Find the offsets between image 1 and image 2 using the DFT upsampling method
@@ -119,7 +119,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         # deltachi2 is not reduced deltachi2
         deltachi2_lowres = (chi2n - chi2n.min())*(xc.size-nfitted-1)
         if verbose:
-            print "Minimum chi2n: %g   Max delta-chi2 (lowres): %g" % (chi2n.min(),deltachi2_lowres.max())
+            print "Minimum chi2n: %g   Max delta-chi2 (lowres): %g  Min delta-chi2: %g" % (chi2n.min(),deltachi2_lowres.max(),deltachi2_lowres[deltachi2_lowres>0].min())
         sigmamax_area = deltachi2_lowres<m_auto
         if sigmamax_area.sum() > 1:
             yy,xx = np.indices(sigmamax_area.shape)
@@ -162,7 +162,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     # deltachi2 is not reduced deltachi2
     deltachi2 = (chi2n_ups - chi2n_ups.min())*(xc.size-nfitted-1)
     if verbose:
-        print "Minimum chi2n_ups: %g   Max delta-chi2: %g" % (chi2n_ups.min(),deltachi2.max())
+        print "Minimum chi2n_ups: %g   Max delta-chi2: %g  Min delta-chi2: %g" % (chi2n_ups.min(),deltachi2.max(),deltachi2[deltachi2>0].min())
 
     yy,xx = np.indices([s1,s2])
     xshifts_corrections = (xx-dftshift)/upsample_factor
