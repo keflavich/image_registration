@@ -6,8 +6,9 @@ import warnings
 import numpy as np
 
 def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
-        nthreads=1, use_numpy_fft=False, zeromean=False, ndof=2, verbose=True,
-        return_error=True, return_chi2array=False, max_auto_size=128):
+        nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2, verbose=False,
+        return_error=True, return_chi2array=False, max_auto_size=128,
+        max_nsig=1.1):
     """
     Find the offsets between image 1 and image 2 using the DFT upsampling method
     (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
@@ -44,7 +45,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     nthreads : bool
         Number of threads to use for fft (only matters if you have fftw
         installed)
-    ndof : int
+    nfitted : int
         number of degrees of freedom in the fit (used for chi^2 computations).
         Should probably always be 2.
     max_auto_size : int
@@ -81,11 +82,11 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         err_ac = correlate2d(err,err, boundary=boundary)
         err2sum = (err**2).sum()
     else:
-        err_ac = xc.size - ndof
-        err2sum = xc.size - ndof
+        err_ac = xc.size - nfitted
+        err2sum = xc.size - nfitted
     ac1peak = (im1**2).sum()
     ac2peak = (im2**2).sum()
-    chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum)
+    chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 
     ymax, xmax = np.unravel_index(chi2n.argmin(), chi2n.shape)
 
     ylen,xlen = im1.shape
@@ -102,23 +103,28 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     try:
         import scipy.stats
         # 1,2,3-sigma delta-chi2 levels
-        m1 = scipy.stats.chi2.ppf( 1-scipy.stats.norm.sf(1)*2, ndof )
-        m2 = scipy.stats.chi2.ppf( 1-scipy.stats.norm.sf(2)*2, ndof )
-        m3 = scipy.stats.chi2.ppf( 1-scipy.stats.norm.sf(3)*2, ndof )
+        m1 = scipy.stats.chi2.ppf( 1-scipy.stats.norm.sf(1)*2, nfitted )
+        m2 = scipy.stats.chi2.ppf( 1-scipy.stats.norm.sf(2)*2, nfitted )
+        m3 = scipy.stats.chi2.ppf( 1-scipy.stats.norm.sf(3)*2, nfitted )
+        m_auto = scipy.stats.chi2.ppf( 1-scipy.stats.norm.sf(max_nsig)*2, nfitted )
     except ImportError:
         # assume m=2 (2 degrees of freedom)
         m1 = 2.2957489288986364
         m2 = 6.1800743062441734 
         m3 = 11.829158081900793
+        m_auto = 2.6088233328527037 # slightly >1 sigma
 
     # biggest scale = where chi^2/n ~ 9 or 11.8 for M=2?
     if upsample_factor=='auto':
-        deltachi2_lowres = chi2n - chi2n.min()
-        sigma3_area = deltachi2_lowres<m3
-        if sigma3_area.sum() > 1:
-            yy,xx = np.indices(sigma3_area.shape)
-            xvals = xx[sigma3_area]
-            yvals = yy[sigma3_area]
+        # deltachi2 is not reduced deltachi2
+        deltachi2_lowres = (chi2n - chi2n.min())*(xc.size-nfitted-1)
+        if verbose:
+            print "Minimum chi2n: %g   Max delta-chi2 (lowres): %g" % (chi2n.min(),deltachi2_lowres.max())
+        sigmamax_area = deltachi2_lowres<m_auto
+        if sigmamax_area.sum() > 1:
+            yy,xx = np.indices(sigmamax_area.shape)
+            xvals = xx[sigmamax_area]
+            yvals = yy[sigmamax_area]
             xvrange = xvals.max()-xvals.min()
             yvrange = yvals.max()-yvals.min()
             size = max(xvrange,yvrange)
@@ -129,7 +135,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         # zoom factor = s1 / upsample_factor = 2*size
         zoom_factor = 2.*size
         if verbose:
-            print "Selected upsample factor %0.1f for image size %i and zoom factor %0.1f (3-sigma range was %i)" % (upsample_factor, s1, zoom_factor, size)
+            print "Selected upsample factor %0.1f for image size %i and zoom factor %0.1f (max-sigma range was %i for area %i)" % (upsample_factor, s1, zoom_factor, size, sigmamax_area.sum())
     else:
         s1,s2 = im1.shape
 
@@ -152,8 +158,11 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
                 upsample_factor=upsample_factor, xshift=xshift, yshift=yshift)
     else:
         err_ups = 1
-    chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)
-    deltachi2 = chi2n_ups - chi2n_ups.min()
+    chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)#*(xc.size-nfitted)
+    # deltachi2 is not reduced deltachi2
+    deltachi2 = (chi2n_ups - chi2n_ups.min())*(xc.size-nfitted-1)
+    if verbose:
+        print "Minimum chi2n_ups: %g   Max delta-chi2: %g" % (chi2n_ups.min(),deltachi2.max())
 
     yy,xx = np.indices([s1,s2])
     xshifts_corrections = (xx-dftshift)/upsample_factor
@@ -183,6 +192,11 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         errx_high = x_sigma1.max() - (upsxmax-dftshift)/upsample_factor
         erry_low = (upsymax-dftshift)/upsample_factor - y_sigma1.min()
         erry_high = y_sigma1.max() - (upsymax-dftshift)/upsample_factor
+        if verbose:
+            print "Found %i pixels within the 1-sigma region. xmin,ymin: %f,%f xmax,ymax: %g,%g" % (sigma1_area.sum(),x_sigma1.min(),y_sigma1.min(),x_sigma1.max(),y_sigma1.max())
+        #from pylab import *
+        #clf(); imshow(deltachi2); colorbar(); contour(sigma1_area,levels=[0.5],colors=['w'])
+        #import pdb; pdb.set_trace()
 
     yshift_corr = yshift+(upsymax-dftshift)/float(upsample_factor)
     xshift_corr = xshift+(upsxmax-dftshift)/float(upsample_factor)

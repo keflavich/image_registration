@@ -325,7 +325,7 @@ try:
         return np.array(offsets)
 
     def register_noise_test(im1,im2, ntests=100, noise=np.std,
-            register_method=register_images, **kwargs):
+            register_method=register_images, return_error=False, **kwargs):
         """
         Perform tests with noise added to determine the errors on the 
         'best-fit' offset
@@ -357,8 +357,12 @@ try:
         offsets = []
         for test_number in progress(xrange(ntests)):
             extra_noise = np.random.randn(*im2.shape) * noise
-            dx,dy = register_method(im1,im2+extra_noise,**kwargs)
-            offsets.append([dx,dy])
+            if return_error:
+                dx,dy,edx,edy = register_method(im1,im2+extra_noise,return_error=True,**kwargs)
+                offsets.append([dx,dy,edx,edy])
+            else:
+                dx,dy = register_method(im1,im2+extra_noise,return_error=False,**kwargs)
+                offsets.append([dx,dy])
 
         return np.array(offsets)
 
@@ -406,7 +410,7 @@ try:
                     im2+extra_noise, return_error=True, gaussfit=True,
                     **kwargs)
             dxchi, dychi, edxchi, edychi = chi2_shift(im1, im2+extra_noise,
-                    err=im2*0+extra_noise.std(),
+                    err=im2*0+noise,
                     return_error=True, upsample_factor='auto', verbose=True, **kwargs)
             offsets.append([dxr,dyr,dxccs,dyccs,dxccg,dyccg,dxchi,dychi])
             eoffsets.append([edxr,edyr,edxccs,edyccs,edxccg,edyccg,edxchi,edychi])
@@ -436,9 +440,9 @@ try:
         emeans = eoffsets.mean(axis=0)
         estds = eoffsets.std(axis=0)
 
-        print stds
-        print emeans
-        print emeans/stds
+        print "Standard Deviations: ", stds
+        print "Error Means: ", emeans
+        print "emeans/stds: ", emeans/stds
 
         pylab.figure(fig2)
         pylab.clf()
