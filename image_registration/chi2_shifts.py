@@ -182,7 +182,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
 
     if sigma1_area.sum() <= 1:
         if verbose:
-            print "Cannot estimate errors: need higher upsample factor.  Sigma3_area=%i" % (sigma3_area.sum())
+            print "Cannot estimate errors: need higher upsample factor.  Sigmamax_area=%i" % (sigmamax_area.sum())
         errx_low = erry_low = errx_high = erry_high = 1./upsample_factor
     else: # compute 1-sigma errors
         x_sigma1 = xshifts_corrections[sigma1_area]
