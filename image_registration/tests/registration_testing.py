@@ -406,12 +406,14 @@ try:
                     im2+extra_noise,
                     errim2=im2*0+extra_noise.std(),
                     return_error=True, **kwargs)
-            dxccg, dyccg, edxccg, edyccg = cross_correlation_shifts(im1,
-                    im2+extra_noise, return_error=True, gaussfit=True,
-                    **kwargs)
+            # too slow!!!
+            dxccg, dyccg, edxccg, edyccg = 0,0,0,0
+            #dxccg, dyccg, edxccg, edyccg = cross_correlation_shifts(im1,
+            #        im2+extra_noise, return_error=True, gaussfit=True,
+            #        **kwargs)
             dxchi, dychi, edxchi, edychi = chi2_shift(im1, im2+extra_noise,
                     err=im2*0+noise,
-                    return_error=True, upsample_factor='auto', verbose=True, **kwargs)
+                    return_error=True, upsample_factor='auto', verbose=False, **kwargs)
             offsets.append([dxr,dyr,dxccs,dyccs,dxccg,dyccg,dxchi,dychi])
             eoffsets.append([edxr,edyr,edxccs,edyccs,edxccg,edyccg,edxchi,edychi])
 
