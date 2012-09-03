@@ -1,6 +1,15 @@
-from cross_correlation_shifts import cross_correlation_shifts
-from register_images import register_images
-from chi2_shifts import chi2_shift
+try:
+    from AG_image_tools.cross_correlation_shifts import cross_correlation_shifts
+    from AG_image_tools.register_images import register_images
+    from AG_image_tools.chi2_shifts import chi2_shift
+    from AG_fft_tools import dftups,upsample_image,shift
+except ImportError:
+    from image_registration.cross_correlation_shifts import cross_correlation_shifts
+    from image_registration.register_images import register_images
+    from image_registration.chi2_shifts import chi2_shift
+    from image_registration.fft_tools import dftups,upsample_image,shift
+
+import numpy as np
 
 def upsample_ft_raw(buf1ft,buf2ft,zoomfac=2):
     """
@@ -390,12 +399,15 @@ try:
             dxr, dyr, edxr, edyr = register_images(im1, im2+extra_noise, usfac=usfac,
                     return_error=True, **kwargs)
             dxccs, dyccs, edxccs, edyccs = cross_correlation_shifts(im1,
-                    im2+extra_noise, return_error=True, **kwargs)
+                    im2+extra_noise,
+                    errim2=im2*0+extra_noise.std(),
+                    return_error=True, **kwargs)
             dxccg, dyccg, edxccg, edyccg = cross_correlation_shifts(im1,
                     im2+extra_noise, return_error=True, gaussfit=True,
                     **kwargs)
             dxchi, dychi, edxchi, edychi = chi2_shift(im1, im2+extra_noise,
-                    return_error=True, **kwargs)
+                    err=im2*0+extra_noise.std(),
+                    return_error=True, upsample_factor='auto', verbose=True, **kwargs)
             offsets.append([dxr,dyr,dxccs,dyccs,dxccg,dyccg,dxchi,dychi])
             eoffsets.append([edxr,edyr,edxccs,edyccs,edxccg,edyccg,edxchi,edychi])
 
