@@ -1,7 +1,7 @@
 try: 
     from AG_fft_tools import correlate2d,fast_ffts
 except ImportError:
-    from fft_tools import correlate2d,fast_ffts
+    from image_registration.fft_tools import correlate2d,fast_ffts
 import warnings
 import numpy as np
 
