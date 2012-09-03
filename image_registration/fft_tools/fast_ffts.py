@@ -42,5 +42,9 @@ def get_ffts(nthreads=1, use_numpy_fft=not has_fftw):
     elif use_numpy_fft:
         fftn = np.fft.fftn
         ifftn = np.fft.ifftn
+    else:
+        # yes, this is redundant, but I feel like there could be a third option...
+        fftn = np.fft.fftn
+        ifftn = np.fft.ifftn
 
     return fftn,ifftn
