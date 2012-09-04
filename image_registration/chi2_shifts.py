@@ -86,6 +86,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
 
     xc = correlate2d(im1,im2, boundary=boundary)
     if err is not None:
+        err = np.nan_to_num(err)
         err_ac = correlate2d(err,err, boundary=boundary)
         err2sum = (err**2).sum()
     else:
