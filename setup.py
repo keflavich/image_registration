@@ -18,5 +18,5 @@ setup(name='image_registration',
       author_email='adam.g.ginsburg@gmail.com',
       url='https://github.com/keflavich/image_registration',
       packages=['image_registration', 'image_registration/fft_tools',
-          'image_registration/tests'], 
+          'image_registration/tests','image_registration/FITS_tools'], 
      )
