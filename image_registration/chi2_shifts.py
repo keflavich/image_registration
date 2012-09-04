@@ -12,7 +12,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     """
     Find the offsets between image 1 and image 2 using the DFT upsampling method
     (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
-    combined with chi^2 to measure the errors on the fit
+    combined with :math:`chi^2` to measure the errors on the fit
 
     .. math::
             \chi^2 & = & \Sigma_{ij} \\frac{(X_{ij}-Y_{ij})^2}{\sigma_{ij}^2} \\\\
@@ -68,8 +68,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     dx,dy : float,float
         .. todo:: CHECK THIS 
         .. todo:: make upsample_factor only zoom on the chi2-relevant region
-        Measures the amount im2 is offset from im1 (i.e., shift im2 by these #'s
-        to match im1)
+        Measures the amount im2 is offset from im1 (i.e., shift im2 by -1 *
+        these #'s to match im1)
 
 
 
