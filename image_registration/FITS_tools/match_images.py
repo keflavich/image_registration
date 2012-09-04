@@ -1,3 +1,4 @@
+import numpy as np
 from image_registration import chi2_shift
 try:
     import astropy.io.fits as pyfits
@@ -6,9 +7,25 @@ except ImportError:
     import pyfits
     import pywcs
 
-def project_to_header(fitsfile, header, use_montage=True, **kwargs):
+def project_to_header(fitsfile, header, use_montage=True, quiet=True, **kwargs):
     """
     Light wrapper of montage with hcongrid as a backup
+
+    Parameters
+    ----------
+        fitsfile : string
+            a FITS file name
+        header : pyfits.Header
+            A pyfits Header instance with valid WCS to project to
+        use_montage : bool
+            Use montage or hcongrid (scipy's map_coordinates)
+        quiet : bool
+            Silence Montage's output
+
+    Returns
+    -------
+        np.ndarray image projected to header's coordinates
+
     """
     try:
         import montage
@@ -40,7 +57,7 @@ def project_to_header(fitsfile, header, use_montage=True, **kwargs):
 
     return image
 
-def match_fits(fitsfile1, fitsfile2, header=None, quiet=True, sigma_cut=False,
+def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         return_header=False, **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
@@ -54,8 +71,6 @@ def match_fits(fitsfile1, fitsfile2, header=None, quiet=True, sigma_cut=False,
         Offset fits file name
     header: pyfits.Header
         Optional - can pass a header to projet both images to
-    quiet: bool
-        Silence messages?
     sigma_cut: bool or int
         Perform a sigma-cut on the returned images at this level
     """
@@ -89,7 +104,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, quiet=True, sigma_cut=False,
         returns = returns + (header,)
     return returns
 
-def register_fits(fitsfile1, fitsfile2, errfile=None,
+def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         register_method=chi2_shift, return_cropped_images=False, **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
@@ -118,23 +133,27 @@ def register_fits(fitsfile1, fitsfile2, errfile=None,
     else:
         errimage = None
 
-    xoff,yoff = register_method(corr_image1, corr_image2, err=errimage, **kwargs)
+    xoff,yoff,exoff,eyoff = register_method(corr_image1, corr_image2, err=errimage,
+            return_error=True, **kwargs)
     
     wcs = pywcs.WCS(header)
     try:
         cdelt = wcs.wcs.cd.diagonal()
     except AttributeError:
         cdelt = wcs.wcs.cdelt
-    xoff_wcs,yoff_wcs = np,array([xoff,yoff])*cdelt
+    xoff_wcs,yoff_wcs = np.array([xoff,yoff])*cdelt
+    exoff_wcs,eyoff_wcs = np.array([exoff,eyoff])*cdelt
     #try:
     #    xoff_wcs,yoff_wcs = np.inner( np.array([[xoff,0],[0,yoff]]), wcs.wcs.cd )[[0,1],[0,1]]
     #except AttributeError:
     #    xoff_wcs,yoff_wcs = 0,0
 
+    returns = xoff,yoff,xoff_wcs,yoff_wcs
+    if return_error:
+        returns = returns + (exoff,eyoff,exoff_wcs,eyoff_wcs)
     if return_cropped_images:
-        return xoff,yoff,xoff_wcs,yoff_wcs,image1,image2_projected
-    else:
-        return xoff,yoff,xoff_wcs,yoff_wcs
+        returns = returns + (image1,image2_projected)
+    return returns
     
 
 
