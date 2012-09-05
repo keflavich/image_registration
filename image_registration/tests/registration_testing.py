@@ -80,15 +80,18 @@ try:
 
         return image, new_image, tolerance
 
-    def make_extended(imsize, powerlaw=2.0):
-        yy,xx = np.indices((imsize,imsize))
-        cen = imsize/2-(1-imsize%2) 
-        yy -= cen
-        xx -= cen
+    def make_extended(imsize, imsize2=None, powerlaw=2.0):
+        if imsize2 is None:
+            imsize2=imsize
+        yy,xx = np.indices((imsize2,imsize))
+        xcen = imsize/2-(1-imsize%2) 
+        ycen = imsize2/2-(1-imsize2%2) 
+        yy -= ycen
+        xx -= xcen
         rr = (xx**2+yy**2)**0.5
         
-        powermap = (np.random.randn(imsize,imsize) * rr**(-powerlaw)+
-            np.random.randn(imsize,imsize) * rr**(-powerlaw) * 1j)
+        powermap = (np.random.randn(imsize2,imsize) * rr**(-powerlaw)+
+            np.random.randn(imsize2,imsize) * rr**(-powerlaw) * 1j)
         powermap[powermap!=powermap] = 0
 
         newmap = np.abs(np.fft.fftshift(np.fft.fft2(powermap)))
