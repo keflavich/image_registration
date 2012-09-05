@@ -133,14 +133,15 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     else:
         errimage = None
 
-    xoff,yoff,exoff,eyoff = register_method(corr_image1, corr_image2, err=errimage,
-            return_error=True, **kwargs)
+    xoff,yoff,exoff,eyoff = register_method(corr_image1, corr_image2,
+            err=errimage, return_error=True, **kwargs)
     
     wcs = pywcs.WCS(header)
     try:
         cdelt = wcs.wcs.cd.diagonal()
     except AttributeError:
         cdelt = wcs.wcs.cdelt
+    print "CDELT: ",cdelt
     xoff_wcs,yoff_wcs = np.array([xoff,yoff])*cdelt
     exoff_wcs,eyoff_wcs = np.array([exoff,eyoff])*cdelt
     #try:
@@ -152,7 +153,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     if return_error:
         returns = returns + (exoff,eyoff,exoff_wcs,eyoff_wcs)
     if return_cropped_images:
-        returns = returns + (image1,image2_projected)
+        returns = returns + (corr_image1,corr_image2)
     return returns
     
 
