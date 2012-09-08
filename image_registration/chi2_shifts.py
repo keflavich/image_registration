@@ -5,6 +5,8 @@ except ImportError:
 import warnings
 import numpy as np
 
+__all__ = ['chi2_shift']
+
 def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2, verbose=False,
         return_error=True, return_chi2array=False, max_auto_size=512,

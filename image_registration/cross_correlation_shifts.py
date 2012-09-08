@@ -5,6 +5,8 @@ except ImportError:
 import warnings
 import numpy as np
 
+__all__ = ['cross_correlation_shifts','cross_correlation_shifts_FITS']
+
 def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
         maxoff=None, verbose=False, gaussfit=False, return_error=False,
         zeromean=True, **kwargs):

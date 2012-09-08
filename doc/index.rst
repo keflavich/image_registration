@@ -11,6 +11,7 @@ extended flux (e.g., nebulae, radio and millimeter maps).
 
 :mod:`image_registration` Module
 --------------------------------
+    :doc:`image_registration`
 
 .. automodule:: image_registration
     :members:
@@ -18,6 +19,7 @@ extended flux (e.g., nebulae, radio and millimeter maps).
 
 :mod:`image_registration.fft_tools` Module
 ------------------------------------------
+    :doc:`image_registration.fft_tools`
 
 .. automodule:: image_registration.fft_tools
     :members:
@@ -25,6 +27,7 @@ extended flux (e.g., nebulae, radio and millimeter maps).
 
 :mod:`image_registration.tests` Module
 --------------------------------------
+    :doc:`image_registration.tests`
 
 .. automodule:: image_registration.tests
     :members:

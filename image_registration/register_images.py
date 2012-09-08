@@ -7,6 +7,8 @@ except ImportError:
 import warnings
 import numpy as np
 
+__all__ = ['register_images']
+
 def register_images(im1, im2, usfac=1, return_registered=False,
         return_error=False, zeromean=True, DEBUG=False, maxoff=None,
         nthreads=1, use_numpy_fft=False):

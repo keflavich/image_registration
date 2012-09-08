@@ -1,26 +1,12 @@
 image_registration Package
 ==========================
 
+.. currentmodule:: image_registration
+
 :mod:`image_registration` Package
 ---------------------------------
 
 .. automodule:: image_registration
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`chi2_shifts` Module
--------------------------
-
-.. automodule:: image_registration.chi2_shifts
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`cross_correlation_shifts` Module
---------------------------------------
-
-.. automodule:: image_registration.cross_correlation_shifts
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,6 +18,29 @@ image_registration Package
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+.. autofunction:: register_images
+
+:mod:`chi2_shifts` Module
+-------------------------
+
+.. automodule:: image_registration.chi2_shifts
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autofunction:: chi2_shift
+
+:mod:`cross_correlation_shifts` Module
+--------------------------------------
+
+.. automodule:: image_registration.cross_correlation_shifts
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autofunction:: cross_correlation_shifts
 
 Subpackages
 -----------
