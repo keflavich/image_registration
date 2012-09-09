@@ -1,2 +1,2 @@
-numpy
 numpydoc
+numpydoc==0.4
