@@ -30,6 +30,13 @@ except ImportError:
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+rootpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, rootpath)
+#import numpydoc
+#sys.path.insert(0, os.path.split(numpydoc.__file__)[0])
+sys.path.insert(0, rootpath+"/doc/sphinxext/")
+sys.path.append(os.path.abspath('sphinxext'))
+sys.path.append(os.path.abspath('.'))
 
 # -- General configuration -----------------------------------------------------
 
