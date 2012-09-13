@@ -139,6 +139,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         else:
             size = 1
         upsample_factor = max_auto_size/2. / size
+        if upsample_factor < 1:
+            upsample_factor = 1
         s1 = s2 = max_auto_size
         # zoom factor = s1 / upsample_factor = 2*size
         zoom_factor = 2.*size
