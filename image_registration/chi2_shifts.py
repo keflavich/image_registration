@@ -5,6 +5,8 @@ except ImportError:
 import warnings
 import numpy as np
 
+__all__ = ['chi2_shift']
+
 def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2, verbose=False,
         return_error=True, return_chi2array=False, max_auto_size=512,
@@ -71,7 +73,14 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         Measures the amount im2 is offset from im1 (i.e., shift im2 by -1 *
         these #'s to match im1)
 
-
+    Examples
+    --------
+    # Create a 2d array
+    >>> image = np.random.randn(50,55)
+    # shift it in both directions
+    >>> shifted = np.roll(np.roll(image,0,12),1,5)
+    # determine shift
+    >>> dx,dy = chi2shift(image, shifted, upsample_factor='auto')
 
     """
     if not im1.shape == im2.shape:

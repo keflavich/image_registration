@@ -13,10 +13,35 @@
 
 import sys, os
 
+try:
+    import numpy
+except ImportError:
+    pass
+try:
+    import scipy
+except ImportError:
+    pass
+try:
+    import image_registration
+except ImportError:
+    pass
+try:
+    import numpydoc
+    print "numpydoc path is ",numpydoc.__file__
+except ImportError:
+    print "Failed to import numpydoc"
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+rootpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, rootpath)
+#import numpydoc
+#sys.path.insert(0, os.path.split(numpydoc.__file__)[0])
+sys.path.insert(0, rootpath+"/doc/sphinxext/")
+sys.path.append(os.path.abspath('sphinxext'))
+sys.path.append(os.path.abspath('.'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -248,3 +273,27 @@ todo_include_todos = True
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+
+# read the docs mocks
+import sys
+
+class Mock(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            return type(name, (), {})
+        else:
+            return Mock()
+
+MOCK_MODULES = ['scipy','pyfits','astropy']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
