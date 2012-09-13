@@ -6,6 +6,8 @@
 Astronomical Image Registration
 ===============================
 
+`Image Registration <https://github.com/keflavich/image_registration>`_
+
 A toolkit for registering images of astronomical images containing primarily
 extended flux (e.g., nebulae, radio and millimeter maps).
 
