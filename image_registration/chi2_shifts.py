@@ -68,19 +68,30 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     Returns
     -------
     dx,dy : float,float
-        .. todo:: CHECK THIS 
-        .. todo:: make upsample_factor only zoom on the chi2-relevant region
         Measures the amount im2 is offset from im1 (i.e., shift im2 by -1 *
         these #'s to match im1)
 
+        .. todo:: CHECK THIS 
+
     Examples
     --------
-    # Create a 2d array
+    >>> # Create a 2d array
     >>> image = np.random.randn(50,55)
-    # shift it in both directions
-    >>> shifted = np.roll(np.roll(image,0,12),1,5)
-    # determine shift
-    >>> dx,dy = chi2shift(image, shifted, upsample_factor='auto')
+    >>> # shift it in both directions
+    >>> shifted = np.roll(np.roll(image,12,0),5,1)
+    >>> # determine shift
+    >>> import image_registration
+    >>> dx,dy,edx,edy = image_registration.chi2_shift(image, shifted, upsample_factor='auto')
+    >>> # Check that the shift is correct
+    >>> print "dx - fitted dx = ",dx-5," error: ",edx
+    >>> print "dy - fitted dy = ",dy-12," error: ",edy
+    >>> # that example was boring; instead let's do one with a non-int shift
+    >>> shifted2 = image_registration.fft_tools.shift(image,3.665,-4.25)
+    >>> dx2,dy2,edx2,edy2 = image_registration.chi2_shift(image, shifted2, upsample_factor='auto')
+    >>> print "dx - fitted dx = ",dx2-3.665," error: ",edx2
+    >>> print "dy - fitted dy = ",dy2-(-4.25)," error: ",edy2
+    
+    .. todo:: understand numerical error in fft-shifted version
 
     """
     if not im1.shape == im2.shape:

@@ -62,8 +62,8 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
     >>> im2 = np.zeros([10,10])
     >>> im1[4,3] = 1
     >>> im2[5,5] = 1
-    >>> import AG_image_tools
-    >>> yoff,xoff = AG_image_tools.cross_correlation_shifts(im1,im2)
+    >>> import image_registration
+    >>> yoff,xoff = image_registration.cross_correlation_shifts(im1,im2)
     >>> im1_aligned_to_im2 = np.roll(np.roll(im1,int(yoff),1),int(xoff),0)
     >>> assert (im1_aligned_to_im2-im2).sum() == 0
     
