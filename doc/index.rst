@@ -14,6 +14,33 @@ extended flux (e.g., nebulae, radio and millimeter maps).
 There are related packages scattered throughout the internet that do the same
 thing, but with different features.
 
+The general goal is to align images that look kind of like these:
+
+.. image:: image.png
+    :width: 400px
+    :alt: The input image
+
+.. image:: image_shifted_corrupted.png
+    :width: 400px
+    :alt: The input image shifted and corrupted with gaussian noise
+
+Module APIs:
+------------
+   :doc:`image_registration` Module
+
+   :doc:`image_registration.fft_tools` Module
+
+   :doc:`image_registration.tests` Module
+
+
+   The most successful of the methods implemented here is :func:`chi2_shift <_chi2_shift>`.
+
+   There is an ipython notebook demonstration of the code `here <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`_
+
+.. autofunction:: chi2_shift
+
+
+
 Related Programs
 ----------------
     `Varosi + Landsman astrolib correl_optimize <http://idlastro.gsfc.nasa.gov/ftp/pro/image/correl_optimize.pro>`_ :
@@ -42,15 +69,6 @@ Related Programs
         that it really didn't work - it helped remove SOME of the large-scale
         junk, but it didn't end up changing the shape of the peak in a helpful
         way.
-
-
-Module APIs:
-------------
-   :doc:`image_registration` Module
-
-   :doc:`image_registration.fft_tools` Module
-
-   :doc:`image_registration.tests` Module
 
 
 .. :mod:`image_registration` Module

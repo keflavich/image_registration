@@ -30,6 +30,7 @@ image_registration Package
     :undoc-members:
     :show-inheritance:
 
+.. _chi2_shift:
 .. autofunction:: chi2_shift
 
 :mod:`cross_correlation_shifts` Module
