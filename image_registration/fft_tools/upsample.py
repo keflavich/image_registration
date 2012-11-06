@@ -2,6 +2,7 @@ import fast_ffts
 import warnings
 import numpy as np
 import scale
+import shift
 import zoom
 
 def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
@@ -140,6 +141,55 @@ def odddftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     #return np.roll(np.roll(out,+1,axis=0),+1,axis=1)
     return out 
 
+
+def dftups1d(inp,nor=None,usfac=1,roff=0):
+    """
+    1D upsampling... not exactly dft becuase I still don't understand it =(
+    """
+    # this function is translated from matlab, so I'm just going to pretend
+    # it is matlab/pylab
+    from numpy.fft import ifftshift
+    #from numpy import pi,newaxis,floor
+    from scipy.signal import resample
+
+
+    nr=np.size(inp);
+    newsize = nr * usfac
+    #shifted = shift(inp, roff, mode='wrap')
+    shifted = shift.shift1d(inp,roff)
+    ups = resample(shifted.astype('float'),newsize)
+    lolim = nr/2-nr/2
+    uplim = nr/2+nr/2
+    # I think it would always have to be wrong on the upper side
+    if uplim-lolim > nr:
+        uplim -= 1
+    elif uplim-lolim < nr:
+        uplim += 1
+    if uplim - lolim != nr: raise ValueError('impossible?')
+    out = ups[lolim:uplim]
+
+    #oldx = np.arange(nr)
+    #newx = np.linspace(nr/2.-nr/2./usfac+roff/usfac,nr/2.+nr/2./usfac+roff/usfac,nr)
+    #oldx = np.linspace(0,1,nr)
+    #newx = np.linspace(0,1,newsize)
+    #inshift = shift.shift1d(inp,roff)
+    #out = ups = np.interp(newx,oldx,np.real(inp))
+
+    #lolim = newsize/2+roff*usfac-nr/2
+    #uplim = newsize/2+roff*usfac+nr/2
+    #out = ups[lolim:uplim]
+    
+    # Set defaults
+    #if nor is None: nor=nr;
+    # Compute kernels and obtain DFT by matrix products
+    #kernc=np.exp((-1j*2*pi/(nc*usfac))*( ifftshift(np.arange(nc) - floor(nc/2)).T[:,newaxis] )*( np.arange(noc) - coff  )[newaxis,:]);
+    #kernr=np.exp((-1j*2*pi/(nr*usfac))*( np.arange(nor).T - roff )[:,newaxis]*( ifftshift(np.arange(nr)) - floor(nr/2) )[newaxis,:]);
+    #kernc=np.ones(nr,dtype='float')/float(nr)
+    #kernc=exp((-i*2*pi/(nc*usfac))*( ifftshift([0:nc-1]).' - floor(nc/2) )*( [0:noc-1] - coff ));
+    #kernr=exp((-i*2*pi/(nr*usfac))*( [0:nor-1].' - roff )*( ifftshift([0:nr-1]) - floor(nr/2)  ));
+    #out=np.dot(kernr,inp)
+    #return np.roll(np.roll(out,-1,axis=0),-1,axis=1)
+    return out 
 
 if __name__ == "__main__" and False:
 
