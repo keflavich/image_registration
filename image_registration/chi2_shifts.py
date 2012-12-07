@@ -94,27 +94,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     .. todo:: understand numerical error in fft-shifted version
 
     """
-    if not im1.shape == im2.shape:
-        raise ValueError("Images must have same shape.")
-
-    if zeromean:
-        im1 = im1 - (im1[im1==im1].mean())
-        im2 = im2 - (im2[im2==im2].mean())
-
-    im1 = np.nan_to_num(im1)
-    im2 = np.nan_to_num(im2)
-
-    xc = correlate2d(im1,im2, boundary=boundary)
-    if err is not None:
-        err = np.nan_to_num(err)
-        err_ac = correlate2d(err,err, boundary=boundary)
-        err2sum = (err**2).sum()
-    else:
-        err_ac = xc.size - nfitted
-        err2sum = xc.size - nfitted
-    ac1peak = (im1**2).sum()
-    ac2peak = (im2**2).sum()
-    chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 
+    chi2n = chi2n_map(im1, im2, err, boundary=boundary, nthreads=nthreads,
+            nfitted=nfitted, zeromean=zeromean, use_numpy_fft=use_numpy_fft)
     ymax, xmax = np.unravel_index(chi2n.argmin(), chi2n.shape)
 
     ylen,xlen = im1.shape
@@ -253,6 +234,60 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
 
     return returns
 
+def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
+        zeromean=True, use_numpy_fft=False):
+    """
+    Parameters
+    ----------
+    im1 : np.ndarray
+    im2 : np.ndarray
+        The images to register. 
+    err : np.ndarray
+        Per-pixel error in image 2
+    boundary : 'wrap','constant','reflect','nearest'
+        Option to pass to map_coordinates for determining what to do with
+        shifts outside of the boundaries.  
+    zeromean : bool
+        Subtract the mean from the images before cross-correlating?  If no, you
+        may get a 0,0 offset because the DC levels are strongly correlated.
+    nthreads : bool
+        Number of threads to use for fft (only matters if you have fftw
+        installed)
+    nfitted : int
+        number of degrees of freedom in the fit (used for chi^2 computations).
+        Should probably always be 2.
+
+    Returns
+    -------
+    chi2n : np.ndarray
+        the :math:`\chi^2` array
+    """
+
+    if not im1.shape == im2.shape:
+        raise ValueError("Images must have same shape.")
+
+    if zeromean:
+        im1 = im1 - (im1[im1==im1].mean())
+        im2 = im2 - (im2[im2==im2].mean())
+
+    im1 = np.nan_to_num(im1)
+    im2 = np.nan_to_num(im2)
+
+    xc = correlate2d(im1,im2, boundary=boundary, nthreads=nthreads,
+            use_numpy_fft=use_numpy_fft)
+    if err is not None:
+        err = np.nan_to_num(err)
+        err_ac = correlate2d(err,err, boundary=boundary, nthreads=nthreads,
+            use_numpy_fft=use_numpy_fft)
+        err2sum = (err**2).sum()
+    else:
+        err_ac = xc.size - nfitted
+        err2sum = xc.size - nfitted
+    ac1peak = (im1**2).sum()
+    ac2peak = (im2**2).sum()
+    chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 
+
+    return chi2n
 
 def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_error=True,
         guessx=0, guessy=0, use_fft=False, ignore_outside=True, **kwargs):
