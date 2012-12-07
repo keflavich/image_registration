@@ -49,5 +49,6 @@ Subpackages
 .. toctree::
 
     image_registration.fft_tools
+    image_registration.FITS_tools
     image_registration.tests
 

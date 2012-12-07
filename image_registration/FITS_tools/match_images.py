@@ -60,8 +60,9 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True, **kwargs):
 def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         return_header=False, **kwargs):
     """
-    Determine the shift between two FITS images using the cross-correlation
-    technique.  Requires montage or scipy.
+    Project one FITS file into another's coordinates
+    If sigma_cut is used, will try to find only regions that are significant
+    in both images using the standard deviation
 
     Parameters
     ----------
@@ -73,6 +74,12 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         Optional - can pass a header to projet both images to
     sigma_cut: bool or int
         Perform a sigma-cut on the returned images at this level
+
+    Returns
+    -------
+    image1,image2,[header] : 
+        Two images projected into the same space, and optionally
+        the header used to project them
     """
 
     if header is None:
@@ -105,10 +112,13 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
     return returns
 
 def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
-        register_method=chi2_shift, return_cropped_images=False, **kwargs):
+        register_method=chi2_shift, return_cropped_images=False,
+        return_header=False, **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
     technique.  Requires montage or hcongrid.
+
+    kwargs are passed to :func:`register_method`
 
     Parameters
     ----------
@@ -116,14 +126,39 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         Reference fits file name
     fitsfile2: str
         Offset fits file name
+    errfile : str [optional]
+        An error image, intended to correspond to fitsfile2
+    register_method : function
+        Can be any of the shift functions in :mod:`image_registration`.
+        Defaults to :func:`chi2_shift`
+    return_errors: bool
+        Return the errors on each parameter in addition to the fitted offset
     return_cropped_images: bool
         Returns the images used for the analysis in addition to the measured
         offsets
+    return_header : bool
+        Return the header the images have been projected to
     quiet: bool
         Silence messages?
     sigma_cut: bool or int
         Perform a sigma-cut before cross-correlating the images to minimize
         noise correlation?
+
+    Returns
+    -------
+    xoff,yoff : (float,float)
+        pixel offsets
+    xoff_wcs,yoff_wcs : (float,float)
+        world coordinate offsets
+    exoff,eyoff : (float,float) (only if `return_errors` is True)
+        Standard error on the fitted pixel offsets
+    exoff_wcs,eyoff_wcs : (float,float) (only if `return_errors` is True)
+        Standard error on the fitted world coordinate offsets
+    proj_image1, proj_image2 : (ndarray,ndarray) (only if `return_cropped_images` is True)
+        The images projected into the same coordinates
+    header : :class:`pyfits.Header` (only if `return_header` is True)
+        The header the images have been projected to
+
     """
     corr_image1, corr_image2, header = match_fits(fitsfile1, fitsfile2,
             return_header=True, **kwargs)
@@ -141,7 +176,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         cdelt = wcs.wcs.cd.diagonal()
     except AttributeError:
         cdelt = wcs.wcs.cdelt
-    print "CDELT: ",cdelt
+    #print "CDELT: ",cdelt
     xoff_wcs,yoff_wcs = np.array([xoff,yoff])*cdelt
     exoff_wcs,eyoff_wcs = np.array([exoff,eyoff])*cdelt
     #try:
@@ -154,6 +189,8 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         returns = returns + (exoff,eyoff,exoff_wcs,eyoff_wcs)
     if return_cropped_images:
         returns = returns + (corr_image1,corr_image2)
+    if return_header:
+        returns = returns + (header,)
     return returns
     
 

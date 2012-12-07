@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+import sys
+if 'build_sphinx' in sys.argv:
+    from setuptools import setup
+else:
+    from distutils.core import setup
 
 with open('README') as file:
     long_description = file.read()

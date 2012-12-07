@@ -26,6 +26,7 @@ The general goal is to align images that look kind of like these:
 
 Module APIs:
 ------------
+
    :doc:`image_registration` Module
 
    :doc:`image_registration.fft_tools` Module
@@ -33,11 +34,13 @@ Module APIs:
    :doc:`image_registration.tests` Module
 
 
-   The most successful of the methods implemented here is :func:`chi2_shift <_chi2_shift>`.
+   The most successful of the methods implemented here is :func:`~image_registration.chi2_shift`.
 
    There is an ipython notebook demonstration of the code `here <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`_
 
 .. autofunction:: chi2_shift
+
+.. currentmodule:: image_registration
 
 
 
@@ -106,6 +109,7 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+* :doc:`image_registration.FITS_tools`
 * :doc:`image_registration.fft_tools`
 * :doc:`image_registration`
 * :doc:`image_registration.tests`
