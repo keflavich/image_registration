@@ -5,7 +5,7 @@ except ImportError:
 import warnings
 import numpy as np
 
-__all__ = ['chi2_shift']
+__all__ = ['chi2_shift','chi2n_map']
 
 def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2, verbose=False,
