@@ -70,8 +70,13 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     dx,dy : float,float
         Measures the amount im2 is offset from im1 (i.e., shift im2 by -1 *
         these #'s to match im1)
+    errx,erry : float,float
+        optional, error in x and y directions
+    xvals,yvals,chi2n_upsampled : ndarray,ndarray,ndarray,
+        not entirely sure what those first two are
 
-        .. todo:: CHECK THIS 
+        .. todo::
+            CHECK THIS 
 
     Examples
     --------
@@ -98,6 +103,10 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
             nthreads=nthreads, nfitted=nfitted, zeromean=zeromean,
             use_numpy_fft=use_numpy_fft, return_all=True)
     ymax, xmax = np.unravel_index(chi2n.argmin(), chi2n.shape)
+
+    # needed for ffts
+    im1 = np.nan_to_num(im1)
+    im2 = np.nan_to_num(im2)
 
     ylen,xlen = im1.shape
     xcen = xlen/2-(1-xlen%2) 
