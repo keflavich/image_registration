@@ -34,7 +34,8 @@ Module APIs:
    :doc:`image_registration.tests` Module
 
 
-   The most successful of the methods implemented here is :func:`~image_registration.chi2_shift`.
+   The most successful of the methods implemented here is
+   :obj:`~image_registration.chi2_shifts.chi2_shift`
 
    There is an ipython notebook demonstration of the code `here
    <http://nbviewer.ipython.org/urls/raw.github.com/keflavich/image_registration/master/examples/Cross%2520Correlation.ipynb>`_
@@ -45,6 +46,8 @@ Module APIs:
 
 .. currentmodule:: image_registration
 
+.. py:function:: chi2_shift(test)
+    spam the foo
 
 
 Related Programs
