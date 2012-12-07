@@ -36,7 +36,10 @@ Module APIs:
 
    The most successful of the methods implemented here is :func:`~image_registration.chi2_shift`.
 
-   There is an ipython notebook demonstration of the code `here <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`_
+   There is an ipython notebook demonstration of the code `here
+   <http://nbviewer.ipython.org/urls/raw.github.com/keflavich/image_registration/master/examples/Cross%2520Correlation.ipynb>`_
+   and in pdf `here
+   <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`_
 
 .. autofunction:: chi2_shift
 
