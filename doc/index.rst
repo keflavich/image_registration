@@ -78,6 +78,8 @@ Related Programs
 
     Related bibliographic items (with no attached code):
     `"Sub-pixel image registration with a maximum likelihood estimator" <http://adsabs.harvard.edu/abs/2005A&A...443..357G>`_
+    The method they describe is statistically equivalent to what I have implemented, though my method measures the *error*
+    on the maximum-likelihood offset in addition to the ML offset.  
 
 
 .. :mod:`image_registration` Module
