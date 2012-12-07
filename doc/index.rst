@@ -42,14 +42,6 @@ Module APIs:
    and in pdf `here
    <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`_
 
-.. autofunction:: chi2_shift
-
-.. currentmodule:: image_registration
-
-.. py:function:: chi2_shift(test)
-    spam the foo
-
-
 Related Programs
 ----------------
     `Varosi + Landsman astrolib correl_optimize <http://idlastro.gsfc.nasa.gov/ftp/pro/image/correl_optimize.pro>`_ :
