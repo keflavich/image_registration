@@ -94,8 +94,9 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     .. todo:: understand numerical error in fft-shifted version
 
     """
-    chi2n = chi2n_map(im1, im2, err, boundary=boundary, nthreads=nthreads,
-            nfitted=nfitted, zeromean=zeromean, use_numpy_fft=use_numpy_fft)
+    chi2n,ac1peak,ac2peak,err2sum,err_ac,xc = chi2n_map(im1, im2, err, boundary=boundary,
+            nthreads=nthreads, nfitted=nfitted, zeromean=zeromean,
+            use_numpy_fft=use_numpy_fft, return_all=True)
     ymax, xmax = np.unravel_index(chi2n.argmin(), chi2n.shape)
 
     ylen,xlen = im1.shape
@@ -235,7 +236,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     return returns
 
 def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
-        zeromean=True, use_numpy_fft=False):
+        zeromean=True, use_numpy_fft=False, return_all=False):
     """
     Parameters
     ----------
@@ -261,6 +262,10 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     -------
     chi2n : np.ndarray
         the :math:`\chi^2` array
+    ac1peak : float
+        The sum of the square of the first autocorrelation image
+    ac2peak : float
+        The sum of the square of the second autocorrelation image
     """
 
     if not im1.shape == im2.shape:
@@ -287,7 +292,10 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     ac2peak = (im2**2).sum()
     chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 
 
-    return chi2n
+    if return_all:
+        return chi2n,ac1peak,ac2peak,err2sum,err_ac,xc
+    else:
+        return chi2n
 
 def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_error=True,
         guessx=0, guessy=0, use_fft=False, ignore_outside=True, **kwargs):
