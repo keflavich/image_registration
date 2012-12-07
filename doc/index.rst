@@ -76,6 +76,9 @@ Related Programs
         junk, but it didn't end up changing the shape of the peak in a helpful
         way.
 
+    Related bibliographic items (with no attached code):
+    `"Sub-pixel image registration with a maximum likelihood estimator" <http://adsabs.harvard.edu/abs/2005A&A...443..357G>`_
+
 
 .. :mod:`image_registration` Module
 .. --------------------------------
