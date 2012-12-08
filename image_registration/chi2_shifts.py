@@ -116,6 +116,9 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     yshift = ymax-ycen # shift im2 by these numbers to get im1
     xshift = xmax-xcen
 
+    if verbose:
+        print "Coarse xmax/ymax = %i,%i, for offset %f,%f" % (xmax,ymax,xshift,yshift)
+
     # below is sub-pixel zoom-in stuff
 
     # find delta-chi^2 limiting values for varying DOFs
@@ -202,8 +205,10 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     upsymax,upsxmax = np.unravel_index(chi2n_ups.argmin(), chi2n_ups.shape)
 
     if sigma1_area.sum() <= 1:
-        if verbose:
+        if verbose and upsample_factor == 'auto':
             print "Cannot estimate errors: need higher upsample factor.  Sigmamax_area=%i" % (sigmamax_area.sum())
+        else:
+            print "Cannot estimate errors: need higher upsample factor."
         errx_low = erry_low = errx_high = erry_high = 1./upsample_factor
     else: # compute 1-sigma errors
         x_sigma1 = xshifts_corrections[sigma1_area]
@@ -245,7 +250,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     return returns
 
 def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
-        zeromean=True, use_numpy_fft=False, return_all=False):
+        zeromean=False, use_numpy_fft=False, return_all=False):
     """
     Parameters
     ----------
