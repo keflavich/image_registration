@@ -139,6 +139,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     # biggest scale = where chi^2/n ~ 9 or 11.8 for M=2?
     if upsample_factor=='auto':
         # deltachi2 is not reduced deltachi2
+        # nfitted = number of fitted pars (OK).  Why -1?  estimating mean?
         deltachi2_lowres = (chi2n - chi2n.min())*(xc.size-nfitted-1)
         if verbose:
             print "Minimum chi2n: %g   Max delta-chi2 (lowres): %g  Min delta-chi2: %g" % (chi2n.min(),deltachi2_lowres.max(),deltachi2_lowres[deltachi2_lowres>0].min())
