@@ -62,11 +62,12 @@ def hcongrid(image, header1, header2, **kwargs):
         # do unit conversions
         raise NotImplementedError("Unit conversions have not yet been implemented.")
 
+    # sigh... why does numpy use matrix convention?  Makes everything so much harder...
     outshape = [wcs2.naxis2,wcs2.naxis1]
     yy2,xx2 = np.indices(outshape)
-    lon2,lat2 = wcs2.wcs_pix2sky(yy2, xx2, 0)
+    lon2,lat2 = wcs2.wcs_pix2sky(xx2, yy2, 0)
     xx1,yy1 = wcs1.wcs_sky2pix(lon2, lat2, 0)
-    grid1 = np.array([xx1.reshape(outshape),yy1.reshape(outshape)])
+    grid1 = np.array([yy1.reshape(outshape),xx1.reshape(outshape)])
 
     newimage = scipy.ndimage.map_coordinates(image, grid1, **kwargs)
     
