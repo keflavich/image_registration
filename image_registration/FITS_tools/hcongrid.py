@@ -69,6 +69,6 @@ def hcongrid(image, header1, header2, **kwargs):
     xx1,yy1 = wcs1.wcs_sky2pix(lon2, lat2, 0)
     grid1 = np.array([yy1.reshape(outshape),xx1.reshape(outshape)])
 
-    newimage = scipy.ndimage.map_coordinates(image, grid1, **kwargs)
+    newimage = scipy.ndimage.map_coordinates(np.nan_to_num(image), grid1, **kwargs)
     
     return newimage
