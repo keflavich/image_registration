@@ -115,7 +115,7 @@ try:
     def test_shifts(xsh,ysh,imsize,gaussfit):
         image,new_image,tolerance = make_offset_images(xsh, ysh, imsize)
         if gaussfit:
-            xoff,yoff,exoff,eyoff = cross_correlation_shifts(image,new_image)
+            xoff,yoff,exoff,eyoff = cross_correlation_shifts(image,new_image,return_error=True)
             print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh),exoff,eyoff
         else:
             xoff,yoff = cross_correlation_shifts(image,new_image)
@@ -274,6 +274,7 @@ try:
         print "Analytic offset: %g" % (( (A[:,3]/A[:,1]).mean() + (A[:,2]/A[:,0]).mean() )/2. )
         print "Gaussian offset: %g" % (( (G[:,3]/G[:,1]).mean() + (G[:,2]/G[:,0]).mean() )/2. )
         
+    @pytest.mark.parametrize(('imsize'),sizes)
     def test_upsample(imsize, usfac=2, xsh=2.25, ysh=2.25, noise=0.1, **kwargs):
         image = make_extended(imsize)
         offim = make_offset_extended(image, xsh, ysh, noise=noise, **kwargs)
