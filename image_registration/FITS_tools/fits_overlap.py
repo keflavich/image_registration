@@ -42,6 +42,15 @@ def header_overlap(hdr1,hdr2):
     ((xmin1,ymin1),) = wcs1.wcs_pix2world([[1,1]],1)
     ((xmin2,ymin2),) = wcs2.wcs_pix2world([[1,1]],1)
 
+    if xmin2 > xmax2:
+        xmax2,xmin2 = xmin2,xmax2
+    if xmin1 > xmax1:
+        xmax1,xmin1 = xmin1,xmax1
+    if ymin2 > ymax2:
+        ymax2,ymin2 = ymin2,ymax2
+    if ymin1 > ymax1:
+        ymax1,ymin1 = ymin1,ymax1
+
     xmin = min(xmin1,xmin2)
     xmax = max(xmax1,xmax2)
     ymin = min(ymin1,ymin2)
