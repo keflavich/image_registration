@@ -47,19 +47,29 @@ def header_overlap(hdr1,hdr2):
     ymin = min(ymin1,ymin2)
     ymax = max(ymax1,ymax2)
 
+    # no overlap at all
+    if xmin1 > xmax2 or xmin2 > xmax1:
+        naxis1 = 0
+    else:
+        naxis1 = np.ceil(np.abs((xmax-xmin)/cdelt1))
+    if ymin1 > ymax2 or ymin2 > ymax1:
+        naxis2 = 0
+    else:
+        naxis2 = np.ceil(np.abs((ymax-ymin)/cdelt2))
+
     try:
         cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cd.diagonal(), wcs2.wcs.cd.diagonal()])).min(axis=0) * np.sign(wcs1.wcs.cd).diagonal()
     except AttributeError:
         cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cdelt, wcs2.wcs.cdelt])).min(axis=0) * np.sign(wcs1.wcs.cdelt)
 
     # may want to change this later...
-    new_header = hdr1
+    new_header = hdr1.copy()
     new_header['CRVAL1'] = (xmin+xmax)/2.
     new_header['CRVAL2'] = (ymin+ymax)/2.
     new_header['CDELT1'] = cdelt1
     new_header['CDELT2'] = cdelt2
-    new_header['NAXIS1'] = np.ceil(np.abs((xmax-xmin)/cdelt1))
-    new_header['NAXIS2'] = np.ceil(np.abs((ymax-ymin)/cdelt2))
+    new_header['NAXIS1'] = naxis1
+    new_header['NAXIS2'] = naxis2
     new_header['CRPIX1'] = new_header['NAXIS1']/2
     new_header['CRPIX2'] = new_header['NAXIS2']/2
 
