@@ -47,6 +47,11 @@ def header_overlap(hdr1,hdr2):
     ymin = min(ymin1,ymin2)
     ymax = max(ymax1,ymax2)
 
+    try:
+        cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cd.diagonal(), wcs2.wcs.cd.diagonal()])).min(axis=0) * np.sign(wcs1.wcs.cd).diagonal()
+    except AttributeError:
+        cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cdelt, wcs2.wcs.cdelt])).min(axis=0) * np.sign(wcs1.wcs.cdelt)
+
     # no overlap at all
     if xmin1 > xmax2 or xmin2 > xmax1:
         naxis1 = 0
@@ -57,10 +62,6 @@ def header_overlap(hdr1,hdr2):
     else:
         naxis2 = np.ceil(np.abs((ymax-ymin)/cdelt2))
 
-    try:
-        cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cd.diagonal(), wcs2.wcs.cd.diagonal()])).min(axis=0) * np.sign(wcs1.wcs.cd).diagonal()
-    except AttributeError:
-        cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cdelt, wcs2.wcs.cdelt])).min(axis=0) * np.sign(wcs1.wcs.cdelt)
 
     # may want to change this later...
     new_header = hdr1.copy()
