@@ -71,8 +71,8 @@ def header_overlap(hdr1,hdr2,max_separation=180):
         cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cdelt, wcs2.wcs.cdelt])).min(axis=0) * np.sign(wcs1.wcs.cdelt)
 
     # no overlap at all
-    if ((xmin1 > xmax2 and np.sign(xmin1)==np.sign(xmax2)) or 
-        (xmin2 > xmax1 and np.sign(xmin2)==np.sign(xmax1))):
+    if ((xmin1 > xmax2) or 
+        (xmin2 > xmax1)):
         naxis1 = 0
     else:
         naxis1 = np.ceil(np.abs((xmax-xmin)/cdelt1))
