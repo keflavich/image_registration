@@ -60,9 +60,9 @@ def header_overlap(hdr1,hdr2,max_separation=180):
     ymax = max(ymax1,ymax2)
     if xmax-xmin > max_separation:
         xmax -= 360
-        for xm in xmin1,xmax1,xmin2,xmax2:
-            if xm > max_separation:
-                xm -= 360
+        xmlist = [ xm - 360 if xm > max_separation else xm
+            for xm in xmin1,xmax1,xmin2,xmax2]
+        xmin1,xmax1,xmin2,xmax2 = xmlist
 
     try:
         cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cd.diagonal(), wcs2.wcs.cd.diagonal()])).min(axis=0) * np.sign(wcs1.wcs.cd).diagonal()
