@@ -11,11 +11,28 @@ def fits_overlap(file1,file2):
     Create a header containing the exact overlap region between two .fits files
 
     Does NOT check to make sure the FITS files are in the same coordinate system!
+
+    Parameters
+    ----------
+    file1,file2 : str,str
+        files from which to extract header strings
     """
 
     hdr1 = pyfits.getheader(file1)
     hdr2 = pyfits.getheader(file2)
+    return header_overlap(hdr1,hdr2)
 
+def header_overlap(hdr1,hdr2):
+    """
+    Create a header containing the exact overlap region between two .fits files
+
+    Does NOT check to make sure the FITS files are in the same coordinate system!
+
+    Parameters
+    ----------
+    hdr1,hdr2 : pyfits.Header
+        Two pyfits headers to compare
+    """
     wcs1 = pywcs.WCS(hdr1)
     wcs2 = pywcs.WCS(hdr2)
 
