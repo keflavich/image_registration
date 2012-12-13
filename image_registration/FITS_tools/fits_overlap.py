@@ -45,6 +45,12 @@ def header_overlap(hdr1,hdr2,max_separation=180):
     ((xmin1,ymin1),) = wcs1.wcs_pix2world([[1,1]],1)
     ((xmin2,ymin2),) = wcs2.wcs_pix2world([[1,1]],1)
 
+    # make sure the edges are all in the same quadrant-ish
+    xmlist = [ xm - 360 if xm > max_separation else 
+            xm + 360 if xm < -max_separation else xm
+        for xm in xmin1,xmax1,xmin2,xmax2]
+    xmin1,xmax1,xmin2,xmax2 = xmlist
+
     if xmin2 > xmax2:
         xmax2,xmin2 = xmin2,xmax2
     if xmin1 > xmax1:
@@ -58,11 +64,6 @@ def header_overlap(hdr1,hdr2,max_separation=180):
     xmax = max(xmax1,xmax2)
     ymin = min(ymin1,ymin2)
     ymax = max(ymax1,ymax2)
-    if xmax-xmin > max_separation:
-        xmax -= 360
-        xmlist = [ xm - 360 if xm > max_separation else xm
-            for xm in xmin1,xmax1,xmin2,xmax2]
-        xmin1,xmax1,xmin2,xmax2 = xmlist
 
     try:
         cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cd.diagonal(), wcs2.wcs.cd.diagonal()])).min(axis=0) * np.sign(wcs1.wcs.cd).diagonal()
@@ -70,7 +71,8 @@ def header_overlap(hdr1,hdr2,max_separation=180):
         cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cdelt, wcs2.wcs.cdelt])).min(axis=0) * np.sign(wcs1.wcs.cdelt)
 
     # no overlap at all
-    if xmin1 > xmax2 or xmin2 > xmax1:
+    if ((xmin1 > xmax2 and np.sign(xmin1)==np.sign(xmax2)) or 
+        (xmin2 > xmax1 and np.sign(xmin2)==np.sign(xmax1))):
         naxis1 = 0
     else:
         naxis1 = np.ceil(np.abs((xmax-xmin)/cdelt1))
