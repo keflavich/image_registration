@@ -527,3 +527,29 @@ if doplots:
     # errorbar(compare_offsets[:,0].mean(),compare_offsets[:,2].mean(),xerr=compare_offsets[:,0].std(),yerr=compare_offsets[:,2].std(),marker='x',linestyle='none')
     # plot(compare_offsets[:,1],compare_offsets[:,3],'.')
     # errorbar(compare_offsets[:,1].mean(),compare_offsets[:,3].mean(),xerr=compare_offsets[:,1].std(),yerr=compare_offsets[:,3].std(),marker='x',linestyle='none')
+
+if __name__ == "__main__":
+    import line_profiler
+
+    profile = line_profiler.LineProfiler(compare_methods, cross_correlation_shifts, chi2_shift, upsample_image, dftups)
+
+    xsh = 1.5
+    ysh = -2.1
+    imsize = 112
+    image,new_image,tolerance = make_offset_images(xsh, ysh, imsize)
+    cmd = "compare_methods(image, new_image, nthreads=8)"
+
+    profile.run(cmd)
+    profile.print_stats()
+
+    # different profiler conditions
+    profile2 = line_profiler.LineProfiler(compare_methods, cross_correlation_shifts, chi2_shift, upsample_image, dftups)
+
+    xsh = 1.5
+    ysh = -2.1
+    imsize = 512
+    image,new_image,tolerance = make_offset_images(xsh, ysh, imsize)
+    cmd = "compare_methods(image, new_image, ntests=10, nthreads=8, usfac=201)"
+
+    profile2.run(cmd)
+    profile2.print_stats()
