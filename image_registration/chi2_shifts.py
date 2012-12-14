@@ -14,16 +14,34 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     """
     Find the offsets between image 1 and image 2 using the DFT upsampling method
     (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
-    combined with :math:`chi^2` to measure the errors on the fit
+    combined with :math:`\chi^2` to measure the errors on the fit
+
+    Equation 1 gives the :math:`\chi^2` value as a function of shift, where Y
+    is the model as a function of shift:
 
     .. math::
-            \chi^2 & = & \Sigma_{ij} \\frac{(X_{ij}-Y_{ij})^2}{\sigma_{ij}^2} \\\\
-                   & = & \Sigma_{ij} \left[ X_{ij}^2/\sigma_{ij}^2 - 2X_{ij}Y_{ij}/\sigma_{ij} + Y_{ij}^2 \\right]  \\\\
+            \chi^2(dx,dy) & = & \Sigma_{ij} \\frac{(X_{ij}-Y_{ij}(dx,dy))^2}{\sigma_{ij}^2} \\\\
+                          & = & \Sigma_{ij} \left[ X_{ij}^2/\sigma_{ij}^2 - 2X_{ij}Y_{ij}(dx,dy)/\sigma_{ij} + Y_{ij}(dx,dy)^2/\sigma{ij}^2 \\right]  \\\\
+
+    Equation 2-4:
 
     .. math::
-            \Sigma_{ij}[x,y] \\frac{X_{ij}^2}{\sigma_{ij}^2} & = & X/dx * X/dx \\\\
-            \Sigma_{ij}[x,y] \\frac{X_{ij}Y_{ij}}{\sigma_{ij}} & = & X/dx * Y \\\\
-            \Sigma_{ij}[x,y] Y_{ij}^2 & = &  Y * Y
+            Term~1: & \Sigma_{ij} \\frac{X_{ij}^2}{\sigma_{ij}^2}  \\\\
+            Term~2: & \Sigma_{ij} \\frac{X_{ij}Y_{ij(dx,dy)}}{\sigma_{ij}}  \\\\
+            Term~3: & \Sigma_{ij} Y_{ij}(dx,dy)^2 
+
+    The cross-correlation can be computed with fourier transforms, and has the property
+
+    .. math::
+            CC(x,y)[m,n] = \Sigma_{ij}[x,y] x^*_{ij} y_{(n+i)(m+j)}
+
+    which can then be applied to our problem, noting that the cross-correlation
+    has the same form as terms 2 and 3 in :math:`\chi^2` (term 1 is a constant,
+    with no dependence on the shift)
+
+    .. math::
+            Term~2: & CC(X/\sigma,Y)[dx,dy] & = & \Sigma_{ij} X^*_{ij}/\sigma_{ij}^* Y_{(dx+i)(dy+j)} \\\\
+            Term~3: & CC(Y,Y)[dx,dy] & = & \Sigma_{ij} Y^*_{ij} Y_{(dx+i)(dy+j)}                      
 
     
     
@@ -99,10 +117,10 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     .. todo:: understand numerical error in fft-shifted version
 
     """
-    chi2n,ac1peak,ac2peak,err2sum,err_ac,xc = chi2n_map(im1, im2, err, boundary=boundary,
+    chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
             nthreads=nthreads, nfitted=nfitted, zeromean=zeromean,
-            use_numpy_fft=use_numpy_fft, return_all=True)
-    ymax, xmax = np.unravel_index(chi2n.argmin(), chi2n.shape)
+            use_numpy_fft=use_numpy_fft, return_all=True, reduced=False)
+    ymax, xmax = np.unravel_index(chi2.argmin(), chi2.shape)
 
     # needed for ffts
     im1 = np.nan_to_num(im1)
@@ -139,10 +157,9 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     # biggest scale = where chi^2/n ~ 9 or 11.8 for M=2?
     if upsample_factor=='auto':
         # deltachi2 is not reduced deltachi2
-        # nfitted = number of fitted pars (OK).  Why -1?  estimating mean?
-        deltachi2_lowres = (chi2n - chi2n.min())*(xc.size-nfitted-1)
+        deltachi2_lowres = (chi2 - chi2.min())
         if verbose:
-            print "Minimum chi2n: %g   Max delta-chi2 (lowres): %g  Min delta-chi2: %g" % (chi2n.min(),deltachi2_lowres.max(),deltachi2_lowres[deltachi2_lowres>0].min())
+            print "Minimum chi2: %g   Max delta-chi2 (lowres): %g  Min delta-chi2: %g" % (chi2.min(),deltachi2_lowres.max(),deltachi2_lowres[deltachi2_lowres>0].min())
         sigmamax_area = deltachi2_lowres<m_auto
         if sigmamax_area.sum() > 1:
             yy,xx = np.indices(sigmamax_area.shape)
@@ -173,27 +190,38 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     # import fft's
     fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
 
+    if err is not None:
+        #err_ups = upsample_image(err_ac, output_size=s1,
+        #        upsample_factor=upsample_factor, xshift=xshift, yshift=yshift)
+        # prevent divide-by-zero errors
+        im2[err==0] = 0
+        err[err==0] = 1
+    else:
+        err = np.ones(im2.shape)
+        err_ups = 1
+
     # pilfered from dftregistration (hence the % comments)
     dftshift = np.trunc(np.ceil(upsample_factor*zoom_factor)/2); #% Center of output array at dftshift+1
-    xc_ups = dftups(fftn(im2)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
+    term2_ups = dftups(fftn(im2/err)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
             roff=dftshift-yshift*upsample_factor,
             coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
-    if err is not None:
-        err_ups = upsample_image(err_ac, output_size=s1,
-                upsample_factor=upsample_factor, xshift=xshift, yshift=yshift)
-    else:
-        err_ups = 1
-    chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)#*(xc.size-nfitted)
+
+    # old and wrong chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)#*(xc.size-nfitted)
+    chi2_ups = term1 - 2*term2_ups + term3
     # deltachi2 is not reduced deltachi2
-    deltachi2 = (chi2n_ups - chi2n_ups.min())*(xc.size-nfitted-1)
+    deltachi2_ups = (chi2_ups - chi2_ups.min())
     if verbose:
-        print "Minimum chi2n_ups: %g   Max delta-chi2: %g  Min delta-chi2: %g" % (chi2n_ups.min(),deltachi2.max(),deltachi2[deltachi2>0].min())
+        print "Minimum chi2_ups: %g   Max delta-chi2: %g  Min delta-chi2: %g" % (chi2_ups.min(),deltachi2_ups.max(),deltachi2_ups[deltachi2_ups>0].min())
+    # THE UPSAMPLED BEST-FIT HAS BEEN FOUND
+
+    # BELOW IS TO COMPUTE THE ERROR
 
     yy,xx = np.indices([s1,s2])
     xshifts_corrections = (xx-dftshift)/upsample_factor
     yshifts_corrections = (yy-dftshift)/upsample_factor
 
-    sigma1_area = deltachi2<m1
+    # need to determine how many pixels are in the 1-sigma region
+    sigma1_area = deltachi2_ups<m1
     # optional...?
     #sigma2_area = deltachi2<m2
     #x_sigma2 = xshifts_corrections[sigma2_area]
@@ -203,7 +231,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     #y_sigma3 = yshifts_corrections[sigma3_area]
 
     # upsampled maximum - correction
-    upsymax,upsxmax = np.unravel_index(chi2n_ups.argmin(), chi2n_ups.shape)
+    upsymax,upsxmax = np.unravel_index(chi2_ups.argmin(), chi2_ups.shape)
 
     if sigma1_area.sum() <= 1:
         if verbose and upsample_factor == 'auto':
@@ -246,12 +274,12 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         returns.append( (errx_low+errx_high)/2. )
         returns.append( (erry_low+erry_high)/2. )
     if return_chi2array:
-        returns.append((shift_xvals,shift_yvals,chi2n_ups))
+        returns.append((shift_xvals,shift_yvals,chi2_ups))
 
     return returns
 
 def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
-        zeromean=False, use_numpy_fft=False, return_all=False):
+        zeromean=False, use_numpy_fft=False, return_all=False, reduced=False):
     """
     Parameters
     ----------
@@ -272,6 +300,9 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     nfitted : int
         number of degrees of freedom in the fit (used for chi^2 computations).
         Should probably always be 2.
+    reduced : bool
+        Return the reduced :math:`\chi^2` array, or unreduced?
+        (assumes 2 degrees of freedom for the fit)
 
     Returns
     -------
@@ -293,24 +324,30 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     im1 = np.nan_to_num(im1)
     im2 = np.nan_to_num(im2)
 
-    xc = correlate2d(im1,im2, boundary=boundary, nthreads=nthreads,
-            use_numpy_fft=use_numpy_fft)
     if err is not None:
         err = np.nan_to_num(err)
-        err_ac = correlate2d(err,err, boundary=boundary, nthreads=nthreads,
-            use_numpy_fft=use_numpy_fft)
-        err2sum = (err**2).sum()
+
+        # to avoid divide-by-zero errors
+        im2[err==0] = 0
+        err[err==0] = 1 
     else:
-        err_ac = xc.size - nfitted
-        err2sum = xc.size - nfitted
-    ac1peak = (im1**2).sum()
-    ac2peak = (im2**2).sum()
-    chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 
+        err = np.ones(im2.shape)
+
+    term1 = ((im2/err)**2).sum()
+    term3 = ((im1)**2).sum()
+
+    term2 = correlate2d(im1,im2/err, boundary=boundary, nthreads=nthreads,
+            use_numpy_fft=use_numpy_fft)
+
+    # old, wrong version chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 
+    chi2 = term1 - 2*term2 + term3
+    if reduced:
+        chi2 /= im2.size-2.
 
     if return_all:
-        return chi2n,ac1peak,ac2peak,err2sum,err_ac,xc
+        return chi2,term1,term2,term3
     else:
-        return chi2n
+        return chi2
 
 def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_error=True,
         guessx=0, guessy=0, use_fft=False, ignore_outside=True, **kwargs):
