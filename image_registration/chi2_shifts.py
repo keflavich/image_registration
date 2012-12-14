@@ -197,6 +197,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         #        upsample_factor=upsample_factor, xshift=xshift, yshift=yshift)
         # prevent divide-by-zero errors
         im2[err==0] = 0
+        im1[err==0] = 0
         err[err==0] = 1
     else:
         err = np.ones(im2.shape)
@@ -204,7 +205,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
 
     # pilfered from dftregistration (hence the % comments)
     dftshift = np.trunc(np.ceil(upsample_factor*zoom_factor)/2); #% Center of output array at dftshift+1
-    term2_ups = dftups(fftn(im2/err)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
+    term2_ups = dftups(fftn(im2/err)*np.conj(fftn(im1/err)), s1, s2, usfac=upsample_factor,
             roff=dftshift-yshift*upsample_factor,
             coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
 
@@ -339,7 +340,7 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     term1 = ((im2/err)**2).sum()
     term3 = ((im1/err)**2).sum()
 
-    term2 = correlate2d(im1,im2/err, boundary=boundary, nthreads=nthreads,
+    term2 = correlate2d(im1/err,im2/err, boundary=boundary, nthreads=nthreads,
             use_numpy_fft=use_numpy_fft)
 
     # old, wrong version chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 
