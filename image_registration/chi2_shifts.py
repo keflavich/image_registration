@@ -21,7 +21,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
 
     .. math::
             \chi^2(dx,dy) & = & \Sigma_{ij} \\frac{(X_{ij}-Y_{ij}(dx,dy))^2}{\sigma_{ij}^2} \\\\
-                          & = & \Sigma_{ij} \left[ X_{ij}^2/\sigma_{ij}^2 - 2X_{ij}Y_{ij}(dx,dy)/\sigma_{ij} + Y_{ij}(dx,dy)^2/\sigma{ij}^2 \\right]  \\\\
+                          & = & \Sigma_{ij} \left[ X_{ij}^2/\sigma_{ij}^2 - 2X_{ij}Y_{ij}(dx,dy)/\sigma_{ij}^2 + Y_{ij}(dx,dy)^2/\sigma_{ij}^2 \\right]  \\\\
 
     Equation 2-4:
 
@@ -36,13 +36,15 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
             CC(x,y)[m,n] = \Sigma_{ij}[x,y] x^*_{ij} y_{(n+i)(m+j)}
 
     which can then be applied to our problem, noting that the cross-correlation
-    has the same form as terms 2 and 3 in :math:`\chi^2` (term 1 is a constant,
+    has the same form as term 2 in :math:`\chi^2` (term 1 is a constant,
     with no dependence on the shift)
 
     .. math::
             Term~2: & CC(X/\sigma,Y)[dx,dy] & = & \Sigma_{ij} X^*_{ij}/\sigma_{ij}^* Y_{(dx+i)(dy+j)} \\\\
-            Term~3: & CC(Y,Y)[dx,dy] & = & \Sigma_{ij} Y^*_{ij} Y_{(dx+i)(dy+j)}                      
 
+    Technically, only term 2 has any effect on the resulting image, since terms
+    1 and 3 are the same for all shifts, and the quantity of interest is
+    :math:`\Delta \chi^2` when determining the best-fit shift and error.
     
     
     Parameters
@@ -329,12 +331,13 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
 
         # to avoid divide-by-zero errors
         im2[err==0] = 0
+        im1[err==0] = 0
         err[err==0] = 1 
     else:
         err = np.ones(im2.shape)
 
     term1 = ((im2/err)**2).sum()
-    term3 = ((im1)**2).sum()
+    term3 = ((im1/err)**2).sum()
 
     term2 = correlate2d(im1,im2/err, boundary=boundary, nthreads=nthreads,
             use_numpy_fft=use_numpy_fft)
