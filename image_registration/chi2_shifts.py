@@ -21,29 +21,33 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
 
     .. math::
             \chi^2(dx,dy) & = & \Sigma_{ij} \\frac{(X_{ij}-Y_{ij}(dx,dy))^2}{\sigma_{ij}^2} \\\\
-                          & = & \Sigma_{ij} \left[ X_{ij}^2/\sigma_{ij}^2 - 2X_{ij}Y_{ij}(dx,dy)/\sigma_{ij}^2 + Y_{ij}(dx,dy)^2/\sigma_{ij}^2 \\right]  \\\\
+                          
+    ..                         
+          & = & \Sigma_{ij} \left[ X_{ij}^2/\sigma_{ij}^2 - 2X_{ij}Y_{ij}(dx,dy)/\sigma_{ij}^2 + Y_{ij}(dx,dy)^2/\sigma_{ij}^2 \\right]  \\\\
 
     Equation 2-4:
 
     .. math::
-            Term~1: & \Sigma_{ij} \\frac{X_{ij}^2}{\sigma_{ij}^2}  \\\\
-            Term~2: & \Sigma_{ij} \\frac{X_{ij}Y_{ij(dx,dy)}}{\sigma_{ij}^2}  \\\\
-            Term~3: & \Sigma_{ij} \\frac{Y_{ij}(dx,dy)^2}{\sigma_{ij}^2}
+            Term~1: f(dx,dy) & = & \Sigma_{ij} \\frac{X_{ij}^2}{\sigma_{ij}^2}  \\\\
+                    f(dx,dy) & = & f(0,0) ,  \\forall dx,dy \\\\
+            Term~2: g(dx,dy) & = & -2 \Sigma_{ij} \\frac{X_{ij}Y_{ij}(dx,dy)}{\sigma_{ij}^2} = -2 \Sigma_{ij} \left(\\frac{X_{ij}}{\sigma_{ij}^2}\\right) Y_{ij}(dx,dy) \\\\
+            Term~3: h(dx,dy) & = & \Sigma_{ij} \\frac{Y_{ij}(dx,dy)^2}{\sigma_{ij}^2} = \Sigma_{ij} \left(\\frac{1}{\sigma_{ij}^2}\\right) Y^2_{ij}(dx,dy)
 
-    The cross-correlation can be computed with fourier transforms, and has the property
+    The cross-correlation can be computed with fourier transforms, and is defined
 
     .. math::
             CC(x,y)[m,n] = \Sigma_{ij}[x,y] x^*_{ij} y_{(n+i)(m+j)}
 
     which can then be applied to our problem, noting that the cross-correlation
-    has the same form as term 2 in :math:`\chi^2` (term 1 is a constant,
+    has the same form as term 2 and 3 in :math:`\chi^2` (term 1 is a constant,
     with no dependence on the shift)
 
     .. math::
-            Term~2: & CC(X/\sigma,Y)[dx,dy] & = & \Sigma_{ij} X^*_{ij}/\sigma_{ij}^* Y_{(dx+i)(dy+j)} \\\\
+            Term~2: & CC(X/\sigma^2,Y)[dx,dy] & = & \Sigma_{ij} \left(\\frac{X_{ij}}{\sigma_{ij}^2}\\right)^* Y_{ij}(dx,dy) \\\\
+            Term~3: & CC(\sigma^{-2},Y^2)[dx,dy] & = & \Sigma_{ij} \left(\\frac{1}{\sigma_{ij}^2}\\right)^* Y^2_{ij}(dx,dy) \\\\
 
-    Technically, only term 2 has any effect on the resulting image, since terms
-    1 and 3 are the same for all shifts, and the quantity of interest is
+    Technically, only terms 2 and 3 has any effect on the resulting image,
+    since term 1 is the same for all shifts, and the quantity of interest is
     :math:`\Delta \chi^2` when determining the best-fit shift and error.
     
     
@@ -335,12 +339,16 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
         im1[err==0] = 0
         err[err==0] = 1 
     else:
-        err = np.ones(im2.shape)
+        err = 1. #np.ones(im2.shape)
 
     term1 = ((im2/err)**2).sum()
-    term3 = ((im1/err)**2).sum()
+    if hasattr(err,'shape'):
+        term3 = correlate2d(im1**2,1./err**2, boundary=boundary, nthreads=nthreads,
+                use_numpy_fft=use_numpy_fft)**2
+    else: # trivial case - term 3 independent of shift
+        term3 = ((im1/err)**2).sum()
 
-    term2 = correlate2d(im1/err,im2/err, boundary=boundary, nthreads=nthreads,
+    term2 = correlate2d(im1/err**2,im2, boundary=boundary, nthreads=nthreads,
             use_numpy_fft=use_numpy_fft)
 
     # old, wrong version chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 

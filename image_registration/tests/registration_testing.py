@@ -2,7 +2,7 @@ try:
     from AG_image_tools.cross_correlation_shifts import cross_correlation_shifts
     from AG_image_tools.register_images import register_images
     from AG_image_tools.chi2_shifts import chi2_shift
-    from AG_fft_tools import dftups,upsample_image,shift
+    from AG_fft_tools import dftups,upsample_image,shift,smooth
 except ImportError:
     from image_registration.cross_correlation_shifts import cross_correlation_shifts
     from image_registration.register_images import register_images
@@ -63,16 +63,20 @@ try:
     shifts = [1,1.5,-1.25,8.2,10.1]
     sizes = [99,100,101]
     amps = [5.,10.,50.,100.,500.,1000.]
-    gaussfits = (True,False)
+    twobools = (True,False)
 
     def make_offset_images(xsh,ysh,imsize, width=3.0, amp=1000.0, noiseamp=1.0,
             xcen=50, ycen=50):
-        image = np.random.randn(imsize,imsize) * noiseamp
+        """
+        Single gaussian test images
+        """
+        #image = np.random.randn(imsize,imsize) * noiseamp
         Y, X = np.indices([imsize, imsize])
         X -= xcen
         Y -= ycen
         new_r = np.sqrt(X*X+Y*Y)
-        image += amp*np.exp(-(new_r)**2/(2.*width**2))
+        # "reference" image should be noiseless
+        image = amp*np.exp(-(new_r)**2/(2.*width**2))
 
         tolerance = 3. * 1./np.sqrt(2*np.pi*width**2*amp/noiseamp)
 
@@ -98,20 +102,28 @@ try:
 
         return newmap
 
-    def make_offset_extended(img, xsh, ysh, noise=1.0, mode='wrap'):
+    def make_offset_extended(img, xsh, ysh, noise=1.0, mode='wrap',
+            noise_taper=False):
         import scipy, scipy.ndimage
         #yy,xx = np.indices(img.shape,dtype='float')
         #yy-=ysh
         #xx-=xsh
         noise = np.random.randn(*img.shape)*noise
+        if noise_taper:
+            noise /= edge_weight(img.shape[0])
         #newimage = scipy.ndimage.map_coordinates(img+noise, [yy,xx], mode=mode)
         newimage = np.abs(shift(img+noise, xsh, ysh))
 
         return newimage
 
+    def edge_weight(imsize, smoothsize=5, power=2):
+        img = np.ones([imsize,imsize])
+        smimg = smooth(img, smoothsize, ignore_edge_zeros=False)
+        return smimg**power
 
 
-    @pytest.mark.parametrize(('xsh','ysh','imsize','gaussfit'),list(itertools.product(shifts,shifts,sizes,gaussfits)))
+
+    @pytest.mark.parametrize(('xsh','ysh','imsize','gaussfit'),list(itertools.product(shifts,shifts,sizes,twobools)))
     def test_shifts(xsh,ysh,imsize,gaussfit):
         image,new_image,tolerance = make_offset_images(xsh, ysh, imsize)
         if gaussfit:
@@ -122,6 +134,16 @@ try:
             print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh) 
         assert np.abs(xoff-xsh) < tolerance
         assert np.abs(yoff-ysh) < tolerance
+
+    @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,twobools)))
+    def test_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4):
+        image = make_extended(imsize)
+        offset_image = make_offset_extended(image, xsh, ysh, noise_taper=noise_taper)
+        noise = 1./edge_weight(imsize)
+        xoff,yoff,exoff,eyoff = cross_correlation_shifts(image,offset_image,noise,return_error=True)
+        assert np.abs(xoff-xsh) < nsigma*exoff
+        assert np.abs(yoff-ysh) < nsigma*eyoff
+
 
     def do_n_fits(nfits, xsh, ysh, imsize, gaussfit=False, maxoff=None,
             return_error=False, shift_func=cross_correlation_shifts,
