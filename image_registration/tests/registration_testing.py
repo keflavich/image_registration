@@ -1,13 +1,7 @@
-try:
-    from AG_image_tools.cross_correlation_shifts import cross_correlation_shifts
-    from AG_image_tools.register_images import register_images
-    from AG_image_tools.chi2_shifts import chi2_shift
-    from AG_fft_tools import dftups,upsample_image,shift,smooth
-except ImportError:
-    from image_registration.cross_correlation_shifts import cross_correlation_shifts
-    from image_registration.register_images import register_images
-    from image_registration.chi2_shifts import chi2_shift
-    from image_registration.fft_tools import dftups,upsample_image,shift
+from image_registration.cross_correlation_shifts import cross_correlation_shifts
+from image_registration.register_images import register_images
+from image_registration.chi2_shifts import chi2_shift
+from image_registration.fft_tools import dftups,upsample_image,shift,smooth
 
 import numpy as np
 
