@@ -27,8 +27,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
 
     .. math::
             Term~1: & \Sigma_{ij} \\frac{X_{ij}^2}{\sigma_{ij}^2}  \\\\
-            Term~2: & \Sigma_{ij} \\frac{X_{ij}Y_{ij(dx,dy)}}{\sigma_{ij}}  \\\\
-            Term~3: & \Sigma_{ij} Y_{ij}(dx,dy)^2 
+            Term~2: & \Sigma_{ij} \\frac{X_{ij}Y_{ij(dx,dy)}}{\sigma_{ij}^2}  \\\\
+            Term~3: & \Sigma_{ij} \\frac{Y_{ij}(dx,dy)^2}{\sigma_{ij}^2}
 
     The cross-correlation can be computed with fourier transforms, and has the property
 
