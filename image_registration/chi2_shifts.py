@@ -7,7 +7,7 @@ import numpy as np
 
 __all__ = ['chi2_shift','chi2n_map']
 
-def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
+def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2, verbose=False,
         return_error=True, return_chi2array=False, max_auto_size=512,
         max_nsig=1.1):
@@ -196,16 +196,19 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     # import fft's
     fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
 
-    if hasattr(err,'shape'):
-        #err_ups = upsample_image(err_ac, output_size=s1,
-        #        upsample_factor=upsample_factor, xshift=xshift, yshift=yshift)
+    # determine the amount to shift by?
+    dftshift = np.trunc(np.ceil(upsample_factor*zoom_factor)/2); #% Center of output array at dftshift+1
+
+    if err is not None and not np.isscalar(err):
+        err = np.nan_to_num(err)
         # prevent divide-by-zero errors
+        # because err is always squared, negative errors are "ok" in a weird sense
         im2[err==0] = 0
         im1[err==0] = 0
         err[err==0] = 1
         term3_ups = dftups(fftn(im1**2)*np.conj(fftn(1./err**2)), s1, s2, usfac=upsample_factor,
                 roff=dftshift-yshift*upsample_factor,
-                coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
+                coff=dftshift-xshift*upsample_factor) #/ (im1.size) #*upsample_factor**2)
     else:
         if err is None:
             err = 1.
@@ -213,17 +216,21 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         term3_ups = term3
 
     # pilfered from dftregistration (hence the % comments)
-    dftshift = np.trunc(np.ceil(upsample_factor*zoom_factor)/2); #% Center of output array at dftshift+1
-    term2_ups = dftups(fftn(im2/err**2)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
+    term2_ups = -2 * dftups(fftn(im2/err**2)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
             roff=dftshift-yshift*upsample_factor,
-            coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
+            coff=dftshift-xshift*upsample_factor) #/ (im1.size) #*upsample_factor**2)
 
     # old and wrong chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)#*(xc.size-nfitted)
-    chi2_ups = term1 - 2*term2_ups + term3_ups
+    chi2_ups = term1 + term2_ups + term3_ups
     # deltachi2 is not reduced deltachi2
     deltachi2_ups = (chi2_ups - chi2_ups.min())
     if verbose:
         print "Minimum chi2_ups: %g   Max delta-chi2: %g  Min delta-chi2: %g" % (chi2_ups.min(),deltachi2_ups.max(),deltachi2_ups[deltachi2_ups>0].min())
+        if verbose > 1:
+            if hasattr(term3_ups,'len'):
+                print "term3_ups has shape ",term3_ups.shape," term2: ",term2_ups.shape," term1=",term1
+            else:
+                print "term2 shape: ",term2.shape," term1: ",term1," term3: ",term3_ups
     # THE UPSAMPLED BEST-FIT HAS BEEN FOUND
 
     # BELOW IS TO COMPUTE THE ERROR
@@ -272,9 +279,10 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
         #print upsymax, upsxmax
         #print upsymax-dftshift, upsxmax-dftshift
         print "Correction: ",(upsymax-dftshift)/float(upsample_factor), (upsxmax-dftshift)/float(upsample_factor)
-        print "Chi2 1sig bounds:", x_sigma1.min(), x_sigma1.max(), y_sigma1.min(), y_sigma1.max()
-        print errx_low,errx_high,erry_low,erry_high
-        print "%0.3f +%0.3f -%0.3f   %0.3f +%0.3f -%0.3f" % (yshift_corr, erry_high, erry_low, xshift_corr, errx_high, errx_low)
+        if 'x_sigma1'  in locals():
+            print "Chi2 1sig bounds:", x_sigma1.min(), x_sigma1.max(), y_sigma1.min(), y_sigma1.max()
+            print errx_low,errx_high,erry_low,erry_high
+            print "%0.3f +%0.3f -%0.3f   %0.3f +%0.3f -%0.3f" % (yshift_corr, erry_high, erry_low, xshift_corr, errx_high, errx_low)
         #print ymax-ycen+upsymax/float(upsample_factor), xmax-xcen+upsxmax/float(upsample_factor)
         #print (upsymax-s1/2)/upsample_factor, (upsxmax-s2/2)/upsample_factor
 
@@ -339,26 +347,29 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     im1 = np.nan_to_num(im1)
     im2 = np.nan_to_num(im2)
 
-    if hasattr(err,'shape'):
+    if err is not None and not np.isscalar(err):
         err = np.nan_to_num(err)
 
         # to avoid divide-by-zero errors
+        # err is always squared, so negative errors are "sort of ok"
         im2[err==0] = 0
         im1[err==0] = 0
         err[err==0] = 1 
 
+        # I think we want im1 first, because it's first down below... but not sure!!!
         term3 = correlate2d(im1**2,1./err**2, boundary=boundary, nthreads=nthreads,
-                use_numpy_fft=use_numpy_fft)**2
+                use_numpy_fft=use_numpy_fft)
 
     else: # scalar error is OK
         if err is None:
             err = 1. 
-        term3 = ((im1/err)**2).sum()
+        term3 = ((im1**2/err**2)).sum()
 
     # term 1 and 2 don't rely on err being an array
-    term1 = ((im2/err)**2).sum()
+    term1 = ((im2**2/err**2)).sum()
 
-    term2 = -2 * correlate2d(im1/err**2,im2, boundary=boundary, nthreads=nthreads,
+    # ORDER MATTERS! cross-correlate im1,im2 not im2,im1
+    term2 = -2 * correlate2d(im1,im2/err**2, boundary=boundary, nthreads=nthreads,
             use_numpy_fft=use_numpy_fft)
 
     chi2 = term1 + term2 + term3

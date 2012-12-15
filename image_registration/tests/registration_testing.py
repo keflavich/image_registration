@@ -117,27 +117,22 @@ try:
 
 
 
-    @pytest.mark.parametrize(('xsh','ysh','imsize','gaussfit'),list(itertools.product(shifts,shifts,sizes,twobools)))
-    def test_shifts(xsh,ysh,imsize,gaussfit):
-        image,new_image,tolerance = make_offset_images(xsh, ysh, imsize)
-        if gaussfit:
-            xoff,yoff,exoff,eyoff = cross_correlation_shifts(image,new_image,return_error=True)
-            print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh),exoff,eyoff
-        else:
-            xoff,yoff = chi2_shift(image,new_image)
-            print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh) 
-        assert np.abs(xoff-xsh) < tolerance
-        assert np.abs(yoff-ysh) < tolerance
 
-    @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,twobools)))
-    def test_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4):
+    def fit_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4):
         image = make_extended(imsize)
         offset_image = make_offset_extended(image, xsh, ysh, noise_taper=noise_taper)
         if noise_taper:
             noise = 1.0/edge_weight(imsize)
         else:
             noise = 1.0
-        xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True)
+        xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True,upsample_factor='auto')
+        return xoff,yoff,exoff,eyoff,nsigma
+
+    @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,twobools)))
+    def test_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4):
+        xoff,yoff,exoff,eyoff,nsigma = fit_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=nsigma)
+        print xoff,xsh,nsigma,exoff
+        print yoff,ysh,nsigma,eyoff
         assert np.abs(xoff-xsh) < nsigma*exoff
         assert np.abs(yoff-ysh) < nsigma*eyoff
 
@@ -150,12 +145,24 @@ try:
             noise = 0.1/edge_weight(imsize)
         else:
             noise = 0.1
-        xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True)
+        xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True,upsample_factor='auto')
         assert np.abs(xoff-xsh) < nsigma*exoff
         assert np.abs(yoff-ysh) < nsigma*eyoff
         # based on simulations in the ipynb
         assert np.abs(exoff-0.005) < 0.002
         assert np.abs(eyoff-0.005) < 0.002
+
+    @pytest.mark.parametrize(('xsh','ysh','imsize','gaussfit'),list(itertools.product(shifts,shifts,sizes,twobools)))
+    def test_shifts(xsh,ysh,imsize,gaussfit):
+        image,new_image,tolerance = make_offset_images(xsh, ysh, imsize)
+        if gaussfit:
+            xoff,yoff,exoff,eyoff = cross_correlation_shifts(image,new_image,return_error=True)
+            print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh),exoff,eyoff
+        else:
+            xoff,yoff = chi2_shift(image,new_image,return_error=False)
+            print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh) 
+        assert np.abs(xoff-xsh) < tolerance
+        assert np.abs(yoff-ysh) < tolerance
 
     def do_n_fits(nfits, xsh, ysh, imsize, gaussfit=False, maxoff=None,
             return_error=False, shift_func=cross_correlation_shifts,
