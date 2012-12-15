@@ -196,25 +196,30 @@ def chi2_shift(im1, im2, err=None, upsample_factor=10, boundary='wrap',
     # import fft's
     fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
 
-    if err is not None:
+    if hasattr(err,'shape'):
         #err_ups = upsample_image(err_ac, output_size=s1,
         #        upsample_factor=upsample_factor, xshift=xshift, yshift=yshift)
         # prevent divide-by-zero errors
         im2[err==0] = 0
         im1[err==0] = 0
         err[err==0] = 1
+        term3_ups = dftups(fftn(im1**2)*np.conj(fftn(1./err**2)), s1, s2, usfac=upsample_factor,
+                roff=dftshift-yshift*upsample_factor,
+                coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
     else:
-        err = np.ones(im2.shape)
-        err_ups = 1
+        if err is None:
+            err = 1.
+        # 'upsampled' term3 is same as term3, because it's scalar
+        term3_ups = term3
 
     # pilfered from dftregistration (hence the % comments)
     dftshift = np.trunc(np.ceil(upsample_factor*zoom_factor)/2); #% Center of output array at dftshift+1
-    term2_ups = dftups(fftn(im2/err)*np.conj(fftn(im1/err)), s1, s2, usfac=upsample_factor,
+    term2_ups = dftups(fftn(im2/err**2)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
             roff=dftshift-yshift*upsample_factor,
             coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
 
     # old and wrong chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)#*(xc.size-nfitted)
-    chi2_ups = term1 - 2*term2_ups + term3
+    chi2_ups = term1 - 2*term2_ups + term3_ups
     # deltachi2 is not reduced deltachi2
     deltachi2_ups = (chi2_ups - chi2_ups.min())
     if verbose:
@@ -315,10 +320,13 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     -------
     chi2n : np.ndarray
         the :math:`\chi^2` array
-    ac1peak : float
-        The sum of the square of the first autocorrelation image
-    ac2peak : float
-        The sum of the square of the second autocorrelation image
+    term1 : float
+        Scalar, term 1 in the :math:`\chi^2` equation
+    term2 : np.ndarray
+        Term 2 in the equation, -2 * cross-correlation(x/sigma^2,y)
+    term3 : np.ndarray | float
+        If error is an array, returns an array, otherwise is a scalar float
+        corresponding to term 3 in the equation
     """
 
     if not im1.shape == im2.shape:
@@ -331,29 +339,32 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     im1 = np.nan_to_num(im1)
     im2 = np.nan_to_num(im2)
 
-    if err is not None:
+    if hasattr(err,'shape'):
         err = np.nan_to_num(err)
 
         # to avoid divide-by-zero errors
         im2[err==0] = 0
         im1[err==0] = 0
         err[err==0] = 1 
-    else:
-        err = 1. #np.ones(im2.shape)
 
-    term1 = ((im2/err)**2).sum()
-    if hasattr(err,'shape'):
         term3 = correlate2d(im1**2,1./err**2, boundary=boundary, nthreads=nthreads,
                 use_numpy_fft=use_numpy_fft)**2
-    else: # trivial case - term 3 independent of shift
+
+    else: # scalar error is OK
+        if err is None:
+            err = 1. 
         term3 = ((im1/err)**2).sum()
 
-    term2 = correlate2d(im1/err**2,im2, boundary=boundary, nthreads=nthreads,
+    # term 1 and 2 don't rely on err being an array
+    term1 = ((im2/err)**2).sum()
+
+    term2 = -2 * correlate2d(im1/err**2,im2, boundary=boundary, nthreads=nthreads,
             use_numpy_fft=use_numpy_fft)
 
-    # old, wrong version chi2n = (ac1peak/err2sum - 2*xc/err_ac + ac2peak/err2sum) 
-    chi2 = term1 - 2*term2 + term3
+    chi2 = term1 + term2 + term3
+
     if reduced:
+        # 2 degrees of freedom
         chi2 /= im2.size-2.
 
     if return_all:
@@ -375,7 +386,7 @@ def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_erro
             First image
         im2 : np.ndarray
             Second image (offset image)
-        err : np.ndarray
+        err : np.ndarray OR float
             Per-pixel error in image 2
         mode : 'wrap','constant','reflect','nearest'
             Option to pass to map_coordinates for determining what to do with
@@ -400,7 +411,7 @@ def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_erro
         im1[im1!=im1] = 0
     if np.any(np.isnan(im2)):
         im2 = im2.copy()
-        if err is not None:
+        if hasattr(err,'shape'):
             err[im2!=im2] = np.inf
         im2[im2!=im2] = 0
 
@@ -439,12 +450,14 @@ def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_erro
                 residuals = np.abs(np.ravel((im1-shifted_img))) / im1.size**0.5
         if err is None:
             return residuals
-        else:
+        elif hasattr(err,'shape'):
             if use_fft:
                 shifted_err = shift(err, -ysh, -xsh)
             else:
                 shifted_err = scipy.ndimage.map_coordinates(err, [yy+ysh,xx+xsh], mode=mode, **kwargs)
             return residuals / shifted_err[yslice,xslice].flat
+        else:
+            return residuals / err
 
     bestfit,cov,info,msg,ier = scipy.optimize.leastsq(residuals, [guessx,guessy], full_output=1)
     #bestfit,cov = scipy.optimize.curve_fit(shift, im2, im1, p0=[guessx,guessy], sigma=err)

@@ -130,7 +130,7 @@ try:
             xoff,yoff,exoff,eyoff = cross_correlation_shifts(image,new_image,return_error=True)
             print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh),exoff,eyoff
         else:
-            xoff,yoff = cross_correlation_shifts(image,new_image)
+            xoff,yoff = chi2_shift(image,new_image)
             print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh) 
         assert np.abs(xoff-xsh) < tolerance
         assert np.abs(yoff-ysh) < tolerance
@@ -139,11 +139,29 @@ try:
     def test_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4):
         image = make_extended(imsize)
         offset_image = make_offset_extended(image, xsh, ysh, noise_taper=noise_taper)
-        noise = 1./edge_weight(imsize)
-        xoff,yoff,exoff,eyoff = cross_correlation_shifts(image,offset_image,noise,return_error=True)
+        if noise_taper:
+            noise = 1.0/edge_weight(imsize)
+        else:
+            noise = 1.0
+        xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True)
         assert np.abs(xoff-xsh) < nsigma*exoff
         assert np.abs(yoff-ysh) < nsigma*eyoff
 
+
+    @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,twobools)))
+    def test_extended_shifts_lownoise(xsh,ysh,imsize, noise_taper, nsigma=4):
+        image = make_extended(imsize)
+        offset_image = make_offset_extended(image, xsh, ysh, noise_taper=noise_taper, noise=0.1)
+        if noise_taper:
+            noise = 0.1/edge_weight(imsize)
+        else:
+            noise = 0.1
+        xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True)
+        assert np.abs(xoff-xsh) < nsigma*exoff
+        assert np.abs(yoff-ysh) < nsigma*eyoff
+        # based on simulations in the ipynb
+        assert np.abs(exoff-0.005) < 0.002
+        assert np.abs(eyoff-0.005) < 0.002
 
     def do_n_fits(nfits, xsh, ysh, imsize, gaussfit=False, maxoff=None,
             return_error=False, shift_func=cross_correlation_shifts,
