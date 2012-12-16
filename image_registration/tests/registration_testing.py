@@ -106,7 +106,7 @@ try:
         if noise_taper:
             noise /= edge_weight(img.shape[0])
         #newimage = scipy.ndimage.map_coordinates(img+noise, [yy,xx], mode=mode)
-        newimage = np.abs(shift(img+noise, xsh, ysh))
+        newimage = np.abs(shift(img, xsh, ysh)+noise)
 
         return newimage
 
@@ -118,17 +118,17 @@ try:
 
 
 
-    def fit_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4):
+    def fit_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4, noise=1.0):
         image = make_extended(imsize)
-        offset_image = make_offset_extended(image, xsh, ysh, noise_taper=noise_taper)
+        offset_image = make_offset_extended(image, xsh, ysh, noise=noise, noise_taper=noise_taper)
         if noise_taper:
-            noise = 1.0/edge_weight(imsize)
+            noise = noise/edge_weight(imsize)
         else:
-            noise = 1.0
+            noise = noise
         xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True,upsample_factor='auto')
         return xoff,yoff,exoff,eyoff,nsigma
 
-    @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,twobools)))
+    @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,(False,))))
     def test_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4):
         xoff,yoff,exoff,eyoff,nsigma = fit_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=nsigma)
         print xoff,xsh,nsigma,exoff
@@ -137,14 +137,14 @@ try:
         assert np.abs(yoff-ysh) < nsigma*eyoff
 
 
-    @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,twobools)))
-    def test_extended_shifts_lownoise(xsh,ysh,imsize, noise_taper, nsigma=4):
+    @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,(False,))))
+    def test_extended_shifts_lownoise(xsh,ysh,imsize, noise_taper, nsigma=4, noise=0.5):
         image = make_extended(imsize)
-        offset_image = make_offset_extended(image, xsh, ysh, noise_taper=noise_taper, noise=0.1)
+        offset_image = make_offset_extended(image, xsh, ysh, noise_taper=noise_taper, noise=noise)
         if noise_taper:
-            noise = 0.1/edge_weight(imsize)
+            noise = noise/edge_weight(imsize)
         else:
-            noise = 0.1
+            noise = noise
         xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True,upsample_factor='auto')
         assert np.abs(xoff-xsh) < nsigma*exoff
         assert np.abs(yoff-ysh) < nsigma*eyoff

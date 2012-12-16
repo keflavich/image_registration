@@ -36,7 +36,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     The cross-correlation can be computed with fourier transforms, and is defined
 
     .. math::
-            CC(x,y)[m,n] = \Sigma_{ij}[x,y] x^*_{ij} y_{(n+i)(m+j)}
+            CC_{m,n}(x,y) = \Sigma_{ij} x^*_{ij} y_{(n+i)(m+j)}
 
     which can then be applied to our problem, noting that the cross-correlation
     has the same form as term 2 and 3 in :math:`\chi^2` (term 1 is a constant,
@@ -165,7 +165,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         # deltachi2 is not reduced deltachi2
         deltachi2_lowres = (chi2 - chi2.min())
         if verbose:
-            print "Minimum chi2: %g   Max delta-chi2 (lowres): %g  Min delta-chi2: %g" % (chi2.min(),deltachi2_lowres.max(),deltachi2_lowres[deltachi2_lowres>0].min())
+            print "Minimum chi2: %g   Max delta-chi2 (lowres): %g  Min delta-chi2 (lowres): %g" % (chi2.min(),deltachi2_lowres.max(),deltachi2_lowres[deltachi2_lowres>0].min())
         sigmamax_area = deltachi2_lowres<m_auto
         if sigmamax_area.sum() > 1:
             yy,xx = np.indices(sigmamax_area.shape)
@@ -208,7 +208,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         err[err==0] = 1
         term3_ups = dftups(fftn(im1**2)*np.conj(fftn(1./err**2)), s1, s2, usfac=upsample_factor,
                 roff=dftshift-yshift*upsample_factor,
-                coff=dftshift-xshift*upsample_factor) #/ (im1.size) #*upsample_factor**2)
+                coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
     else:
         if err is None:
             err = 1.
@@ -218,14 +218,15 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     # pilfered from dftregistration (hence the % comments)
     term2_ups = -2 * dftups(fftn(im2/err**2)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
             roff=dftshift-yshift*upsample_factor,
-            coff=dftshift-xshift*upsample_factor) #/ (im1.size) #*upsample_factor**2)
+            coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
+    # why do we have to divide by im1.size?  
 
     # old and wrong chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)#*(xc.size-nfitted)
     chi2_ups = term1 + term2_ups + term3_ups
     # deltachi2 is not reduced deltachi2
     deltachi2_ups = (chi2_ups - chi2_ups.min())
     if verbose:
-        print "Minimum chi2_ups: %g   Max delta-chi2: %g  Min delta-chi2: %g" % (chi2_ups.min(),deltachi2_ups.max(),deltachi2_ups[deltachi2_ups>0].min())
+        print "Minimum chi2_ups: %g   Max delta-chi2 (highres): %g  Min delta-chi2 (highres): %g" % (chi2_ups.min(),deltachi2_ups.max(),deltachi2_ups[deltachi2_ups>0].min())
         if verbose > 1:
             if hasattr(term3_ups,'len'):
                 print "term3_ups has shape ",term3_ups.shape," term2: ",term2_ups.shape," term1=",term1
@@ -356,9 +357,9 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
         im1[err==0] = 0
         err[err==0] = 1 
 
-        # I think we want im1 first, because it's first down below... but not sure!!!
-        term3 = correlate2d(im1**2,1./err**2, boundary=boundary, nthreads=nthreads,
-                use_numpy_fft=use_numpy_fft)
+        # we want im1 first, because it's first down below
+        term3 = correlate2d(im1**2, 1./err**2, boundary=boundary,
+                nthreads=nthreads, use_numpy_fft=use_numpy_fft)
 
     else: # scalar error is OK
         if err is None:
