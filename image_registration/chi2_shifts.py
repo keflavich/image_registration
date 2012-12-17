@@ -1,16 +1,13 @@
-try: 
-    from AG_fft_tools import correlate2d,fast_ffts,dftups,upsample_image
-except ImportError:
-    from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image
+from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image
 import warnings
 import numpy as np
 
 __all__ = ['chi2_shift','chi2n_map']
 
 def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
-        nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2, verbose=False,
-        return_error=True, return_chi2array=False, max_auto_size=512,
-        max_nsig=1.1):
+        nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2,
+        verbose=False, return_error=True, return_chi2array=False,
+        max_auto_size=512, return_terms=False, max_nsig=1.1):
     """
     Find the offsets between image 1 and image 2 using the DFT upsampling method
     (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
@@ -203,6 +200,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         err = np.nan_to_num(err)
         # prevent divide-by-zero errors
         # because err is always squared, negative errors are "ok" in a weird sense
+        if verbose:
+            print "Found %i points where err==0" % ((err==0).sum())
         im2[err==0] = 0
         im1[err==0] = 0
         err[err==0] = 1
@@ -214,6 +213,14 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
             err = 1.
         # 'upsampled' term3 is same as term3, because it's scalar
         term3_ups = term3
+
+    if verbose > 1:
+        print "dftshift: %f  s1: %f  s2: %f  upsample_factor: %f roff: %f  coff: %f xshift: %f yshift: %f" % (dftshift,
+                s1,s2,upsample_factor,
+                dftshift-yshift*upsample_factor,
+                dftshift-xshift*upsample_factor,
+                xshift,
+                yshift)
 
     # pilfered from dftregistration (hence the % comments)
     term2_ups = -2 * dftups(fftn(im2/err**2)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
@@ -296,6 +303,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         returns.append( (erry_low+erry_high)/2. )
     if return_chi2array:
         returns.append((shift_xvals,shift_yvals,chi2_ups))
+    if return_terms:
+        returns.append((term1,term2_ups,term3_ups))
 
     return returns
 
