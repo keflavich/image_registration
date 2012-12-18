@@ -22,6 +22,9 @@ def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     operations were performed
       - Embed the array "in" in an array that is usfac times larger in each
         dimension. ifftshift to bring the center of the image to (1,1).
+        *ADAM'S NOTE: ifftshift appeared to be incorrect; fftshift is right
+            (only different for odd-shaped images).  Except, doesn't affect
+            the part I thought it did, so ifft it will be!
       - Take the FFT of the larger array
       - Extract an [nor, noc] region of the result. Starting with the 
         [roff+1 coff+1] element.
@@ -129,7 +132,7 @@ def center_zoom_image(image, upsample_factor=1, output_size=None, nthreads=1,
         s1 = output_size
         s2 = output_size
 
-    vshape = image.shape[0]*upsample_factor,image.shape[1]*upsample_factor
+    #vshape = image.shape[0]*upsample_factor,image.shape[1]*upsample_factor
     # int(float(a)/b) is the "round towards zero" division operation
     #roff = -((vshape[0] - upsample_factor - s1)/2) -1#*(s1 % 2)
     #coff = -((vshape[1] - upsample_factor - s2)/2) -1#*(s2 % 2)
@@ -142,15 +145,26 @@ def center_zoom_image(image, upsample_factor=1, output_size=None, nthreads=1,
     # offset_from_bottom_left_corner_X = round((image.shape[1]*upsample_factor  - s2)/2.) 
     # this is STILL WRONG roff = -int(np.round(float(image.shape[0]*upsample_factor - s1)/2.))
     # this is STILL WRONG coff = -int(np.round(float(image.shape[1]*upsample_factor - s2)/2.))
-    roff = -round((image.shape[0]*upsample_factor  - s1)/2.) + upsample_factor/2.*(image.shape[0]%2==1)
-    coff = -round((image.shape[1]*upsample_factor  - s2)/2.) + upsample_factor/2.*(image.shape[1]%2==1)
-    print "roff,coff,upsample_factor,shape: ",roff,coff,upsample_factor,image.shape
 
+    # round((image.shape[0]*upsample_factor  - s1)/2.) is the size of the big
+    # image (with split pixels) minus the size of the zoomed-in image (in split
+    # pixel units) divided by two because there is a left and a right buffer
+    # The added factor upsample_factor/2*(image.shape[0]%2==1) is to deal with odd-shaped images,
+    # which for no particularly obvious reason are mistreated by dftups...
+    # The last term is if the input and output image shapes differ in even/oddness, the zoom should be offset by half a pixel...
+    roff = -round((image.shape[0]*upsample_factor  - s1)/2.) + upsample_factor/2*(image.shape[0]%2==1) 
+    coff = -round((image.shape[1]*upsample_factor  - s2)/2.) + upsample_factor/2*(image.shape[1]%2==1) 
+
+    # doesn't this look like a hack?  It feels like a hack.
+    roff += 0.5 * (image.shape[0]%2==0) * (upsample_factor%2==0) + (image.shape[0]%2==0)*((upsample_factor-1)/2)
+    coff += 0.5 * (image.shape[1]%2==0) * (upsample_factor%2==0) + (image.shape[1]%2==0)*((upsample_factor-1)/2)
+    #roff += -((image.shape[0]-s1)%2==1)*(upsample_factor%2==0)*(image.shape[0]<s1) #*((image.shape[0]-s1)%2==1)*(image.shape[0]<s1)
+    #coff += -((image.shape[1]-s2)%2==1)*(upsample_factor%2==0)*(image.shape[1]<s2) #*((image.shape[1]-s2)%2==1)*(image.shape[1]<s2)
+    print "roff,coff,upsample_factor,shape: ",roff,coff,upsample_factor,image.shape
 
     # discovered mostly by guess and check (for shame):
     # yshift/xshift must be scale up by upsample factor because
     # they get scaled with the image
-    # Note that they're NOT now, which is WRONG but WORKS?!
     ups = dftups(imfft, s1, s2, upsample_factor, 
             roff=roff-yshift*upsample_factor, 
             coff=coff-xshift*upsample_factor)
