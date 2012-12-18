@@ -226,10 +226,15 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     term2_ups = -2 * dftups(fftn(im2/err**2)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
             roff=dftshift-yshift*upsample_factor,
             coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
-    # why do we have to divide by im1.size?  
+    # why do we have to divide by im1.size?  because the fourier scaling theorem is 1/a * FT(f(t/a))
 
     # old and wrong chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)#*(xc.size-nfitted)
     chi2_ups = term1 + term2_ups + term3_ups
+
+    chi2_ups = dftups(fftn(chi2), s1, s2, usfac=upsample_factor,
+            roff=dftshift-yshift*upsample_factor,
+            coff=dftshift-xshift*upsample_factor) / (chi2.size) 
+
     # deltachi2 is not reduced deltachi2
     deltachi2_ups = (chi2_ups - chi2_ups.min())
     if verbose:
@@ -379,8 +384,8 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     term1 = ((im2**2/err**2)).sum()
 
     # ORDER MATTERS! cross-correlate im1,im2 not im2,im1
-    term2 = -2 * correlate2d(im1,im2/err**2, boundary=boundary, nthreads=nthreads,
-            use_numpy_fft=use_numpy_fft)
+    term2 = -2 * correlate2d(im1,im2/err**2, boundary=boundary,
+            nthreads=nthreads, use_numpy_fft=use_numpy_fft)
 
     chi2 = term1 + term2 + term3
 

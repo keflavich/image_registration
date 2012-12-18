@@ -22,9 +22,6 @@ def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     operations were performed
       - Embed the array "in" in an array that is usfac times larger in each
         dimension. ifftshift to bring the center of the image to (1,1).
-        *ADAM'S NOTE: ifftshift appeared to be incorrect; fftshift is right
-            (only different for odd-shaped images).  Except, doesn't affect
-            the part I thought it did, so ifft it will be!
       - Take the FFT of the larger array
       - Extract an [nor, noc] region of the result. Starting with the 
         [roff+1 coff+1] element.
@@ -35,7 +32,7 @@ def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     """
     # this function is translated from matlab, so I'm just going to pretend
     # it is matlab/pylab
-    from numpy.fft import ifftshift
+    from numpy.fft import ifftshift,fftfreq
     from numpy import pi,newaxis,floor
 
     nr,nc=np.shape(inp);
@@ -43,17 +40,64 @@ def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     if noc is None: noc=nc;
     if nor is None: nor=nr;
     # Compute kernels and obtain DFT by matrix products
-    term1c = ( ifftshift(np.arange(nc) - floor(nc/2)).T[:,newaxis] )
-    term2c = ( np.arange(noc) - coff  )[newaxis,:]
-    kernc=np.exp((-1j*2*pi/(nc*usfac))*term1c*term2c);
-    term1r = ( np.arange(nor).T - roff )[:,newaxis]
-    term2r = ( ifftshift(np.arange(nr)) - floor(nr/2) )[newaxis,:]
+    term1c = ( ifftshift(np.arange(nc,dtype='float') - floor(nc/2)).T[:,newaxis] )/nc # fftfreq
+    term2c = (( np.arange(noc,dtype='float') - coff  )/usfac)[newaxis,:]              # output points
+    kernc=np.exp((-1j*2*pi)*term1c*term2c);
+
+    term1r = ( np.arange(nor,dtype='float').T - roff )[:,newaxis]
+    term2r = ( ifftshift(np.arange(nr,dtype='float')) - floor(nr/2) )[newaxis,:]
     kernr=np.exp((-1j*2*pi/(nr*usfac))*term1r*term2r);
     #kernc=exp((-i*2*pi/(nc*usfac))*( ifftshift([0:nc-1]).' - floor(nc/2) )*( [0:noc-1] - coff ));
     #kernr=exp((-i*2*pi/(nr*usfac))*( [0:nor-1].' - roff )*( ifftshift([0:nr-1]) - floor(nr/2)  ));
     out=np.dot(np.dot(kernr,inp),kernc);
     #return np.roll(np.roll(out,-1,axis=0),-1,axis=1)
     return out 
+
+def dftups1d(inp,usfac=1,outsize=None,offset=0, return_xouts=False):
+    """
+    """
+    # this function is translated from matlab, so I'm just going to pretend
+    # it is matlab/pylab
+    from numpy.fft import ifftshift,fftfreq
+    from numpy import pi,newaxis,floor
+
+    insize, = inp.shape
+    if outsize is None: outsize=insize
+
+    # Compute kernel and obtain DFT by matrix products
+    term1 = fftfreq(insize)[:,newaxis]
+    term2 = ((np.arange(outsize,dtype='float') + offset)/usfac)[newaxis,:]
+    kern=np.exp((-1j*2*pi)*term1*term2);
+    # Without the +1 in term 2, the output is always shifted by 1.
+    # But, the actual X-axis starts at zero, so I have to subtract 1 below
+    # This is weird... it implies that the FT is indexed from 1, which is not
+    # a meaningful statement
+    # My best guess is that it's a problem with e^0, the mean case, throwing things
+    # off, but that's not a useful statement
+
+    out = np.dot(inp,kern)
+    if return_xouts:
+        return term2.squeeze(),out
+    return out 
+
+def zoom1d(inp, usfac=1, outsize=None, offset=0, nthreads=1,
+        use_numpy_fft=False, return_xouts=False):
+    fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
+    insize, = inp.shape
+    if outsize is None: outsize=insize
+    offset_center = insize*usfac/2 - outsize/2 
+    result = dftups1d(fftn(inp), usfac=usfac, outsize=outsize,
+            offset=offset+offset_center, return_xouts=return_xouts)
+    if return_xouts:
+        xouts,out = result
+        return xouts,(np.roll(np.real(out),-usfac)/inp.size)
+        return xouts,out.real/inp.size 
+    else:
+        out=result
+        return (np.roll(np.real(out),-usfac)/inp.size)
+
+def zoomnd(inp,usfac=1,outsize=None,offset=0,nthreads=1,use_numpy_fft=False):
+    pass
 
 def upsample_image(image, upsample_factor=1, output_size=None, nthreads=1,
         use_numpy_fft=False, xshift=0, yshift=0):
@@ -184,8 +228,24 @@ def center_zoom_image(image, upsample_factor=1, output_size=None, nthreads=1,
 
     return np.abs(ups)
 
+def center_zoom_dftups(image, upsample_factor=1, dx=0, dy=0):
+    s1,s2 = image.shape
 
-if __name__ == "__main__":
+    zoom_factor = s1/upsample_factor
+    if zoom_factor <= 1:
+        zoom_factor = 2
+        s1 = zoom_factor*upsample_factor
+        s2 = zoom_factor*upsample_factor
+    dftshift = np.trunc(np.ceil(upsample_factor*zoom_factor)/2); #% Center of output array at dftshift+1
+
+    zoomed = dftups((fftn(image)), s1, s2, usfac=upsample_factor,
+            roff=dftshift-dy*upsample_factor,
+            coff=dftshift-dx*upsample_factor) / (image.size) #*upsample_factor**2)
+
+    return zoomed
+
+
+if __name__ == "__main__" and False:
 
     # breakdown of the dft upsampling method
     from numpy.fft import ifftshift

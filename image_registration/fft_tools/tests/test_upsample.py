@@ -78,6 +78,29 @@ def test_center_zoom_simple2(imsize,upsample_factor,doplot=False):
     if imsize > 10:
         assert ((zoomed_image-zoom)**2).sum() < 0.001
 
+@pytest.mark.parametrize(('imsize','upsample_factor'),
+    list(itertools.product((24,25,26,27),upsample_factors)))
+def test_center_zoom_simple3(imsize,upsample_factor,doplot=False):
+    image = gaussian(imsize)
+
+    x,y,zoom = upsample.center_zoom_image(image,
+            upsample_factor=upsample_factor, output_size=image.shape,
+            nthreads=4, return_axes=True)
+
+    if imsize * upsample_factor < 512:
+        fx,fy,fullzoom = upsample.center_zoom_image(image,
+                upsample_factor=upsample_factor, nthreads=4, return_axes=True)
+    else:
+        fullzoom = None
+
+    if doplot:
+        plotthings(image,image,image,zoom,0,0,upsample_factor,imsize,imsize,x,y,fullzoom=fullzoom)
+
+    # in order for zooming to work, need to at least nyquist-sample peak
+    # (I think)
+    if imsize > 10:
+        assert ((image-zoom[::upsample_factor,::upsample_factor])**2).sum() < 0.001
+
 #@pytest.mark.parametrize(('imsize','upsample_factor'),
 #    list(itertools.product((3,4,5,6,7,8,9,25,26,27),upsample_factors)))
 #def test_center_zoom_simple(imsize,upsample_factor,doplot=False):
