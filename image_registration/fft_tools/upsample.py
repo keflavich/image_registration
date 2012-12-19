@@ -1,6 +1,7 @@
 import fast_ffts
 import warnings
 import numpy as np
+import scale
 
 def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     """
@@ -81,20 +82,52 @@ def dftups1d(inp,usfac=1,outsize=None,offset=0, return_xouts=False):
     return out 
 
 def zoom1d(inp, usfac=1, outsize=None, offset=0, nthreads=1,
-        use_numpy_fft=False, return_xouts=False):
-    fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
+        use_numpy_fft=False, return_xouts=False, return_real=True):
+    """
+    Zoom in to the center of a 1D array using Fourier upsampling
+
+    Parameters
+    ----------
+    inp : np.ndarray
+        Input 1D array
+    usfac : int
+        Upsampling factor
+    outsize : int
+        Number of pixels in output array
+    offset : float
+        Offset from center *in original pixel units*
+
+    Other Parameters
+    ----------------
+    return_xouts : bool
+        Return the X indices of the output array in addition to the scaled
+        array
+    return_real : bool
+        Return the real part of the zoomed array (if True) or the complex
+
+    Returns
+    -------
+    The input array upsampled by a factor `usfac` with size `outsize`.
+    If `return_xouts`, returns a tuple (xvals, zoomed)
+    """
+
     insize, = inp.shape
     if outsize is None: outsize=insize
-    offset_center = insize*usfac/2 - outsize/2 
-    result = dftups1d(fftn(inp), usfac=usfac, outsize=outsize,
-            offset=offset+offset_center, return_xouts=return_xouts)
+
+    # output array should cover 1/usfac *  the range of the input
+    # it should go from 1/2.-1/usfac to 1/2+1/usfac
+    # plus whatever offset is specified
+    # outsize is always 1+(highest index of input)
+    middle = (insize-1.)/2. + offset
+    outarr = np.linspace(middle - (outsize-1)/usfac/2., middle + (outsize-1)/usfac/2., outsize)
+
+    result = scale.fourier_interp1d(inp, outarr, nthreads=nthreads,
+            use_numpy_fft=use_numpy_fft, return_real=return_real)
+
     if return_xouts:
-        xouts,out = result
-        return xouts,(np.roll(np.real(out),-usfac)/inp.size)
-        return xouts,out.real/inp.size 
+        return outarr,result
     else:
-        out=result
-        return (np.roll(np.real(out),-usfac)/inp.size)
+        return result
 
 def zoomnd(inp,usfac=1,outsize=None,offset=0,nthreads=1,use_numpy_fft=False):
     pass
