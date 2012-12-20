@@ -313,6 +313,181 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
 
     return returns
 
+def chi2map_to_errors(chi2map, zoomfactor=1., nsigma=1, nfitted=2):
+    """
+    Derive errors from a chi^2 map
+
+    Parameters
+    ----------
+    chi2map : np.ndarray
+        A chi^2 map *with a minimum in bounds* and with delta-chi^2 <
+        chi2stat(nsigma) in bounds
+    zoomfactor : float
+        The amount the chi2 map has been zoomed (i.e., the pixel scale, in
+        units of small pixels per original pixel)
+    nsigma : float
+        How many sigma do you want the error bars to be?  Uses scipy.stats to
+        invert the chi^2 distribution, or an extrapolated version thereof if
+        nsigma>8 (leads to errors in the ppf because of 1-0 floating point
+        inaccuracy above that level)
+    nfitted : int
+        Number of fitted parameters.  In this case, always 2, but you could
+        change your chi^2 statistic based on this
+
+    Returns
+    -------
+    (-ex,+ex,-ey,+ey) where ex/ey are the x and y errors.
+    """
+
+    # find delta-chi^2 limiting values for varying DOFs
+    try:
+        import scipy.stats
+        def sigma_to_chi2(x):
+            if x < 8:
+                return scipy.stats.chi2.ppf( 1-scipy.stats.norm.sf(x)*2, nfitted )
+            else: # flop accuracy fails, assume 2 dof
+                return 1.59358435 * x**1.80468278
+    except ImportError:
+        # assume m=2 (2 degrees of freedom)
+        sigma_to_chi2 = lambda x: 1.59358435 * x**1.80468278
+
+    yy,xx = (np.indices(chi2map.shape) - np.array(chi2map.shape)[:,np.newaxis,np.newaxis]/2.) / zoomfactor
+
+    xcen = xx.flat[chi2map.argmin()]
+    ycen = yy.flat[chi2map.argmin()]
+
+    deltachi2 = chi2map - chi2map.min()
+    sigma1_area = deltachi2 < sigma_to_chi2(nsigma)
+    x_sigma1 = xx[sigma1_area]
+    y_sigma1 = yy[sigma1_area]
+
+    errx_low = xcen - x_sigma1.min()
+    errx_high = x_sigma1.max() - xcen
+    erry_low = ycen - y_sigma1.min()
+    erry_high = y_sigma1.max() - ycen
+
+    return errx_low,errx_high,erry_low,erry_high
+
+def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
+        nthreads=1, use_numpy_fft=False, zeromean=False, 
+        verbose=False, return_error=True, return_chi2array=False,
+        zoom_shape=[10,10],
+        rezoom_shape=[100,100], rezoom_factor=5, mindiff=1):
+    """
+    Find the offsets between image 1 and image 2 using the DFT upsampling method
+    (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
+    combined with :math:`\chi^2` to measure the errors on the fit
+
+    A simpler version of :func:`chi2_shift` that only computes the
+    :math:`\chi^2` array on the largest scales, then uses a fourier upsampling
+    technique to zoom in.
+    
+    
+    Parameters
+    ----------
+    im1 : np.ndarray
+    im2 : np.ndarray
+        The images to register. 
+    err : np.ndarray
+        Per-pixel error in image 2
+    boundary : 'wrap','constant','reflect','nearest'
+        Option to pass to map_coordinates for determining what to do with
+        shifts outside of the boundaries.  
+    upsample_factor : int or 'auto'
+        upsampling factor; governs accuracy of fit (1/usfac is best accuracy)
+        (can be "automatically" determined based on chi^2 error)
+    zeromean : bool
+        Subtract the mean from the images before cross-correlating?  If no, you
+        may get a 0,0 offset because the DC levels are strongly correlated.
+    verbose : bool
+        Print error message if upsampling factor is inadequate to measure errors
+    use_numpy_fft : bool
+        Force use numpy's fft over fftw?  (only matters if you have fftw
+        installed)
+    nthreads : bool
+        Number of threads to use for fft (only matters if you have fftw
+        installed)
+    nfitted : int
+        number of degrees of freedom in the fit (used for chi^2 computations).
+        Should probably always be 2.
+    zoom_shape : [int,int]
+        Shape of iterative zoom image
+    rezoom_shape : [int,int]
+        Shape of the output chi^2 map to use for determining the errors
+    rezoom_factor : int
+        Amount to zoom above the last zoom factor.  Should be <=
+        rezoom_shape/zoom_shape
+
+    Other Parameters
+    ----------------
+    return_error : bool
+        Returns the "fit error" (1-sigma in x and y) based on the delta-chi2
+        values
+    return_chi2_array : bool
+        Returns the x and y shifts and the chi2 as a function of those shifts
+        in addition to other returned parameters.  i.e., the last return from
+        this function will be a tuple (x, y, chi2)
+
+    Returns
+    -------
+    dx,dy : float,float
+        Measures the amount im2 is offset from im1 (i.e., shift im2 by -1 *
+        these #'s to match im1)
+    errx,erry : float,float
+        optional, error in x and y directions
+    xvals,yvals,chi2n_upsampled : ndarray,ndarray,ndarray,
+        not entirely sure what those first two are
+
+        .. todo::
+            CHECK THIS 
+
+    Examples
+    --------
+    >>> # Create a 2d array
+    >>> image = np.random.randn(50,55)
+    >>> # shift it in both directions
+    >>> shifted = np.roll(np.roll(image,12,0),5,1)
+    >>> # determine shift
+    >>> import image_registration
+    >>> dx,dy,edx,edy = image_registration.chi2_shift(image, shifted, upsample_factor='auto')
+    >>> # Check that the shift is correct
+    >>> print "dx - fitted dx = ",dx-5," error: ",edx
+    >>> print "dy - fitted dy = ",dy-12," error: ",edy
+    >>> # that example was boring; instead let's do one with a non-int shift
+    >>> shifted2 = image_registration.fft_tools.shift(image,3.665,-4.25)
+    >>> dx2,dy2,edx2,edy2 = image_registration.chi2_shift(image, shifted2, upsample_factor='auto')
+    >>> print "dx - fitted dx = ",dx2-3.665," error: ",edx2
+    >>> print "dy - fitted dy = ",dy2-(-4.25)," error: ",edy2
+    
+    .. todo:: understand numerical error in fft-shifted version
+
+    """
+    chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
+            nthreads=nthreads, nfitted=nfitted, zeromean=zeromean,
+            use_numpy_fft=use_numpy_fft, return_all=True, reduced=False)
+    # at this point, the chi2 map contains ALL of the information!
+
+    if verbose:
+        print "Coarse xmax/ymax = %i,%i, for offset %f,%f" % (xmax,ymax,xshift,yshift)
+
+    # below is sub-pixel zoom-in stuff
+
+    chi2zoom, zf, offsets = iterative_min_zoom(chi2, mindiff=mindiff,
+            zoomshape=zoomshape, return_zoomed=True)
+
+    chi2_rezoom = zoom.zoomnd(chi2, zf*rezoom_factor, offsets, outshape=rezoom_shape)
+
+    returns = [-xshift_corr,-yshift_corr]
+    if return_error:
+        errx_low,errx_high,erry_low,erry_high = chi2map_to_errors(chi2_rezoom, zf*rezoom_factor)
+        returns.append( (errx_low+errx_high)/2. )
+        returns.append( (erry_low+erry_high)/2. )
+    if return_chi2array:
+        yy,xx = (np.indices(chi2_rezoom.shape) - np.array(chi2_rezoom.shape)[:,np.newaxis,np.newaxis]/2.) / zf*rezoom_factor
+        returns.append((xx,yy,chi2_rezoom))
+
+    return returns
+
 def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
         zeromean=False, use_numpy_fft=False, return_all=False, reduced=False):
     """
@@ -399,7 +574,7 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
         return chi2
 
 def iterative_min_zoom(image, mindiff=1., zoomshape=[10,10],
-        return_zoomed=False, zoomstep=2):
+        return_zoomed=False, zoomstep=2, verbose=False):
     """
     Iteratively zoom in on the *minimum* position in an image until the
     delta-peak value is below `mindiff`
@@ -419,11 +594,15 @@ def iterative_min_zoom(image, mindiff=1., zoomshape=[10,10],
     zoomstep : int
         Amount to increase the zoom factor by on each iteration.  Probably best to
         stick with small integers (2-5ish).
+    verbose : bool
+        Print out information about zoom factor, offset at each iteration
 
     Returns
     -------
     The y,x offsets (following numpy convention) of the center position of the
-    original image.  If `return_zoomed`, returns (zoomed_image, offsets)
+    original image.  If `return_zoomed`, returns (zoomed_image, zoom_factor,
+    offsets) because you can't interpret the zoomed image without the zoom
+    factor.
     """
 
     image_zoom = image
@@ -443,8 +622,13 @@ def iterative_min_zoom(image, mindiff=1., zoomshape=[10,10],
         image_zoom = zoom.zoomnd(image,zf,offsets=offset,outshape=zoomshape)
         delta_image = image_zoom-image_zoom.min()
 
+        if verbose:
+            print ("Zoom factor %6i, center_shift = %10g,%10g, offset=%10g,%10g" %
+                    (zf, center_shift[0], center_shift[1], offset[0],
+                        offset[1]))
+
     if return_zoomed:
-        return image_zoom,offset
+        return image_zoom,zf,offset
     else:
         return offset
 
