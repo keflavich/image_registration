@@ -167,7 +167,7 @@ def zoomnd(inp, usfac=1, outshape=None, offsets=(), nthreads=1,
     elif len(offsets) == 0:
         offsets = (0,) * inp.ndim
 
-    outarr = np.zeros((inp.ndim,)+outshape)
+    outarr = np.zeros((inp.ndim,)+tuple(outshape))
     for ii,(insize, outsize, off) in enumerate(zip(inshape,outshape,offsets)):
         # output array should cover 1/usfac *  the range of the input
         # it should go from 1/2.-1/usfac to 1/2+1/usfac

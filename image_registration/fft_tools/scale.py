@@ -89,7 +89,7 @@ def fourier_interpnd(data, outinds, nthreads=1, use_numpy_fft=False,
     # load fft
     fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
 
-    if hasattr(outinds,'ndim') and outinds.ndim != data.ndim+1:
+    if hasattr(outinds,'ndim') and outinds.ndim not in (data.ndim+1,data.ndim):
         raise ValueError("Must specify an array of output indices with # of dimensions = input # of dims + 1")
     elif len(outinds) != data.ndim:
         raise ValueError("outind array must have an axis for each dimension")
@@ -97,48 +97,32 @@ def fourier_interpnd(data, outinds, nthreads=1, use_numpy_fft=False,
     imfft = ifftn(data)
     result = imfft
 
-    kernels = []
-    indlist=[]
     for dim,dimsize in enumerate(data.shape):
-    #for dim,dimsize in enumerate(data.shape[::-1]):
 
         # specify fourier frequencies
         freq = np.fft.fftfreq(dimsize)
 
         # have to cleverly specify frequency dimensions for the dot
         # frequency is the axis that will get summed over
-        #freqdims = [None]*(data.ndim-1-dim) + [slice(None)] + [None]*(dim)
         freqdims = [None]*(dim) + [slice(None)] + [None]*(data.ndim-1-dim)
+        inddims = [None]*(data.ndim-1-dim) + [slice(None)] + [None]*(dim)
 
         # create the fourier kernel 
         if hasattr(outinds,'ndim') and outinds.ndim == data.ndim+1:
-            inds = freq[freqdims]*outinds[data.ndim-1-dim]+1
-            #inds = freq[freqdims]*outinds[dim]
-            kern=np.exp((-1j*2*np.pi)*inds)
-        elif hasattr(outinds[dim],'ndim') and outinds[dim].ndim == 1:
-            inddims = [None]*(data.ndim-1) + [slice(None)]
-            inds = freq[freqdims]*outinds[dim][inddims]
-            kern=np.exp((-1j*2*np.pi)*inds)
-        indlist.append(inds)
-        kernels.append(kern)
+            # if outinds = np.indices(shape), we extract just lines along each index
+            outslice = [dim] + [0]*dim + [slice(None)] + [0]*(data.ndim-1-dim)
+            inds = freq[freqdims]*outinds[outslice][inddims]
+        # un-pythonic? elif hasattr(outinds[dim],'ndim') and outinds[dim].ndim == 1:
+        else:
+            inds = freq[freqdims]*np.array(outinds[dim])[inddims]
 
-    raise ValueError('sigh')
-    for kern in kernels:
+        kern=np.exp((-1j*2*np.pi)*inds)
 
         # the result is the dot product (sum along one axis) of the inverse fft of
         # the function and the kernel
-        print 'pre kern shape: ',kern.shape, "freqsize: ",dimsize, 'result size: ',result.shape
-        print "log(kern)/(-j*2*pi):\n",inds
-        print "result:\n",result
         # first time: dim = 0   ndim-1-dim = 1
         # second time: dim = 1  ndim-1-dim = 0
-        result = np.dot(result.swapaxes(data.ndim-1-dim,-1),kern.swapaxes(dim,-1)).T
-        #result = np.dot(kern,result.swapaxes(dim,-1))
-
-        print 'post kern shape: ',kern.shape, "freqsize: ",dimsize, 'result size: ',result.shape
-        print
-    # 2D case:
-    # result = np.dot( np.dot(row-kernel, inp), column-kernel )
+        result = np.dot(result.swapaxes(dim,-1),kern.swapaxes(data.ndim-1-dim,-1)).swapaxes(dim,-1)
 
     if return_real:
         return result.real
