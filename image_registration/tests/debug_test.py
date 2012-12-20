@@ -26,6 +26,9 @@ xoff, yoff, exoff, eyoff, (x, y, c2), (term1b, term2ups, term3ups) = \
             return_chi2array=True, return_terms=True)
 c2map,term1,term2,term3 = image_registration.chi2n_map(image,offset_image_taper,noise,return_all=True)
 
+xoff,yoff,exoff,eyoff,(x3,y3,c3) = chi2_shift_iterzoom(image, offset_image_taper, noise, return_chi2array=True, return_error=True)
+xoff,yoff,exoff,eyoff,(x4,y4,c4) = chi2_shift_iterzoom(image, offset_image, 0.5, return_chi2array=True, return_error=True)
+
 c2mapA,term1A,term2A,term3A = image_registration.chi2n_map(image,offset_image,0.5,return_all=True)
 print "TAPERED error: ",xoff,yoff,exoff,eyoff
 print "TAPERED error absolute difference: ",abs(xoff-xsh),abs(yoff-ysh)

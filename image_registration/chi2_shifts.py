@@ -463,8 +463,8 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto', boundary='wr
 
     """
     chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
-            nthreads=nthreads, nfitted=nfitted, zeromean=zeromean,
-            use_numpy_fft=use_numpy_fft, return_all=True, reduced=False)
+            nthreads=nthreads, zeromean=zeromean, use_numpy_fft=use_numpy_fft,
+            return_all=True, reduced=False)
     # at this point, the chi2 map contains ALL of the information!
 
     if verbose:
@@ -473,22 +473,27 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto', boundary='wr
     # below is sub-pixel zoom-in stuff
 
     chi2zoom, zf, offsets = iterative_min_zoom(chi2, mindiff=mindiff,
-            zoomshape=zoomshape, return_zoomed=True)
+            zoomshape=zoom_shape, return_zoomed=True)
 
-    chi2_rezoom = zoom.zoomnd(chi2, zf*rezoom_factor, offsets, outshape=rezoom_shape)
+    chi2_rezoom = zoom.zoomnd(chi2, zf*rezoom_factor, offsets=offsets,
+            outshape=rezoom_shape)
 
-    returns = [-xshift_corr,-yshift_corr]
+    returns = [-off for off in offsets[::-1]]
     if return_error:
         errx_low,errx_high,erry_low,erry_high = chi2map_to_errors(chi2_rezoom, zf*rezoom_factor)
         returns.append( (errx_low+errx_high)/2. )
         returns.append( (erry_low+erry_high)/2. )
     if return_chi2array:
-        yy,xx = (np.indices(chi2_rezoom.shape) - np.array(chi2_rezoom.shape)[:,np.newaxis,np.newaxis]/2.) / zf*rezoom_factor
+        yy,xx = (np.indices(chi2_rezoom.shape) - np.array(chi2_rezoom.shape)[:,np.newaxis,np.newaxis]/2.) / (zf*rezoom_factor)
+        yy += offsets[0]
+        xx += offsets[1]
+        xx *= -1
+        yy *= -1
         returns.append((xx,yy,chi2_rezoom))
 
     return returns
 
-def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
+def chi2n_map(im1, im2, err=None, boundary='wrap', nthreads=1,
         zeromean=False, use_numpy_fft=False, return_all=False, reduced=False):
     """
     Parameters
@@ -507,9 +512,6 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
     nthreads : bool
         Number of threads to use for fft (only matters if you have fftw
         installed)
-    nfitted : int
-        number of degrees of freedom in the fit (used for chi^2 computations).
-        Should probably always be 2.
     reduced : bool
         Return the reduced :math:`\chi^2` array, or unreduced?
         (assumes 2 degrees of freedom for the fit)
