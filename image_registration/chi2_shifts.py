@@ -1,4 +1,4 @@
-from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image
+from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image,zoom
 import warnings
 import numpy as np
 
@@ -397,6 +397,56 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nfitted=2, nthreads=1,
         return chi2,term1,term2,term3
     else:
         return chi2
+
+def iterative_min_zoom(image, mindiff=1., zoomshape=[10,10],
+        return_zoomed=False, zoomstep=2):
+    """
+    Iteratively zoom in on the *minimum* position in an image until the
+    delta-peak value is below `mindiff`
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Two-dimensional image with a *minimum* to zoom in on
+    mindiff : float
+        Minimum difference that must be present in image before zooming is done
+    zoomshape : [int,int]
+        Shape of the "mini" image to create.  Smaller is faster, but a bit less
+        accurate.  [10,10] seems to work well in preliminary tests (though unit
+        tests have not been written)
+    return_zoomed : bool
+        Return the zoomed image in addition to the measured offset?
+    zoomstep : int
+        Amount to increase the zoom factor by on each iteration.  Probably best to
+        stick with small integers (2-5ish).
+
+    Returns
+    -------
+    The y,x offsets (following numpy convention) of the center position of the
+    original image.  If `return_zoomed`, returns (zoomed_image, offsets)
+    """
+
+    image_zoom = image
+
+    zf = 1. # "zoom factor" initialized to 1 for the base shift measurement
+    offset = np.array([0,0],dtype='float') # center offset
+    delta_image = (image_zoom - image_zoom.min())
+
+    # check to make sure the smallest *nonzero* difference > mindiff
+    while delta_image[delta_image>0].min() > mindiff:
+        minpos = np.unravel_index(image_zoom.argmin(), image_zoom.shape)
+        center_shift = (np.array(minpos) - np.array(image_zoom.shape)/2.) / zf
+        offset += center_shift
+
+        zf *= zoomstep
+
+        image_zoom = zoom.zoomnd(image,zf,offsets=offset,outshape=zoomshape)
+        delta_image = image_zoom-image_zoom.min()
+
+    if return_zoomed:
+        return image_zoom,offset
+    else:
+        return offset
 
 def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_error=True,
         guessx=0, guessy=0, use_fft=False, ignore_outside=True, **kwargs):

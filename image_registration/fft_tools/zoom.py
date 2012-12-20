@@ -95,7 +95,7 @@ def zoomnd(inp, usfac=1, outshape=None, offsets=(), nthreads=1,
         # plus whatever offset is specified
         # outsize is always 1+(highest index of input)
         middle = (insize-1.)/2. + off
-        outarr_d = np.linspace(middle - (outsize-1)/usfac/2., middle + (outsize-1)/usfac/2., outsize)
+        outarr_d = np.linspace(middle - (outsize-1.)/usfac/2., middle + (outsize-1.)/usfac/2., outsize)
         
         # slice(None) = ":" or "get everything"
         # [None] = newaxis = add a blank axis on this dim
