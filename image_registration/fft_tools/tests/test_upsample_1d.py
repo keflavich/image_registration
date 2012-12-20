@@ -1,4 +1,4 @@
-from image_registration.fft_tools import upsample
+from image_registration.fft_tools import zoom
 import numpy as np
 import pytest
 import itertools
@@ -21,7 +21,7 @@ def test_plot_tests(imsize, upsample_factor,doplot=False):
     # always centered
     x = np.arange(imsize)
     g = gaussian(x - (imsize-1)/2.)
-    xz,z = upsample.zoom1d(g,upsample_factor,outsize=g.size*upsample_factor,return_xouts=True)
+    xz,z = zoom.zoom1d(g,upsample_factor,outsize=g.size*upsample_factor,return_xouts=True)
 
     if doplot:
         print x,xz
@@ -51,7 +51,7 @@ def test_gaussian_upsample(imsize, upsample_factor, offset):
     """
     x = np.arange(imsize)
     g = gaussian(x-(imsize-1)/2.-offset)
-    xz,z = upsample.zoom1d(g,upsample_factor,outsize=g.size*upsample_factor,return_xouts=True)
+    xz,z = zoom.zoom1d(g,upsample_factor,outsize=g.size*upsample_factor,return_xouts=True)
 
     assert ((gaussian(xz - (imsize-1)/2. -offset)-z)**2).sum() < 4e-5*upsample_factor+0.12*imsize**-1.83
 
@@ -69,6 +69,6 @@ def test_gaussian_upsample_oddoffsets(imsize, upsample_factor, offset):
     """
     x = np.arange(imsize)
     g = gaussian(x-(imsize-1)/2.-offset)
-    xz,z = upsample.zoom1d(g,upsample_factor,outsize=g.size*upsample_factor,return_xouts=True)
+    xz,z = zoom.zoom1d(g,upsample_factor,outsize=g.size*upsample_factor,return_xouts=True)
 
     assert ((gaussian(xz - (imsize-1)/2. -offset)-z)**2).sum() < 4e-5*upsample_factor+0.12*imsize**-1.83
