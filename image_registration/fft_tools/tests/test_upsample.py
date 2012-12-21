@@ -1,6 +1,6 @@
 from image_registration.fft_tools import upsample
 import numpy as np
-import pytest
+#import pytest
 import itertools
 
 def gaussian_centered(imsize, upsample_factor=1):
@@ -54,9 +54,9 @@ iterpars_even = (
 
 from pylab import * # debug
 
-@pytest.mark.parametrize(('imsize','upsample_factor'),
-    list(itertools.product((24,25,26,27),upsample_factors)))
-def test_center_zoom_simple2(imsize,upsample_factor,doplot=False):
+#@pytest.mark.parametrize(('imsize','upsample_factor'),
+#    list(itertools.product((24,25,26,27),upsample_factors)))
+def obsolete_test_center_zoom_simple2(imsize,upsample_factor,doplot=False):
     image = gaussian(imsize)
     zoomed_image = zoomed_gaussian(imsize, upsample_factor=upsample_factor)
 
@@ -78,9 +78,9 @@ def test_center_zoom_simple2(imsize,upsample_factor,doplot=False):
     if imsize > 10:
         assert ((zoomed_image-zoom)**2).sum() < 0.001
 
-@pytest.mark.parametrize(('imsize','upsample_factor'),
-    list(itertools.product((24,25,26,27),upsample_factors)))
-def test_center_zoom_simple3(imsize,upsample_factor,doplot=False):
+#@pytest.mark.parametrize(('imsize','upsample_factor'),
+#    list(itertools.product((24,25,26,27),upsample_factors)))
+def obsolete_test_center_zoom_simple3(imsize,upsample_factor,doplot=False):
     image = gaussian(imsize)
 
     x,y,zoom = upsample.center_zoom_image(image,
@@ -99,11 +99,11 @@ def test_center_zoom_simple3(imsize,upsample_factor,doplot=False):
     # in order for zooming to work, need to at least nyquist-sample peak
     # (I think)
     if imsize > 10:
-        assert ((image-zoom[::upsample_factor,::upsample_factor])**2).sum() < 0.001
+        assert ((image-zoom)**2).sum() < 0.001
 
 #@pytest.mark.parametrize(('imsize','upsample_factor'),
 #    list(itertools.product((3,4,5,6,7,8,9,25,26,27),upsample_factors)))
-#def test_center_zoom_simple(imsize,upsample_factor,doplot=False):
+#def obsolete_test_center_zoom_simple(imsize,upsample_factor,doplot=False):
 #    """
 #    Really, why should this be right?  Why is an off-center image OK?  It really should not be...
 #    """
@@ -147,8 +147,8 @@ def test_center_zoom_simple3(imsize,upsample_factor,doplot=False):
 #        assert ((zoomed_image-zoom)**2).sum() < 0.001
 
 
-@pytest.mark.parametrize(('imsize','outsize','cx','cy','upsample_factor'),iterpars_even)
-def test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=False):
+# @pytest.mark.parametrize(('imsize','outsize','cx','cy','upsample_factor'),iterpars_even)
+def obsolete_test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=False):
     if imsize != outsize and np.abs(imsize-outsize)==1:
         return "Yarrr, something's awry!"
     pixspace = np.mean(np.diff(np.linspace(-5,5,imsize)))
