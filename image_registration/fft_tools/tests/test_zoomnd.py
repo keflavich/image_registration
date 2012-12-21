@@ -90,3 +90,5 @@ def test_zoom_samesize_recentered(imsize, upsample_factor, offset, doplot=False,
 
     assert ((gaussian(xr)-zz)**2).sum() < expected_accuracy
 
+def test_outarr_is_expected(imsize, upsample_factor, offset):
+    pass
