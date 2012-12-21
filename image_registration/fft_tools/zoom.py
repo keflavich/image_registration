@@ -53,7 +53,8 @@ def zoom1d(inp, usfac=1, outsize=None, offset=0, nthreads=1,
 def zoomnd(inp, usfac=1, outshape=None, offsets=(), nthreads=1,
         use_numpy_fft=False, return_real=True, return_xouts=False):
     """
-    Zoom in to the center of a 1D array using Fourier upsampling
+    Zoom in to the center of a 1D or 2D array using Fourier upsampling
+    (in principle, should work on N-dimensions, but does not at present!)
 
     Parameters
     ----------
@@ -94,7 +95,7 @@ def zoomnd(inp, usfac=1, outshape=None, offsets=(), nthreads=1,
         # it should go from 1/2.-1/usfac to 1/2+1/usfac
         # plus whatever offset is specified
         # outsize is always 1+(highest index of input)
-        middle = (insize-1)/2 + off
+        middle = (insize-1)/2. + off
         outarr_d = np.linspace(middle - (outsize-1.)/usfac/2., middle + (outsize-1.)/usfac/2., outsize)
         
         # slice(None) = ":" or "get everything"
@@ -102,7 +103,12 @@ def zoomnd(inp, usfac=1, outshape=None, offsets=(), nthreads=1,
         dims = [None]*ii + [slice(None)] + [None]*(inp.ndim-1-ii)
         outarr[ii] = outarr_d[dims]
 
-    result = scale.fourier_interpnd(inp, outarr, nthreads=nthreads,
+    # temporary hack
+    if inp.ndim != 2: 
+        raise NotImplementedError("Can't do more than 2D yet")
+    interpfunc = scale.fourier_interp2d if inp.ndim == 2 else scale.fourier_interp1d
+
+    result = interpfunc(inp, outarr, nthreads=nthreads,
             use_numpy_fft=use_numpy_fft, return_real=return_real)
 
     if return_xouts:

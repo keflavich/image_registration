@@ -6,6 +6,35 @@ import itertools
 def gaussian(x):
     return np.exp(-x**2/2.)
 
+@pytest.mark.parametrize(('imsize','ndim'),
+    list(itertools.product(range(3,19),[2])))
+def test_inds(imsize, ndim):
+    """
+    Make sure output indices are correct (don't care about zoomed values for this test)
+    """
+    upsample_factor = 1
+    inds = np.indices([imsize]*ndim)
+    rr = np.sum([(ind - (imsize-1)/2.)**2 for ind in inds],axis=0)**0.5
+    gg = gaussian(rr)
+    xz,zz = zoom.zoomnd(gg,upsample_factor,return_xouts=True)
+    assert np.all(inds==xz)
+
+@pytest.mark.parametrize(('imsize','upsample_factor','ndim'),
+    list(itertools.product(range(3,19),range(1,25),[2])))
+def test_inds(imsize, upsample_factor, ndim):
+    offset = [0]*ndim
+    inds = np.indices([imsize]*ndim)
+    rr = np.sum([(ind - (imsize-1)/2.)**2 for ind in inds],axis=0)**0.5
+    gg = gaussian(rr)
+    outsize = imsize*upsample_factor
+    xz,zz = zoom.zoomnd(gg,upsample_factor,outshape=[outsize]*ndim, return_xouts=True,offsets=offset)
+    # wrong newinds = np.indices([imsize]*ndim)/float(imsize*upsample_factor-1)*(imsize-1)
+    newinds = np.linspace(-0.5+1./upsample_factor/2.,(imsize-1)+0.5-1./upsample_factor/2.,outsize)
+
+    for dnum in range(ndim):
+        slices = [np.newaxis]*(dnum) + [slice(None)] + [np.newaxis]*(ndim-dnum-1)
+        np.testing.assert_array_almost_equal(newinds[slices]*np.ones(xz[dnum].shape),xz[dnum])
+
 @pytest.mark.parametrize(('imsize','upsample_factor'),
     list(itertools.product(range(11,27),range(1,25))))
 def test_zoom_samesize(imsize, upsample_factor,doplot=False,ndim=2):
@@ -90,5 +119,4 @@ def test_zoom_samesize_recentered(imsize, upsample_factor, offset, doplot=False,
 
     assert ((gaussian(xr)-zz)**2).sum() < expected_accuracy
 
-def test_outarr_is_expected(imsize, upsample_factor, offset):
-    pass
+

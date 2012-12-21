@@ -67,12 +67,65 @@ def fourier_interp1d(data, out_x, data_x=None, nthreads=1, use_numpy_fft=False,
     else:
         return result
 
+def fourier_interp2d(data, outinds, nthreads=1, use_numpy_fft=False,
+        return_real=True):
+    """
+    Use the fourier scaling theorem to interpolate (or extrapolate, without raising
+    any exceptions) data.
+
+    Parameters
+    ----------
+    data : ndarray
+        The data values of the array to interpolate
+    outinds : ndarray
+        The coordinate axis values along which the data should be interpolated
+        CAN BE:
+            ndim x [n,m,...] like np.indices
+        OR (less memory intensive, more processor intensive):
+            ([n],[m],...)
+    """
+
+    # load fft
+    fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
+
+    if hasattr(outinds,'ndim') and outinds.ndim not in (data.ndim+1,data.ndim):
+        raise ValueError("Must specify an array of output indices with # of dimensions = input # of dims + 1")
+    elif len(outinds) != data.ndim:
+        raise ValueError("outind array must have an axis for each dimension")
+
+    imfft = ifftn(data)
+
+    freqY = np.fft.fftfreq(data.shape[0])
+    if hasattr(outinds,'ndim') and outinds.ndim == 3:
+        # if outinds = np.indices(shape), we extract just lines along each index
+        indsY = freqY[np.newaxis,:]*outinds[0,:,0][:,np.newaxis]
+    else:
+        indsY = freqY[np.newaxis,:]*np.array(outinds[0])[:,np.newaxis]
+    kerny=np.exp((-1j*2*np.pi)*indsY)
+
+    freqX = np.fft.fftfreq(data.shape[1])
+    if hasattr(outinds,'ndim') and outinds.ndim == 3:
+        # if outinds = np.indices(shape), we extract just lines along each index
+        indsX = freqX[:,np.newaxis]*outinds[1,0,:][np.newaxis,:]
+    else:
+        indsX = freqX[:,np.newaxis]*np.array(outinds[1])[np.newaxis,:]
+    kernx=np.exp((-1j*2*np.pi)*indsX)
+
+    result = np.dot(np.dot(kerny, imfft), kernx)
+
+    if return_real:
+        return result.real
+    else:
+        return result
+
+
 
 def fourier_interpnd(data, outinds, nthreads=1, use_numpy_fft=False,
         return_real=True):
     """
     Use the fourier scaling theorem to interpolate (or extrapolate, without raising
     any exceptions) data.
+    * DOES NOT WORK FOR ANY BUT 2 DIMENSIONS *
 
     Parameters
     ----------

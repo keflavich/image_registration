@@ -45,8 +45,8 @@ def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     term2c = (( np.arange(noc,dtype='float') - coff  )/usfac)[newaxis,:]              # output points
     kernc=np.exp((-1j*2*pi)*term1c*term2c);
 
-    term1r = ( np.arange(nor,dtype='float').T - roff )[:,newaxis]
-    term2r = ( ifftshift(np.arange(nr,dtype='float')) - floor(nr/2) )[newaxis,:]
+    term1r = ( np.arange(nor,dtype='float').T - roff )[:,newaxis]                # output points
+    term2r = ( ifftshift(np.arange(nr,dtype='float')) - floor(nr/2) )[newaxis,:] # fftfreq
     kernr=np.exp((-1j*2*pi/(nr*usfac))*term1r*term2r);
     #kernc=exp((-i*2*pi/(nc*usfac))*( ifftshift([0:nc-1]).' - floor(nc/2) )*( [0:noc-1] - coff ));
     #kernr=exp((-i*2*pi/(nr*usfac))*( [0:nor-1].' - roff )*( ifftshift([0:nr-1]) - floor(nr/2)  ));
