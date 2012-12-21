@@ -192,7 +192,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
             s2 = zoom_factor*upsample_factor
 
     (yshifts_corrections,xshifts_corrections),chi2_ups = zoom.zoomnd(chi2,
-            upsample_factor, outshape=[s1,s2], offsets=[yshift,xshift],
+            usfac=upsample_factor, outshape=[s1,s2], offsets=[yshift,xshift],
             return_xouts=True)
 
     # deltachi2 is not reduced deltachi2
@@ -285,11 +285,11 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
         boundary='wrap', nthreads=1, use_numpy_fft=False, zeromean=False,
         verbose=False, return_error=True, return_chi2array=False,
         zoom_shape=[10,10], rezoom_shape=[100,100], rezoom_factor=5,
-        mindiff=1):
+        mindiff=1, **kwargs):
     """
-    Find the offsets between image 1 and image 2 using the DFT upsampling method
-    (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
-    combined with :math:`\chi^2` to measure the errors on the fit
+    Find the offsets between image 1 and image 2 using an iterative DFT
+    upsampling method combined with :math:`\chi^2` to measure the errors on the
+    fit
 
     A simpler version of :func:`chi2_shift` that only computes the
     :math:`\chi^2` array on the largest scales, then uses a fourier upsampling
@@ -384,16 +384,19 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
 
     chi2zoom, zf, offsets = iterative_zoom.iterative_zoom(chi2,
             mindiff=mindiff, zoomshape=zoom_shape, return_zoomed=True,
-            verbose=verbose)
+            verbose=verbose, return_center=False, **kwargs)
 
     if np.all(chi2zoom==0):
         # if you've over-zoomed & broken things, you can zoom in by the same
         # factor but with a bigger field of view
-        chi2_rezoom = zoom.zoomnd(chi2, zf, offsets=offsets,
-                outshape=rezoom_shape)
+        (xx,yy),chi2_rezoom = zoom.zoomnd(chi2, usfac=zf, offsets=offsets,
+                outshape=rezoom_shape, middle_convention=np.floor,
+                return_xouts=True, **kwargs)
     else:
-        chi2_rezoom = zoom.zoomnd(chi2, zf*rezoom_factor, offsets=offsets,
-                outshape=rezoom_shape)
+        (xx,yy),chi2_rezoom = zoom.zoomnd(chi2, usfac=zf*rezoom_factor,
+                offsets=offsets, outshape=rezoom_shape,
+                middle_convention=np.floor, return_xouts=True, 
+                **kwargs)
 
     # x and y are swapped (or not?)
     returns = [-off for off in offsets]
@@ -403,11 +406,8 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
         returns.append( (errx_low+errx_high)/2. )
         returns.append( (erry_low+erry_high)/2. )
     if return_chi2array:
-        yy,xx = (np.indices(chi2_rezoom.shape) - np.array(chi2_rezoom.shape)[:,np.newaxis,np.newaxis]/2.) / (zf*rezoom_factor)
-        yy += offsets[1] # somehow they got unswapped?!  
-        xx += offsets[0] # maybe the cross-correlation did it?!
-        xx *= -1
-        yy *= -1
+        yy = (chi2.shape[0]-1)/2 - yy
+        xx = (chi2.shape[1]-1)/2 - xx
         returns.append((xx,yy,chi2_rezoom))
 
     return returns

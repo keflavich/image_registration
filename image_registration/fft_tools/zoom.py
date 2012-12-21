@@ -122,11 +122,22 @@ def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
     else:
         return result
 
-@autogen_docstring(zoom_on_pixel,msg="offsets : tuple of floats\n\tOffset from center *in original pixel units*")
-def zoomnd(inp, offsets=(), **kwargs):
+@autogen_docstring(zoom_on_pixel)
+def zoomnd(inp, offsets=(), middle_convention=np.float, **kwargs):
     """
     Zoom in to the center of a 1D or 2D array using Fourier upsampling
     (in principle, should work on N-dimensions, but does not at present!)
+
+    Parameters
+    ----------
+    inp : np.ndarray
+        Input 1D array
+    offsets : tuple of floats
+        Offset from center *in original pixel units*"
+    middle_convention : function
+        What convention to use for the "Middle" of the array.  Should be either
+        float (i.e., can be half-pixel), floor, or ceil.  I don't think round makes
+        a ton of sense... should just be ceil.
     """
 
     if len(offsets) > 0 and len(offsets) != inp.ndim:
@@ -139,7 +150,7 @@ def zoomnd(inp, offsets=(), **kwargs):
     # plus whatever offset is specified
     # outsize is always 1+(highest index of input)
 
-    middlepix = [(insize-1)/2. + off for insize,off in zip(inp.shape,offsets)]
+    middlepix = [middle_convention((insize-1)/2.) + off for insize,off in zip(inp.shape,offsets)]
 
     return zoom_on_pixel(inp, middlepix, **kwargs)
 

@@ -26,8 +26,8 @@ xoff, yoff, exoff, eyoff, (x, y, c2) = \
             return_chi2array=True)
 c2map,term1,term2,term3 = image_registration.chi2n_map(image,offset_image_taper,noise,return_all=True)
 
-xoff3,yoff3,exoff3,eyoff3,(x3,y3,c3) = image_registration.chi2_shifts.chi2_shift_iterzoom(image, offset_image_taper, noise, return_chi2array=True, return_error=True)
-xoff4,yoff4,exoff4,eyoff4,(x4,y4,c4) = image_registration.chi2_shifts.chi2_shift_iterzoom(image, offset_image, 0.5, return_chi2array=True, return_error=True)
+xoff3,yoff3,exoff3,eyoff3,(x3,y3,c3) = image_registration.chi2_shifts.chi2_shift_iterzoom(image, offset_image_taper, noise, return_chi2array=True, return_error=True,verbose=True,mindiff=0.1)
+xoff4,yoff4,exoff4,eyoff4,(x4,y4,c4) = image_registration.chi2_shifts.chi2_shift_iterzoom(image, offset_image, 0.5, return_chi2array=True, return_error=True,verbose=True,mindiff=0.1)
 
 c2mapA,term1A,term2A,term3A = image_registration.chi2n_map(image,offset_image,0.5,return_all=True)
 print "TAPERED error: ",xoff,yoff,exoff,eyoff
@@ -35,10 +35,12 @@ print "TAPERED error absolute difference: ",abs(xoff-xsh),abs(yoff-ysh)
 
 print "ITER version: "
 print "SCALAR"
-print "SCALAR error: ",xoff3,yoff3,exoff3,eyoff3
-print "SCALAR error absolute difference: ",abs(xoff3-xsh),abs(yoff3-ysh)
-print "TAPERED error: ",xoff4,yoff4,exoff4,eyoff4
-print "TAPERED error absolute difference: ",abs(xoff4-xsh),abs(yoff4-ysh)
+print "TAPERED error: ",xoff3,yoff3,exoff3,eyoff3
+print "TAPERED error absolute difference: ",abs(xoff3-xsh),abs(yoff3-ysh)
+print "TAPERED chi^2 min pos: ",x3.flat[c3.argmin()],y3.flat[c3.argmin()]
+print "SCALAR error: ",xoff4,yoff4,exoff4,eyoff4
+print "SCALAR error absolute difference: ",abs(xoff4-xsh),abs(yoff4-ysh)
+print "SCALAR chi^2 min pos: ",x4.flat[c4.argmin()],y4.flat[c4.argmin()]
 
 ylen,xlen = imsize,imsize
 xcen = xlen/2-(1-xlen%2) 
