@@ -213,8 +213,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     yshift_corr = yshifts_corrections.flat[chi2_ups.argmin()]-ycen
     xshift_corr = xshifts_corrections.flat[chi2_ups.argmin()]-xcen
 
-    shift_xvals = xshifts_corrections+xmax
-    shift_yvals = yshifts_corrections+ymax
+    shift_xvals = xshifts_corrections-xcen
+    shift_yvals = yshifts_corrections-ycen
 
     returns = [-xshift_corr,-yshift_corr]
     if return_error:
@@ -384,8 +384,14 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
     chi2zoom, zf, offsets = iterative_min_zoom(chi2, mindiff=mindiff,
             zoomshape=zoom_shape, return_zoomed=True, verbose=verbose)
 
-    chi2_rezoom = zoom.zoomnd(chi2, zf*rezoom_factor, offsets=offsets,
-            outshape=rezoom_shape)
+    if np.all(chi2zoom==0):
+        # if you've over-zoomed & broken things, you can zoom in by the same
+        # factor but with a bigger field of view
+        chi2_rezoom = zoom.zoomnd(chi2, zf, offsets=offsets,
+                outshape=rezoom_shape)
+    else:
+        chi2_rezoom = zoom.zoomnd(chi2, zf*rezoom_factor, offsets=offsets,
+                outshape=rezoom_shape)
 
     # x and y are swapped (or not?)
     returns = [-off for off in offsets]

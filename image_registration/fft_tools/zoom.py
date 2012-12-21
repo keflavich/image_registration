@@ -94,7 +94,7 @@ def zoomnd(inp, usfac=1, outshape=None, offsets=(), nthreads=1,
         # it should go from 1/2.-1/usfac to 1/2+1/usfac
         # plus whatever offset is specified
         # outsize is always 1+(highest index of input)
-        middle = (insize-1.)/2. + off
+        middle = (insize-1)/2 + off
         outarr_d = np.linspace(middle - (outsize-1.)/usfac/2., middle + (outsize-1.)/usfac/2., outsize)
         
         # slice(None) = ":" or "get everything"
