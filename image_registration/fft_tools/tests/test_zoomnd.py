@@ -16,7 +16,7 @@ def test_inds(imsize, ndim):
     inds = np.indices([imsize]*ndim)
     rr = np.sum([(ind - (imsize-1)/2.)**2 for ind in inds],axis=0)**0.5
     gg = gaussian(rr)
-    xz,zz = zoom.zoomnd(gg,upsample_factor,return_xouts=True)
+    xz,zz = zoom.zoomnd(gg,usfac=upsample_factor,return_xouts=True)
     assert np.all(inds==xz)
 
 @pytest.mark.parametrize(('imsize','upsample_factor','ndim'),
@@ -27,7 +27,7 @@ def test_inds(imsize, upsample_factor, ndim):
     rr = np.sum([(ind - (imsize-1)/2.)**2 for ind in inds],axis=0)**0.5
     gg = gaussian(rr)
     outsize = imsize*upsample_factor
-    xz,zz = zoom.zoomnd(gg,upsample_factor,outshape=[outsize]*ndim, return_xouts=True,offsets=offset)
+    xz,zz = zoom.zoomnd(gg,usfac=upsample_factor,outshape=[outsize]*ndim, return_xouts=True,offsets=offset)
     # wrong newinds = np.indices([imsize]*ndim)/float(imsize*upsample_factor-1)*(imsize-1)
     newinds = np.linspace(-0.5+1./upsample_factor/2.,(imsize-1)+0.5-1./upsample_factor/2.,outsize)
 
@@ -45,7 +45,7 @@ def test_zoom_samesize(imsize, upsample_factor,doplot=False,ndim=2):
     inds = np.indices([imsize]*ndim)
     rr = ((inds-(imsize-1)/2.)**2).sum(axis=0)**0.5
     gg = gaussian(rr)
-    xz,zz = zoom.zoomnd(gg,upsample_factor,return_xouts=True)
+    xz,zz = zoom.zoomnd(gg,usfac=upsample_factor,return_xouts=True)
     xr = ((xz - (imsize-1.)/2.)**2).sum(axis=0)**0.5
 
     expected_accuracy = ( (upsample_factor**1.1) * 6.2e-4 * (imsize%2==1) + # odd case
@@ -66,7 +66,7 @@ def test_zoom_fullsize(imsize, upsample_factor,doplot=False,ndim=2):
     rr = ((inds-(imsize-1)/2.)**2).sum(axis=0)**0.5
     gg = gaussian(rr)
     outshape = [s*upsample_factor for s in gg.shape]
-    xz,zz = zoom.zoomnd(gg,upsample_factor,outshape=outshape,return_xouts=True)
+    xz,zz = zoom.zoomnd(gg,usfac=upsample_factor,outshape=outshape,return_xouts=True)
     xr = ((xz - (imsize-1.)/2.)**2).sum(axis=0)**0.5
 
     expected_accuracy = ( (upsample_factor**2) * 1.2e-4 + # odd case
@@ -88,7 +88,7 @@ def test_zoom_samesize_uncentered(imsize, upsample_factor, offset, doplot=False,
     inds = np.indices([imsize]*ndim)
     rr = ((inds[0] - (imsize-1)/2. - offset[0])**2  + (inds[1] - (imsize-1)/2. - offset[1])**2)**0.5
     gg = gaussian(rr)
-    xz,zz = zoom.zoomnd(gg,upsample_factor,return_xouts=True)
+    xz,zz = zoom.zoomnd(gg,usfac=upsample_factor,return_xouts=True)
     xr = ((xz[0] - (imsize-1)/2. - offset[0])**2  + (xz[1] - (imsize-1)/2. - offset[1])**2)**0.5
 
     expected_accuracy = ( (upsample_factor**1.1) * 6.2e-4 * (imsize%2==1) + # odd case
@@ -109,7 +109,7 @@ def test_zoom_samesize_recentered(imsize, upsample_factor, offset, doplot=False,
     inds = np.indices([imsize]*ndim)
     rr = ((inds[0] - (imsize-1)/2. - offset[0])**2  + (inds[1] - (imsize-1)/2. - offset[1])**2)**0.5
     gg = gaussian(rr)
-    xz,zz = zoom.zoomnd(gg,upsample_factor,return_xouts=True,offsets=offset)
+    xz,zz = zoom.zoomnd(gg,usfac=upsample_factor,return_xouts=True,offsets=offset)
     xr = ((xz[0] - (imsize-1)/2. - offset[0])**2  + (xz[1] - (imsize-1)/2. - offset[1])**2)**0.5
 
     expected_accuracy = ( (upsample_factor**1.1) * 6.2e-4 * (imsize%2==1) + # odd case

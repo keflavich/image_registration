@@ -1,4 +1,5 @@
 from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image,zoom
+import iterative_zoom
 import warnings
 import numpy as np
 
@@ -381,8 +382,9 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
 
     # below is sub-pixel zoom-in stuff
 
-    chi2zoom, zf, offsets = iterative_min_zoom(chi2, mindiff=mindiff,
-            zoomshape=zoom_shape, return_zoomed=True, verbose=verbose)
+    chi2zoom, zf, offsets = iterative_zoom.iterative_zoom(chi2,
+            mindiff=mindiff, zoomshape=zoom_shape, return_zoomed=True,
+            verbose=verbose)
 
     if np.all(chi2zoom==0):
         # if you've over-zoomed & broken things, you can zoom in by the same
@@ -492,71 +494,6 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nthreads=1,
     else:
         return chi2
 
-def iterative_min_zoom(image, mindiff=1., zoomshape=[10,10],
-        return_zoomed=False, zoomstep=2, verbose=False):
-    """
-    Iteratively zoom in on the *minimum* position in an image until the
-    delta-peak value is below `mindiff`
-
-    Parameters
-    ----------
-    image : np.ndarray
-        Two-dimensional image with a *minimum* to zoom in on
-    mindiff : float
-        Minimum difference that must be present in image before zooming is done
-    zoomshape : [int,int]
-        Shape of the "mini" image to create.  Smaller is faster, but a bit less
-        accurate.  [10,10] seems to work well in preliminary tests (though unit
-        tests have not been written)
-    return_zoomed : bool
-        Return the zoomed image in addition to the measured offset?
-    zoomstep : int
-        Amount to increase the zoom factor by on each iteration.  Probably best to
-        stick with small integers (2-5ish).
-    verbose : bool
-        Print out information about zoom factor, offset at each iteration
-
-    Returns
-    -------
-    The y,x offsets (following numpy convention) of the center position of the
-    original image.  If `return_zoomed`, returns (zoomed_image, zoom_factor,
-    offsets) because you can't interpret the zoomed image without the zoom
-    factor.
-    """
-
-    image_zoom = image
-
-    zf = 1. # "zoom factor" initialized to 1 for the base shift measurement
-    offset = np.array([0,0],dtype='float') # center offset
-    delta_image = (image_zoom - image_zoom.min())
-
-    # check to make sure the smallest *nonzero* difference > mindiff
-    while delta_image[delta_image>0].min() > mindiff:
-        minpos = np.unravel_index(image_zoom.argmin(), image_zoom.shape)
-        center_shift = (np.array(minpos) - (np.array(image_zoom.shape)-1)/2.) / zf
-        offset += center_shift
-
-        zf *= zoomstep
-
-        image_zoom = zoom.zoomnd(image,zf,offsets=offset,outshape=zoomshape)
-        delta_image = image_zoom-image_zoom.min()
-
-        # base case: in case you can't do any better...
-        # (at this point, you're all the way zoomed)
-        if np.all(delta_image == 0):
-            if verbose:
-                print "Can't zoom any further.  zf=%i" % zf
-            break
-
-        if verbose:
-            print ("Zoom factor %6i, center_shift = %15g,%15g, offset=%15g,%15g" %
-                    (zf, center_shift[0], center_shift[1], offset[0],
-                        offset[1]))
-
-    if return_zoomed:
-        return image_zoom,zf,offset
-    else:
-        return offset
 
 def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_error=True,
         guessx=0, guessy=0, use_fft=False, ignore_outside=True, **kwargs):
