@@ -7,7 +7,7 @@ __all__ = ['chi2_shift','chi2n_map']
 def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2,
         verbose=False, return_error=True, return_chi2array=False,
-        max_auto_size=512, return_terms=False, max_nsig=1.1):
+        max_auto_size=512, max_nsig=1.1):
     """
     Find the offsets between image 1 and image 2 using the DFT upsampling method
     (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
@@ -190,117 +190,31 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
             s1 = zoom_factor*upsample_factor
             s2 = zoom_factor*upsample_factor
 
-    # import fft's
-    fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
-
-    # determine the amount to shift by?
-    dftshift = np.trunc(np.ceil(upsample_factor*zoom_factor)/2); #% Center of output array at dftshift+1
-
-    if err is not None and not np.isscalar(err):
-        err = np.nan_to_num(err)
-        # prevent divide-by-zero errors
-        # because err is always squared, negative errors are "ok" in a weird sense
-        if verbose:
-            print "Found %i points where err==0" % ((err==0).sum())
-        im2[err==0] = 0
-        im1[err==0] = 0
-        err[err==0] = 1
-        term3_ups = dftups(fftn(im1**2)*np.conj(fftn(1./err**2)), s1, s2, usfac=upsample_factor,
-                roff=dftshift-yshift*upsample_factor,
-                coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
-    else:
-        if err is None:
-            err = 1.
-        # 'upsampled' term3 is same as term3, because it's scalar
-        term3_ups = term3
-
-    if verbose > 1:
-        print "dftshift: %f  s1: %f  s2: %f  upsample_factor: %f roff: %f  coff: %f xshift: %f yshift: %f" % (dftshift,
-                s1,s2,upsample_factor,
-                dftshift-yshift*upsample_factor,
-                dftshift-xshift*upsample_factor,
-                xshift,
-                yshift)
-
-    # pilfered from dftregistration (hence the % comments)
-    term2_ups = -2 * dftups(fftn(im2/err**2)*np.conj(fftn(im1)), s1, s2, usfac=upsample_factor,
-            roff=dftshift-yshift*upsample_factor,
-            coff=dftshift-xshift*upsample_factor) / (im1.size) #*upsample_factor**2)
-    # why do we have to divide by im1.size?  because the fourier scaling theorem is 1/a * FT(f(t/a))
-
-    # old and wrong chi2n_ups = (ac1peak/err2sum-2*np.abs(xc_ups)/np.abs(err_ups)+ac2peak/err2sum)#*(xc.size-nfitted)
-    chi2_ups = term1 + term2_ups + term3_ups
-
-    chi2_ups = dftups(fftn(chi2), s1, s2, usfac=upsample_factor,
-            roff=dftshift-yshift*upsample_factor,
-            coff=dftshift-xshift*upsample_factor) / (chi2.size) 
+    (yshifts_corrections,xshifts_corrections),chi2_ups = zoom.zoomnd(chi2,
+            upsample_factor, outshape=[s1,s2], offsets=[yshift,xshift],
+            return_xouts=True)
 
     # deltachi2 is not reduced deltachi2
     deltachi2_ups = (chi2_ups - chi2_ups.min())
     if verbose:
         print "Minimum chi2_ups: %g   Max delta-chi2 (highres): %g  Min delta-chi2 (highres): %g" % (chi2_ups.min(),deltachi2_ups.max(),deltachi2_ups[deltachi2_ups>0].min())
         if verbose > 1:
-            if hasattr(term3_ups,'len'):
-                print "term3_ups has shape ",term3_ups.shape," term2: ",term2_ups.shape," term1=",term1
-            else:
-                print "term2 shape: ",term2.shape," term1: ",term1," term3: ",term3_ups
+            pass
+            #if hasattr(term3_ups,'len'):
+            #    print "term3_ups has shape ",term3_ups.shape," term2: ",term2_ups.shape," term1=",term1
+            #else:
+            #    print "term2 shape: ",term2.shape," term1: ",term1," term3: ",term3_ups
     # THE UPSAMPLED BEST-FIT HAS BEEN FOUND
 
     # BELOW IS TO COMPUTE THE ERROR
 
-    yy,xx = np.indices([s1,s2])
-    xshifts_corrections = (xx-dftshift)/upsample_factor
-    yshifts_corrections = (yy-dftshift)/upsample_factor
+    errx_low,errx_high,erry_low,erry_high = chi2map_to_errors(chi2_ups, upsample_factor)
 
-    # need to determine how many pixels are in the 1-sigma region
-    sigma1_area = deltachi2_ups<m1
-    # optional...?
-    #sigma2_area = deltachi2<m2
-    #x_sigma2 = xshifts_corrections[sigma2_area]
-    #y_sigma2 = yshifts_corrections[sigma2_area]
-    #sigma3_area = deltachi2<m3
-    #x_sigma3 = xshifts_corrections[sigma3_area]
-    #y_sigma3 = yshifts_corrections[sigma3_area]
+    yshift_corr = yshifts_corrections.flat[chi2_ups.argmin()]-ycen
+    xshift_corr = xshifts_corrections.flat[chi2_ups.argmin()]-xcen
 
-    # upsampled maximum - correction
-    upsymax,upsxmax = np.unravel_index(chi2_ups.argmin(), chi2_ups.shape)
-
-    if sigma1_area.sum() <= 1:
-        if verbose and upsample_factor == 'auto':
-            print "Cannot estimate errors: need higher upsample factor.  Sigmamax_area=%i" % (sigmamax_area.sum())
-        else:
-            print "Cannot estimate errors: need higher upsample factor."
-        errx_low = erry_low = errx_high = erry_high = 1./upsample_factor
-    else: # compute 1-sigma errors
-        x_sigma1 = xshifts_corrections[sigma1_area]
-        y_sigma1 = yshifts_corrections[sigma1_area]
-
-        errx_low = (upsxmax-dftshift)/upsample_factor - x_sigma1.min()
-        errx_high = x_sigma1.max() - (upsxmax-dftshift)/upsample_factor
-        erry_low = (upsymax-dftshift)/upsample_factor - y_sigma1.min()
-        erry_high = y_sigma1.max() - (upsymax-dftshift)/upsample_factor
-        if verbose:
-            print "Found %i pixels within the 1-sigma region. xmin,ymin: %f,%f xmax,ymax: %g,%g" % (sigma1_area.sum(),x_sigma1.min(),y_sigma1.min(),x_sigma1.max(),y_sigma1.max())
-        #from pylab import *
-        #clf(); imshow(deltachi2); colorbar(); contour(sigma1_area,levels=[0.5],colors=['w'])
-        #import pdb; pdb.set_trace()
-
-    yshift_corr = yshift+(upsymax-dftshift)/float(upsample_factor)
-    xshift_corr = xshift+(upsxmax-dftshift)/float(upsample_factor)
-    if verbose > 1:
-        #print ymax,xmax
-        #print upsymax, upsxmax
-        #print upsymax-dftshift, upsxmax-dftshift
-        print "Correction: ",(upsymax-dftshift)/float(upsample_factor), (upsxmax-dftshift)/float(upsample_factor)
-        if 'x_sigma1'  in locals():
-            print "Chi2 1sig bounds:", x_sigma1.min(), x_sigma1.max(), y_sigma1.min(), y_sigma1.max()
-            print errx_low,errx_high,erry_low,erry_high
-            print "%0.3f +%0.3f -%0.3f   %0.3f +%0.3f -%0.3f" % (yshift_corr, erry_high, erry_low, xshift_corr, errx_high, errx_low)
-        #print ymax-ycen+upsymax/float(upsample_factor), xmax-xcen+upsxmax/float(upsample_factor)
-        #print (upsymax-s1/2)/upsample_factor, (upsxmax-s2/2)/upsample_factor
-
-    shift_xvals = xshifts_corrections+xshift
-    shift_yvals = yshifts_corrections+yshift
+    shift_xvals = xshifts_corrections+xmax
+    shift_yvals = yshifts_corrections+ymax
 
     returns = [-xshift_corr,-yshift_corr]
     if return_error:
@@ -308,8 +222,6 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         returns.append( (erry_low+erry_high)/2. )
     if return_chi2array:
         returns.append((shift_xvals,shift_yvals,chi2_ups))
-    if return_terms:
-        returns.append((term1,term2_ups,term3_ups))
 
     return returns
 

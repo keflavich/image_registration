@@ -3,7 +3,7 @@ from image_registration.fft_tools import *
 from pylab import *
 
 noise_taper = True
-imsize=99
+imsize=100
 xsh=3.75
 ysh=1.2
 image = image_registration.tests.make_extended(imsize)
@@ -20,10 +20,10 @@ xoff, yoff, exoff, eyoff, (x, y, c2a) = image_registration.chi2_shift(image,
         upsample_factor='auto', return_chi2array=True)
 print "SCALAR error: ",xoff,yoff,exoff,eyoff
 print
-xoff, yoff, exoff, eyoff, (x, y, c2), (term1b, term2ups, term3ups) = \
+xoff, yoff, exoff, eyoff, (x, y, c2) = \
         image_registration.chi2_shift(image, offset_image_taper, noise,
             return_error=True, verbose=2, upsample_factor='auto',
-            return_chi2array=True, return_terms=True)
+            return_chi2array=True)
 c2map,term1,term2,term3 = image_registration.chi2n_map(image,offset_image_taper,noise,return_all=True)
 
 xoff3,yoff3,exoff3,eyoff3,(x3,y3,c3) = image_registration.chi2_shifts.chi2_shift_iterzoom(image, offset_image_taper, noise, return_chi2array=True, return_error=True)
@@ -59,10 +59,10 @@ title("c2.real")
 plot(-xsh,-ysh,'wx')
 
 figure(3,figsize=[20,8])
-subplot(131); pcolormesh(x,y,term2ups.real); colorbar(); title('term2ups.real')
-contour(x,y,term2ups.real-term2ups.real.min(),levels=[0,2.3,6,8,100,200],cmap=cm.gray)
+#subplot(131); pcolormesh(x,y,term2ups.real); colorbar(); title('term2ups.real')
+#contour(x,y,term2ups.real-term2ups.real.min(),levels=[0,2.3,6,8,100,200],cmap=cm.gray)
 plot(-xsh,-ysh,'wx')
-subplot(132); pcolormesh(x,y,term3ups.real); colorbar(); title('term3ups.real')
+#subplot(132); pcolormesh(x,y,term3ups.real); colorbar(); title('term3ups.real')
 plot(-xsh,-ysh,'wx')
 subplot(133); pcolormesh(x,y,c2.real); colorbar(); title('c2.real')
 contour(x,y,c2.real-c2.real.min(),levels=[0,2.3,6,8,100,200],cmap=cm.gray)

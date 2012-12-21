@@ -61,7 +61,7 @@ def zoomnd(inp, usfac=1, outshape=None, offsets=(), nthreads=1,
         Input 1D array
     usfac : int
         Upsampling factor
-    outsize : int
+    outshape : int
         Number of pixels in output array
     offsets : tuple of floats
         Offset from center *in original pixel units*
@@ -76,7 +76,7 @@ def zoomnd(inp, usfac=1, outshape=None, offsets=(), nthreads=1,
 
     Returns
     -------
-    The input array upsampled by a factor `usfac` with size `outsize`.
+    The input array upsampled by a factor `usfac` with size `outshape`.
     If `return_xouts`, returns a tuple (xvals, zoomed)
     """
 
