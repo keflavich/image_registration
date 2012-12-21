@@ -1,3 +1,10 @@
+"""
+Shift
+-----
+
+Fourier-transform based shifting.  scipy.fftpack.shift does about the same
+thing, but only in one dimension
+"""
 import fast_ffts
 import numpy as np
 
