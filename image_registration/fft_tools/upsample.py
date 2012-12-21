@@ -2,6 +2,7 @@ import fast_ffts
 import warnings
 import numpy as np
 import scale
+import zoom
 
 def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     """
@@ -138,94 +139,6 @@ def odddftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     out=np.dot(np.dot(kernr,inp),kernc);
     #return np.roll(np.roll(out,+1,axis=0),+1,axis=1)
     return out 
-
-def center_zoom_image(image, upsample_factor=1, output_size=None, nthreads=1,
-        use_numpy_fft=False, xshift=0, yshift=0, return_axes=False):
-    """
-    Same as :func:`upsample_image` but with "default" xoff/yoff computed such that the zoom
-    always remains in the center
-    """
-    fftn,ifftn = fast_ffts.get_ffts(nthreads=nthreads, use_numpy_fft=use_numpy_fft)
-
-    imfft = ifftn(image)
-
-    if output_size is None:
-        s1 = image.shape[0]*upsample_factor
-        s2 = image.shape[1]*upsample_factor
-    elif hasattr(output_size,'__len__'):
-        s1 = output_size[0]
-        s2 = output_size[1]
-    else:
-        s1 = output_size
-        s2 = output_size
-
-    #vshape = image.shape[0]*upsample_factor,image.shape[1]*upsample_factor
-    # int(float(a)/b) is the "round towards zero" division operation
-    #roff = -((vshape[0] - upsample_factor - s1)/2) -1#*(s1 % 2)
-    #coff = -((vshape[1] - upsample_factor - s2)/2) -1#*(s2 % 2)
-    # worked for the odd case
-    #roff = -int(np.round(float(vshape[0] - upsample_factor - s1)/2.)) - (upsample_factor%2==0) 
-    #coff = -int(np.round(float(vshape[1] - upsample_factor - s2)/2.)) - (upsample_factor%2==0) 
-    # in principle, works for even case
-    # this is the solution I found on paper.
-    # offset_from_bottom_left_corner_Y = round((image.shape[0]*upsample_factor  - s1)/2.) 
-    # offset_from_bottom_left_corner_X = round((image.shape[1]*upsample_factor  - s2)/2.) 
-    # this is STILL WRONG roff = -int(np.round(float(image.shape[0]*upsample_factor - s1)/2.))
-    # this is STILL WRONG coff = -int(np.round(float(image.shape[1]*upsample_factor - s2)/2.))
-
-    # round((image.shape[0]*upsample_factor  - s1)/2.) is the size of the big
-    # image (with split pixels) minus the size of the zoomed-in image (in split
-    # pixel units) divided by two because there is a left and a right buffer
-    # The added factor upsample_factor/2*(image.shape[0]%2==1) is to deal with odd-shaped images,
-    # which for no particularly obvious reason are mistreated by dftups...
-    # The last term is if the input and output image shapes differ in even/oddness, the zoom should be offset by half a pixel...
-    roff = -round((image.shape[0]*upsample_factor  - s1)/2.) + upsample_factor/2*(image.shape[0]%2==1) 
-    coff = -round((image.shape[1]*upsample_factor  - s2)/2.) + upsample_factor/2*(image.shape[1]%2==1) 
-
-    # doesn't this look like a hack?  It feels like a hack.
-    roff += 0.5 * (image.shape[0]%2==0) * (upsample_factor%2==0) + (image.shape[0]%2==0)*((upsample_factor-1)/2)
-    coff += 0.5 * (image.shape[1]%2==0) * (upsample_factor%2==0) + (image.shape[1]%2==0)*((upsample_factor-1)/2)
-    #roff += -((image.shape[0]-s1)%2==1)*(upsample_factor%2==0)*(image.shape[0]<s1) #*((image.shape[0]-s1)%2==1)*(image.shape[0]<s1)
-    #coff += -((image.shape[1]-s2)%2==1)*(upsample_factor%2==0)*(image.shape[1]<s2) #*((image.shape[1]-s2)%2==1)*(image.shape[1]<s2)
-    print "roff,coff,upsample_factor,shape: ",roff,coff,upsample_factor,image.shape
-
-    # discovered mostly by guess and check (for shame):
-    # yshift/xshift must be scale up by upsample factor because
-    # they get scaled with the image
-    ups = dftups(imfft, s1, s2, upsample_factor, 
-            roff=roff-yshift*upsample_factor, 
-            coff=coff-xshift*upsample_factor)
-
-    if return_axes:
-        yy,xx = np.indices([s1,s2],dtype='float')
-        xshifts_corrections = (xx-coff-xshift)/upsample_factor + xshift #+ (vshape[1]%2==0) * 1./(2*upsample_factor)
-        yshifts_corrections = (yy-roff-yshift)/upsample_factor + yshift #+ (vshape[0]%2==0) * 1./(2*upsample_factor)
-        # black = (red - (ups-1)/2)/ups
-        xshifts_corrections = (xx-coff)/upsample_factor - 0.5 + 1/(2.*upsample_factor)-xshift
-        yshifts_corrections = (yy-roff)/upsample_factor - 0.5 + 1/(2.*upsample_factor)-yshift
-        #yyOrig,xxOrig = np.linspace(0,image.shape[0]-1,s1),np.linspace(0,image.shape[1]-1,s2)
-        #yy,xx = np.meshgrid(yyOrig,xxOrig)
-        #xshifts_corrections = (xx*upsample_factor + (upsample_factor-1)/2. - coff - xshift*upsample_factor)
-        #yshifts_corrections = (yy*upsample_factor + (upsample_factor-1)/2. - roff - yshift*upsample_factor)
-        return xshifts_corrections,yshifts_corrections,np.abs(ups)
-
-    return np.abs(ups)
-
-def center_zoom_dftups(image, upsample_factor=1, dx=0, dy=0):
-    s1,s2 = image.shape
-
-    zoom_factor = s1/upsample_factor
-    if zoom_factor <= 1:
-        zoom_factor = 2
-        s1 = zoom_factor*upsample_factor
-        s2 = zoom_factor*upsample_factor
-    dftshift = np.trunc(np.ceil(upsample_factor*zoom_factor)/2); #% Center of output array at dftshift+1
-
-    zoomed = dftups((fftn(image)), s1, s2, usfac=upsample_factor,
-            roff=dftshift-dy*upsample_factor,
-            coff=dftshift-dx*upsample_factor) / (image.size) #*upsample_factor**2)
-
-    return zoomed
 
 
 if __name__ == "__main__" and False:
