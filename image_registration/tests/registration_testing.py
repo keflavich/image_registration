@@ -98,15 +98,11 @@ try:
 
     def make_offset_extended(img, xsh, ysh, noise=1.0, mode='wrap',
             noise_taper=False):
-        import scipy, scipy.ndimage
-        #yy,xx = np.indices(img.shape,dtype='float')
-        #yy-=ysh
-        #xx-=xsh
         noise = np.random.randn(*img.shape)*noise
         if noise_taper:
             noise /= edge_weight(img.shape[0])
         #newimage = scipy.ndimage.map_coordinates(img+noise, [yy,xx], mode=mode)
-        newimage = np.abs(shift(img, xsh, ysh)+noise)
+        newimage = np.real(shift.shiftnd(img, (ysh, xsh))+noise)
 
         return newimage
 

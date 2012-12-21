@@ -121,8 +121,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
 
     """
     chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
-            nthreads=nthreads, nfitted=nfitted, zeromean=zeromean,
-            use_numpy_fft=use_numpy_fft, return_all=True, reduced=False)
+            nthreads=nthreads, zeromean=zeromean, use_numpy_fft=use_numpy_fft,
+            return_all=True, reduced=False)
     ymax, xmax = np.unravel_index(chi2.argmin(), chi2.shape)
 
     # needed for ffts
@@ -368,11 +368,11 @@ def chi2map_to_errors(chi2map, zoomfactor=1., nsigma=1, nfitted=2):
 
     return errx_low,errx_high,erry_low,erry_high
 
-def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
-        nthreads=1, use_numpy_fft=False, zeromean=False, 
+def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
+        boundary='wrap', nthreads=1, use_numpy_fft=False, zeromean=False,
         verbose=False, return_error=True, return_chi2array=False,
-        zoom_shape=[10,10],
-        rezoom_shape=[100,100], rezoom_factor=5, mindiff=1):
+        zoom_shape=[10,10], rezoom_shape=[100,100], rezoom_factor=5,
+        mindiff=1):
     """
     Find the offsets between image 1 and image 2 using the DFT upsampling method
     (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
@@ -467,26 +467,25 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto', boundary='wr
             return_all=True, reduced=False)
     # at this point, the chi2 map contains ALL of the information!
 
-    if verbose:
-        print "Coarse xmax/ymax = %i,%i, for offset %f,%f" % (xmax,ymax,xshift,yshift)
-
     # below is sub-pixel zoom-in stuff
 
     chi2zoom, zf, offsets = iterative_min_zoom(chi2, mindiff=mindiff,
-            zoomshape=zoom_shape, return_zoomed=True)
+            zoomshape=zoom_shape, return_zoomed=True, verbose=verbose)
 
     chi2_rezoom = zoom.zoomnd(chi2, zf*rezoom_factor, offsets=offsets,
             outshape=rezoom_shape)
 
-    returns = [-off for off in offsets[::-1]]
+    # x and y are swapped (or not?)
+    returns = [-off for off in offsets]
+
     if return_error:
         errx_low,errx_high,erry_low,erry_high = chi2map_to_errors(chi2_rezoom, zf*rezoom_factor)
         returns.append( (errx_low+errx_high)/2. )
         returns.append( (erry_low+erry_high)/2. )
     if return_chi2array:
         yy,xx = (np.indices(chi2_rezoom.shape) - np.array(chi2_rezoom.shape)[:,np.newaxis,np.newaxis]/2.) / (zf*rezoom_factor)
-        yy += offsets[0]
-        xx += offsets[1]
+        yy += offsets[1] # somehow they got unswapped?!  
+        xx += offsets[0] # maybe the cross-correlation did it?!
         xx *= -1
         yy *= -1
         returns.append((xx,yy,chi2_rezoom))
@@ -616,7 +615,7 @@ def iterative_min_zoom(image, mindiff=1., zoomshape=[10,10],
     # check to make sure the smallest *nonzero* difference > mindiff
     while delta_image[delta_image>0].min() > mindiff:
         minpos = np.unravel_index(image_zoom.argmin(), image_zoom.shape)
-        center_shift = (np.array(minpos) - np.array(image_zoom.shape)/2.) / zf
+        center_shift = (np.array(minpos) - (np.array(image_zoom.shape)-1)/2.) / zf
         offset += center_shift
 
         zf *= zoomstep
@@ -624,8 +623,15 @@ def iterative_min_zoom(image, mindiff=1., zoomshape=[10,10],
         image_zoom = zoom.zoomnd(image,zf,offsets=offset,outshape=zoomshape)
         delta_image = image_zoom-image_zoom.min()
 
+        # base case: in case you can't do any better...
+        # (at this point, you're all the way zoomed)
+        if np.all(delta_image == 0):
+            if verbose:
+                print "Can't zoom any further.  zf=%i" % zf
+            break
+
         if verbose:
-            print ("Zoom factor %6i, center_shift = %10g,%10g, offset=%10g,%10g" %
+            print ("Zoom factor %6i, center_shift = %15g,%15g, offset=%15g,%15g" %
                     (zf, center_shift[0], center_shift[1], offset[0],
                         offset[1]))
 

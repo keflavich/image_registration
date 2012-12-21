@@ -3,7 +3,7 @@ from image_registration.fft_tools import *
 from pylab import *
 
 noise_taper = True
-imsize=100
+imsize=99
 xsh=3.75
 ysh=1.2
 image = image_registration.tests.make_extended(imsize)
@@ -26,13 +26,19 @@ xoff, yoff, exoff, eyoff, (x, y, c2), (term1b, term2ups, term3ups) = \
             return_chi2array=True, return_terms=True)
 c2map,term1,term2,term3 = image_registration.chi2n_map(image,offset_image_taper,noise,return_all=True)
 
-xoff,yoff,exoff,eyoff,(x3,y3,c3) = chi2_shift_iterzoom(image, offset_image_taper, noise, return_chi2array=True, return_error=True)
-xoff,yoff,exoff,eyoff,(x4,y4,c4) = chi2_shift_iterzoom(image, offset_image, 0.5, return_chi2array=True, return_error=True)
+xoff3,yoff3,exoff3,eyoff3,(x3,y3,c3) = image_registration.chi2_shifts.chi2_shift_iterzoom(image, offset_image_taper, noise, return_chi2array=True, return_error=True)
+xoff4,yoff4,exoff4,eyoff4,(x4,y4,c4) = image_registration.chi2_shifts.chi2_shift_iterzoom(image, offset_image, 0.5, return_chi2array=True, return_error=True)
 
 c2mapA,term1A,term2A,term3A = image_registration.chi2n_map(image,offset_image,0.5,return_all=True)
 print "TAPERED error: ",xoff,yoff,exoff,eyoff
 print "TAPERED error absolute difference: ",abs(xoff-xsh),abs(yoff-ysh)
 
+print "ITER version: "
+print "SCALAR"
+print "SCALAR error: ",xoff3,yoff3,exoff3,eyoff3
+print "SCALAR error absolute difference: ",abs(xoff3-xsh),abs(yoff3-ysh)
+print "TAPERED error: ",xoff4,yoff4,exoff4,eyoff4
+print "TAPERED error absolute difference: ",abs(xoff4-xsh),abs(yoff4-ysh)
 
 ylen,xlen = imsize,imsize
 xcen = xlen/2-(1-xlen%2) 
@@ -138,7 +144,7 @@ axis(axlims)
 figure(9)
 subplot(131); imshow(offset_image_taper/noise**2); colorbar(); title('taper/noise**2')
 subplot(132); imshow(image**2/noise**2); colorbar(); title('image**2/noise**2')
-subplot(133); imshow(image_registration.fft_tools.shift(image,xsh,ysh)**2/noise**2); colorbar(); title('shift(image)**2/noise**2')
+subplot(133); imshow(image_registration.fft_tools.shift.shiftnd(image,(ysh,xsh))**2/noise**2); colorbar(); title('shift(image)**2/noise**2')
 figure(10)
 subplot(131); imshow(image); colorbar()
 subplot(132); imshow(offset_image**2); colorbar()
@@ -165,3 +171,19 @@ unups = fftn(im2/err**2)*np.conj(fftn(im1))
 #figure()
 #imshow(unups.real)
 #title("fftn(im2/err**2)*np.conj(fftn(im1))")
+
+figure(14)
+pcolormesh(x3,y3,c3)
+contour(x3,y3,c3-c3.min(),levels=[0,2.3,6.8,11,100,200],cmap=cm.gray)
+axlims=axis()
+errorbar(xoff3,yoff3,xerr=exoff3,yerr=eyoff3,color='w')
+axis(axlims)
+title("Iterative tapered")
+figure(15)
+pcolormesh(x4,y4,c4)
+contour(x4,y4,c4-c4.min(),levels=[0,2.3,6.8,11,100,200],cmap=cm.gray)
+axlims=axis()
+errorbar(xoff4,yoff4,xerr=exoff4,yerr=eyoff4,color='w')
+axis(axlims)
+title("Iterative scalar")
+
