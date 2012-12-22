@@ -389,17 +389,17 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
     if np.all(chi2zoom==0):
         # if you've over-zoomed & broken things, you can zoom in by the same
         # factor but with a bigger field of view
-        (xx,yy),chi2_rezoom = zoom.zoomnd(chi2, usfac=zf, offsets=offsets,
+        (yy,xx),chi2_rezoom = zoom.zoomnd(chi2, usfac=zf, offsets=offsets,
                 outshape=rezoom_shape, middle_convention=np.floor,
                 return_xouts=True, **kwargs)
     else:
-        (xx,yy),chi2_rezoom = zoom.zoomnd(chi2, usfac=zf*rezoom_factor,
+        (yy,xx),chi2_rezoom = zoom.zoomnd(chi2, usfac=zf*rezoom_factor,
                 offsets=offsets, outshape=rezoom_shape,
                 middle_convention=np.floor, return_xouts=True, 
                 **kwargs)
 
-    # x and y are swapped (or not?)
-    returns = [-off for off in offsets]
+    # x and y are swapped and negative
+    returns = [-off for off in offsets[::-1]]
 
     if return_error:
         errx_low,errx_high,erry_low,erry_high = chi2map_to_errors(chi2_rezoom, zf*rezoom_factor)
