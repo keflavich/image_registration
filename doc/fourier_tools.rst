@@ -37,9 +37,9 @@ Resources
 ---------
 I made use of a lot of not particularly easy to find documents when writing this code.
 
- * `Image Resampling by Neil Dodgson <http://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-261.pdf>` is a book
+ * `Image Resampling by Neil Dodgson <http://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-261.pdf>`_ is a book
  * `Comparison of Interpolation Methods for Image Resampling <http://www.cs.uic.edu/~kenyon/Papers/Comparison.of.Interpolating.Methods.Parker.Kenyon.Troxel.pdf>`_
- * `The Similarity Theorem <http://www.technick.net/public/code/cp_dpage.php?aiocp_dp=guide_dft_appendix_d_similarity>`
+ * `The Similarity Theorem <http://www.technick.net/public/code/cp_dpage.php?aiocp_dp=guide_dft_appendix_d_similarity>`_
 
 As stated elsewhere, though, the main inspiration for this work was `Manuel Guizar's DFT upsampling technique
-<http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation>`
+<http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation>`_
