@@ -29,7 +29,7 @@ Module APIs:
 
    :doc:`image_registration` Module
 
-   :doc:`image_registration.fft_tools` Module
+   :doc:`image_registration.fft_tools` Module (and a description of the :doc:`fourier_tools`)
 
    :doc:`image_registration.tests` Module
 
