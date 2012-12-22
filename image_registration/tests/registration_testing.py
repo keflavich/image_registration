@@ -145,8 +145,8 @@ try:
         assert np.abs(xoff-xsh) < nsigma*exoff
         assert np.abs(yoff-ysh) < nsigma*eyoff
         # based on simulations in the ipynb
-        assert np.abs(exoff-0.005) < 0.002
-        assert np.abs(eyoff-0.005) < 0.002
+        assert np.abs(exoff-0.08*noise) < 0.03
+        assert np.abs(eyoff-0.08*noise) < 0.03
 
     @pytest.mark.parametrize(('xsh','ysh','imsize','gaussfit'),list(itertools.product(shifts,shifts,sizes,twobools)))
     def test_shifts(xsh,ysh,imsize,gaussfit):
