@@ -43,8 +43,8 @@ def chi2(im1, im2, dx, dy, err=None, upsample=1):
         #im2s = np.abs(shift(im2, -dx*upsample, -dy*upsample))
 
     else:
-        im2s = np.abs(shift(im2, -dx, -dy))
-        err = np.abs(shift(err, -dx, -dy))
+        im2s = np.abs(shift.shiftnd(im2, (-dy,-dx)))
+        err = np.abs(shift.shiftnd(err, (-dy,-dx)))
 
     return ((im1-im2s)**2/err**2).sum()
 
