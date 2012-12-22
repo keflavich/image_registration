@@ -41,6 +41,22 @@ fft_tools Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`zoom` Module
+-------------------
+
+.. automodule:: image_registration.fft_tools.zoom
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`scale` Module
+-------------------
+
+.. automodule:: image_registration.fft_tools.scale
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`upsample` Module
 ----------------------
 
