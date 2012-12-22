@@ -15,7 +15,7 @@ with open('CHANGES') as file:
 # no versions yet from agpy import __version__ as version
 
 setup(name='image_registration',
-      version='0.1',
+      version='0.2',
       description='Image Registration Tools for extended images in astronomy.',
       long_description=long_description,
       author='Adam Ginsburg',
