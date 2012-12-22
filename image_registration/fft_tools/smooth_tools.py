@@ -1,7 +1,7 @@
 import numpy as np
 import types
 from downsample import downsample as downsample_2d
-from astropy.nddata import convolve_fft as convolve
+from convolve_nd import convolvend as convolve
 
 def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
         silent=True, psf_pad=True, interp_nan=False, nwidths='max',

@@ -1,8 +1,5 @@
 import numpy as np
-try:
-    import astropy.nddata.convolution.convolve.convolve_fft as convolve
-except ImportError:
-    from convolve_nd import convolvend as convolve
+from convolve_nd import convolvend as convolve
 
 def correlate2d(im1,im2, boundary='wrap', **kwargs):
     """

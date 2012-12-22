@@ -295,6 +295,7 @@ class Mock(object):
             return Mock()
 
 MOCK_MODULES = ['numpy', 'scipy', 'pyfits', 'astropy', 'pytest', 'astropy.wcs',
-    'astropy.io', 'astropy.io.fits', 'scipy.ndimage', 'pywcs', 'matplotlib']
+    'astropy.io', 'astropy.io.fits', 'astropy.nddata', 'scipy.ndimage', 'pywcs',
+    'matplotlib']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
