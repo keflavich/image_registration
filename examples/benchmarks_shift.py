@@ -32,6 +32,7 @@ import numpy as np
 
 timings = {'map_coordinates':[],
            'fourier_shift':[],
+           'skimage':[],
            #'griddata_nearest':[],
            #'griddata_linear':[],
            #'griddata_cubic':[],
@@ -55,6 +56,8 @@ for imsize in imsizes:
     import scipy.ndimage as snd
     points = zip(xx.flat,yy.flat)
     imflat = im.ravel()
+    import skimage.transform as skit
+    skshift = skit.AffineTransform(translation=[0.5,0.5])
     """.replace("    ","").format(imsize=imsize)
 
     fshift_timer = timeit.Timer("ftest=fsh.shiftnd(im,(0.5,0.5))",
@@ -66,6 +69,10 @@ for imsize in imsizes:
 
     mapcoord_timer = timeit.Timer("mtest=snd.map_coordinates(im,[yy-0.5,xx-0.5])",
             setup=setup)
+
+    # not exactly right; doesn't do quite the same thing as the others...
+    # but wow, I wish I'd figured out how to use this a week ago...
+    skimage_timer = timeit.Timer("stest=skit.warp(im,skshift)",setup=setup)
 
     # all slopw
     #grid_timer_nearest = timeit.Timer("gtest=si.griddata(points,imflat,(xx-0.5,yy-0.5), method='nearest')",
@@ -79,6 +86,8 @@ for imsize in imsizes:
     timings['fourier_shift'].append( np.min(fshift_timer.repeat(3,10)) )
     print "imsize %i map_coordinates shift " % imsize,
     timings['map_coordinates'].append( np.min(mapcoord_timer.repeat(3,10)) )
+    print "imsize %i skimage shift " % imsize,
+    timings['skimage'].append( np.min(skimage_timer.repeat(3,10)) )
     #timings['griddata_nearest'].append( np.min(grid_timer_nearest.repeat(3,10)) )
     #timings['griddata_linear'].append( np.min(grid_timer_linear.repeat(3,10)) )
     #timings['griddata_cubic'].append( np.min(grid_timer_cubic.repeat(3,10)) )

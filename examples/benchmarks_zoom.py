@@ -43,12 +43,14 @@ import numpy as np
 
 zoomtimings = {'map_coordinates':[],
            'fourier_zoom':[],
+           'skimage_zoom':[],
            #'griddata_nearest':[],
            #'griddata_linear':[],
            #'griddata_cubic':[],
            }
 
 imsizes = np.round(np.linspace(50,1024,20))
+imsizes = np.round(np.linspace(50,500,10))
 
 for imsize in imsizes:
     t0 = time.time()
@@ -66,6 +68,7 @@ for imsize in imsizes:
     import scipy.ndimage as snd
     points = zip(xx.flat,yy.flat)
     imflat = im.ravel()
+    import skimage.transform as skit
     """.replace("    ","").format(imsize=imsize)
 
     fzoom_timer = timeit.Timer("ftest=fzm.zoomnd(im,usfac=2,outshape=xxnew.shape)",
@@ -77,6 +80,8 @@ for imsize in imsizes:
 
     mapzoom_timer = timeit.Timer("mtest=snd.map_coordinates(im,[yynew,xxnew])",
             setup=setup)
+
+    skimagezoom_timer = timeit.Timer("stest=skit.resize(im,xxnew.shape)",setup=setup)
 
     # all slopw
     #grid_timer_nearest = timeit.Timer("gtest=si.griddata(points,imflat,(xx-0.5,yy-0.5), method='nearest')",
@@ -90,6 +95,8 @@ for imsize in imsizes:
     zoomtimings['fourier_zoom'].append( np.min(fzoom_timer.repeat(3,10)) )
     print "imsize %i map_coordinates zoom " % imsize,
     zoomtimings['map_coordinates'].append( np.min(mapzoom_timer.repeat(3,10)) )
+    print "imsize %i skimage zoom " % imsize,
+    zoomtimings['skimage_zoom'].append( np.min(skimagezoom_timer.repeat(3,10)) )
     #zoomtimings['griddata_nearest'].append( np.min(grid_timer_nearest.repeat(3,10)) )
     #zoomtimings['griddata_linear'].append( np.min(grid_timer_linear.repeat(3,10)) )
     #zoomtimings['griddata_cubic'].append( np.min(grid_timer_cubic.repeat(3,10)) )
