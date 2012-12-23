@@ -277,7 +277,6 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 
 # Don't import the module as "version" or it will override the
 # "version" configuration parameter
-from astropy import version as versionmod
 edit_on_github_project = "keflavich/image_registration"
 edit_on_github_branch = "master"
 edit_on_github_source_root = ""
