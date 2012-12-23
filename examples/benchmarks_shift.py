@@ -23,6 +23,33 @@
 
 Fourier outperforms map_coordinates slightly.  It wraps, though, while
 map_coordinates in general does not.
+
+With skimage:
+    imsize   map_coordinates    fourier_shift          skimage
+        50         0.0154819       0.00862598        0.0100191
+        84         0.0373471        0.0164428        0.0299141
+       118         0.0771091        0.0555351         0.047652
+       153          0.128651        0.0582621         0.108211
+       187          0.275812         0.129408          0.17893
+       221          0.426893         0.177555         0.281367
+       255          0.571022          0.26866         0.354988
+       289           0.75541         0.412766         0.415558
+       324           1.02605         0.402632         0.617405
+       358           1.14151         0.975867         0.512207
+       392           1.51085         0.549434         0.904133
+       426           1.72907          1.28387         0.948763
+       461           2.03424          1.79091          1.09984
+       495           2.23595         0.976755          1.49104
+       529           2.59915          1.95115          1.47774
+       563           3.34082          3.03312          1.76769
+       597           3.43117          2.84357          2.67582
+       632           4.06516          4.19464          2.22102
+       666           6.22056          3.65876          2.39756
+       700           5.06125          2.00939          2.73733
+
+Fourier's all over the place, probably because of a strong dependence on
+primeness.  Comparable to skimage for some cases though.
+
 """
 import itertools
 import timeit
@@ -106,10 +133,12 @@ def f(x,a,b,c):
 
 pm,err = scopt.curve_fit(f,imsizes[2:],timings['map_coordinates'][2:])
 pf,err = scopt.curve_fit(f,imsizes[2:],timings['fourier_shift'][2:])
+ps,err = scopt.curve_fit(f,imsizes[2:],timings['skimage'][2:])
 
 import matplotlib.pyplot as pl
 pl.clf()
-pl.loglog(imsizes,timings['map_coordinates'],'+')
-pl.loglog(imsizes,timings['fourier_shift'],'x')
+pl.loglog(imsizes,timings['map_coordinates'],'+',label='map_coordinates')
+pl.loglog(imsizes,timings['fourier_shift'],'x',label='fourier')
+pl.loglog(imsizes,timings['skimage'],'o',label='skimage')
 pl.loglog(imsizes,f(imsizes,*pm))
 pl.loglog(imsizes,f(imsizes,*pf))

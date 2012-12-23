@@ -34,6 +34,21 @@ It's also pretty weird that the fourier approach seems to go up more steeply
 than the map_coordinates approach; it could indicate memory limitations on my
 machine.
 
+Another test:
+    imsize   map_coordinates     fourier_zoom     skimage_zoom
+        50          0.086158        0.0248492        0.0535769
+       100          0.308121         0.114798         0.199375
+       150          0.762103         0.300909          0.53565
+       200           1.32903         0.753605         0.900321
+       250           2.13581          1.33399          1.39549
+       300           2.98052          2.05711          2.18081
+       350            4.3403          3.49586          2.69526
+       400           5.45967          4.82973          3.68139
+       450           7.97855           6.9673          4.62726
+       500             8.367          8.79732          3.99151
+    
+skimage is the clear winner, except for small images.  Hrmph.
+
 """
 import itertools
 import timeit
@@ -114,10 +129,13 @@ def f(x,a,b):
 
 pm,err = scopt.curve_fit(f,imsizes[1:],zoomtimings['map_coordinates'][1:])
 pf,err = scopt.curve_fit(f,imsizes[1:],zoomtimings['fourier_zoom'][1:])
+ps,err = scopt.curve_fit(f,imsizes[1:],zoomtimings['skimage_zoom'][1:])
 
 import matplotlib.pyplot as pl
 pl.clf()
 pl.loglog(imsizes,zoomtimings['map_coordinates'],'+')
 pl.loglog(imsizes,zoomtimings['fourier_zoom'],'x')
+pl.loglog(imsizes,zoomtimings['skimage_zoom'],'x')
 pl.loglog(imsizes,f(imsizes,*pm))
 pl.loglog(imsizes,f(imsizes,*pf))
+pl.loglog(imsizes,f(imsizes,*ps))
