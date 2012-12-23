@@ -53,7 +53,7 @@ sys.path.append(os.path.abspath('.'))
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
 'sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.coverage',
 'sphinx.ext.pngmath', 'sphinx.ext.mathjax', 'sphinx.ext.ifconfig',
-'sphinx.ext.viewcode','numpydoc']
+'sphinx.ext.viewcode','numpydoc','edit_on_github']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -274,6 +274,14 @@ todo_include_todos = True
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
+
+# Don't import the module as "version" or it will override the
+# "version" configuration parameter
+from astropy import version as versionmod
+edit_on_github_project = "keflavich/image_registration"
+edit_on_github_branch = "master"
+edit_on_github_source_root = ""
+edit_on_github_doc_root = "doc"
 
 # read the docs mocks
 import sys
