@@ -5,8 +5,8 @@ python:
     - 2.6
 env:
     - NUMPY_VERSION=1.6.2 ONLY_EGG_INFO=false
-    - NUMPY_VERSION=1.5.1 ONLY_EGG_INFO=false
-    - NUMPY_VERSION=1.4.1 ONLY_EGG_INFO=false
+    #- NUMPY_VERSION=1.5.1 ONLY_EGG_INFO=false # no known numpy vers. deps
+    #- NUMPY_VERSION=1.4.1 ONLY_EGG_INFO=false # no known numpy vers. deps
     
 before_install:
    # We do this to make sure we get the dependencies so pip works below
