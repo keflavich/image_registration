@@ -51,7 +51,6 @@ def chi2(im1, im2, dx, dy, err=None, upsample=1):
 
 import pytest
 import itertools
-from scipy import interpolate
 
 shifts = [1,1.5,-1.25,8.2,10.1]
 sizes = [99,100,101]
