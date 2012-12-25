@@ -112,28 +112,28 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
 
     Examples
     --------
-    >>> convolve_fft([1,0,3],[1,1,1])
+    >>> convolvend([1,0,3],[1,1,1])
     array([ 1.,  4.,  3.])
 
-    >>> convolve_fft([1,np.nan,3],[1,1,1])
+    >>> convolvend([1,np.nan,3],[1,1,1])
     array([ 1.,  4.,  3.])
 
-    >>> convolve_fft([1,0,3],[0,1,0])
+    >>> convolvend([1,0,3],[0,1,0])
     array([ 1.,  0.,  3.])
 
-    >>> convolve_fft([1,2,3],[1])
+    >>> convolvend([1,2,3],[1])
     array([ 1.,  2.,  3.])
 
-    >>> convolve_fft([1,np.nan,3],[0,1,0], interpolate_nan=True)
+    >>> convolvend([1,np.nan,3],[0,1,0], interpolate_nan=True)
     array([ 1.,  0.,  3.])
 
-    >>> convolve_fft([1,np.nan,3],[0,1,0], interpolate_nan=True, min_wt=1e-8)
+    >>> convolvend([1,np.nan,3],[0,1,0], interpolate_nan=True, min_wt=1e-8)
     array([ 1.,  nan,  3.])
 
-    >>> convolve_fft([1,np.nan,3],[1,1,1], interpolate_nan=True)
+    >>> convolvend([1,np.nan,3],[1,1,1], interpolate_nan=True)
     array([ 1.,  4.,  3.])
 
-    >>> convolve_fft([1,np.nan,3],[1,1,1], interpolate_nan=True, normalize_kernel=True)
+    >>> convolvend([1,np.nan,3],[1,1,1], interpolate_nan=True, normalize_kernel=True)
     array([ 1.,  2.,  3.])
 
     """
@@ -208,7 +208,7 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
 
 
     if boundary is None:
-        WARNING = ("The convolve_fft version of boundary=None is equivalent" +
+        WARNING = ("The convolvend version of boundary=None is equivalent" +
                 " to the convolve boundary='fill'.  There is no FFT " +
                 " equivalent to convolve's zero-if-kernel-leaves-boundary" )
         warnings.warn(WARNING)

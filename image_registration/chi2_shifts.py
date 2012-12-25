@@ -1,4 +1,5 @@
 from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image,zoom
+import image_registration # for doctests
 import iterative_zoom
 import warnings
 import numpy as np
@@ -95,31 +96,38 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     errx,erry : float,float
         optional, error in x and y directions
     xvals,yvals,chi2n_upsampled : ndarray,ndarray,ndarray,
-        not entirely sure what those first two are
-
-        .. todo::
-            CHECK THIS 
+        x,y positions (in original chi^2 coordinates) of the chi^2 values and
+        their corresponding chi^2 value
 
     Examples
     --------
-    >>> # Create a 2d array
-    >>> image = np.random.randn(50,55)
-    >>> # shift it in both directions
-    >>> shifted = np.roll(np.roll(image,12,0),5,1)
-    >>> # determine shift
-    >>> import image_registration
-    >>> dx,dy,edx,edy = image_registration.chi2_shift(image, shifted, upsample_factor='auto')
-    >>> # Check that the shift is correct
-    >>> print "dx - fitted dx = ",dx-5," error: ",edx
-    >>> print "dy - fitted dy = ",dy-12," error: ",edy
-    >>> # that example was boring; instead let's do one with a non-int shift
-    >>> shifted2 = image_registration.fft_tools.shift(image,3.665,-4.25)
-    >>> dx2,dy2,edx2,edy2 = image_registration.chi2_shift(image, shifted2, upsample_factor='auto')
-    >>> print "dx - fitted dx = ",dx2-3.665," error: ",edx2
-    >>> print "dy - fitted dy = ",dy2-(-4.25)," error: ",edy2
-    
-    .. todo:: understand numerical error in fft-shifted version
+    Create a 2d array, 
+    shift it in both directions,
+    then use chi2_shift to determine the shift
 
+    >>> np.random.seed(42) # so the doctest will pass
+    >>> image = np.random.randn(50,55)
+    >>> shifted = np.roll(np.roll(image,12,0),5,1)
+    >>> dx,dy,edx,edy = chi2_shift(image, shifted, upsample_factor='auto')
+
+    Check that the shift is correct.  Note that the difference between
+    the fitted and "true" errors is abouve a factor of 10 less than the
+    1-sigma expected error.
+
+    >>> print "dx - fitted dx = ",dx-5," error: ",edx
+    dx - fitted dx =  0.001953125  error:  0.013671875
+    >>> print "dy - fitted dy = ",dy-12," error: ",edy
+    dy - fitted dy =  -0.001953125  error:  0.013671875
+    
+    That example was mildly boring; instead let's do one with a non-int shift:
+
+    >>> shifted2 = image_registration.fft_tools.shift2d(image,3.665,-4.25)
+    >>> dx2,dy2,edx2,edy2 = chi2_shift(image, shifted2, upsample_factor='auto')
+    >>> print "dx - fitted dx = ",dx2-3.665," error: ",edx2
+    dx - fitted dx =  0.001015625  error:  0.013671875
+    >>> print "dy - fitted dy = ",dy2-(-4.25)," error: ",edy2
+    dy - fitted dy =  0.005859375  error:  0.015625
+    
     """
     chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
             nthreads=nthreads, zeromean=zeromean, use_numpy_fft=use_numpy_fft,
@@ -326,7 +334,7 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
     zoom_shape : [int,int]
         Shape of iterative zoom image
     rezoom_shape : [int,int]
-        Shape of the output chi^2 map to use for determining the errors
+        Shape of the final output chi^2 map to use for determining the errors
     rezoom_factor : int
         Amount to zoom above the last zoom factor.  Should be <=
         rezoom_shape/zoom_shape
@@ -349,31 +357,36 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
     errx,erry : float,float
         optional, error in x and y directions
     xvals,yvals,chi2n_upsampled : ndarray,ndarray,ndarray,
-        not entirely sure what those first two are
-
-        .. todo::
-            CHECK THIS 
+        x,y positions (in original chi^2 coordinates) of the chi^2 values and
+        their corresponding chi^2 value
 
     Examples
     --------
-    >>> # Create a 2d array
-    >>> image = np.random.randn(50,55)
-    >>> # shift it in both directions
-    >>> shifted = np.roll(np.roll(image,12,0),5,1)
-    >>> # determine shift
-    >>> import image_registration
-    >>> dx,dy,edx,edy = image_registration.chi2_shift(image, shifted, upsample_factor='auto')
-    >>> # Check that the shift is correct
-    >>> print "dx - fitted dx = ",dx-5," error: ",edx
-    >>> print "dy - fitted dy = ",dy-12," error: ",edy
-    >>> # that example was boring; instead let's do one with a non-int shift
-    >>> shifted2 = image_registration.fft_tools.shift(image,3.665,-4.25)
-    >>> dx2,dy2,edx2,edy2 = image_registration.chi2_shift(image, shifted2, upsample_factor='auto')
-    >>> print "dx - fitted dx = ",dx2-3.665," error: ",edx2
-    >>> print "dy - fitted dy = ",dy2-(-4.25)," error: ",edy2
-    
-    .. todo:: understand numerical error in fft-shifted version
+    Create a 2d array, 
+    shift it in both directions,
+    then use chi2_shift_iterzoom to determine the shift
 
+    >>> np.random.seed(42) # so the doctest will pass
+    >>> image = np.random.randn(50,55)
+    >>> shifted = np.roll(np.roll(image,12,0),5,1)
+    >>> dx,dy,edx,edy = chi2_shift_iterzoom(image, shifted, upsample_factor='auto')
+
+    Check that the shift is correct
+
+    >>> print "dx - fitted dx = ",dx-5," error: ",edx
+    dx - fitted dx =  0  error:  0.05
+    >>> print "dy - fitted dy = ",dy-12," error: ",edy
+    dy - fitted dy =  0  error:  0.05
+    
+    That example was mildly boring; instead let's do one with a non-int shift:
+
+    >>> shifted2 = image_registration.fft_tools.shift2d(image,3.665,-4.25)
+    >>> dx2,dy2,edx2,edy2 = chi2_shift_iterzoom(image, shifted2, upsample_factor='auto')
+    >>> print "dx - fitted dx = ",dx2-3.665," error: ",edx2
+    dx - fitted dx =  -0.0009375  error:  0.015625
+    >>> print "dy - fitted dy = ",dy2-(-4.25)," error: ",edy2
+    dy - fitted dy =  0.0078125  error:  0.015625
+    
     """
     chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
             nthreads=nthreads, zeromean=zeromean, use_numpy_fft=use_numpy_fft,

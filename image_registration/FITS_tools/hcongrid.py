@@ -33,9 +33,10 @@ def hcongrid(image, header1, header2, **kwargs):
 
     Examples
     --------
-    >>> fits1 = pyfits.open('test.fits')
-    >>> target_header = pyfits.getheader('test2.fits')
-    >>> new_image = hcongrid(fits1[0].data, fits1[0].heeader, target_header)
+    (not written with >>> because test.fits/test2.fits do not exist)
+    fits1 = pyfits.open('test.fits')
+    target_header = pyfits.getheader('test2.fits')
+    new_image = hcongrid(fits1[0].data, fits1[0].header, target_header)
 
     """
 
