@@ -16,5 +16,4 @@ install:
    - export PYTHONIOENCODING=UTF8 # just in case
    - pip install --upgrade "numpy==$NUMPY_VERSION" --use-mirrors
    - pip install matplotlib --use-mirrors
-   - if ! $ONLY_EGG_INFO; then pip -q install Cython --use-mirrors; fi
-script: if $ONLY_EGG_INFO;then python setup.py egg_info;else python setup.py test;fi
+script: python setup.py test
