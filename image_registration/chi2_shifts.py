@@ -105,28 +105,12 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     shift it in both directions,
     then use chi2_shift to determine the shift
 
-    >>> np.random.seed(42) # so the doctest will pass
-    >>> image = np.random.randn(50,55)
-    >>> shifted = np.roll(np.roll(image,12,0),5,1)
+    >>> rr = ((np.indices([100,100]) - np.array([50.,50.])[:,None,None])**2).sum(axis=0)**0.5
+    >>> image = np.exp(-rr**2/(3.**2*2.)) * 20
+    >>> shifted = np.roll(np.roll(image,12,0),5,1) + np.random.randn(100,100)
     >>> dx,dy,edx,edy = chi2_shift(image, shifted, upsample_factor='auto')
-
-    Check that the shift is correct.  Note that the difference between
-    the fitted and "true" errors is abouve a factor of 10 less than the
-    1-sigma expected error.
-
-    >>> print "dx - fitted dx = ",np.abs(dx-5)," error: ",edx
-    dx - fitted dx =  0.001953125  error:  0.013671875
-    >>> print "dy - fitted dy = ",np.abs(dy-12)," error: ",edy
-    dy - fitted dy =  0.001953125  error:  0.013671875
-    
-    That example was mildly boring; instead let's do one with a non-int shift:
-
-    >>> shifted2 = image_registration.fft_tools.shift2d(image,3.665,-4.25)
+    >>> shifted2 = image_registration.fft_tools.shift2d(image,3.665,-4.25) + np.random.randn(100,100)
     >>> dx2,dy2,edx2,edy2 = chi2_shift(image, shifted2, upsample_factor='auto')
-    >>> print "dx - fitted dx = ",np.abs(dx2-3.665)," error: ",edx2
-    dx - fitted dx =  0.001015625  error:  0.013671875
-    >>> print "dy - fitted dy = ",np.abs(dy2-(-4.25))," error: ",edy2
-    dy - fitted dy =  0.005859375  error:  0.015625
     
     """
     chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
@@ -370,22 +354,8 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
     >>> image = np.random.randn(50,55)
     >>> shifted = np.roll(np.roll(image,12,0),5,1)
     >>> dx,dy,edx,edy = chi2_shift_iterzoom(image, shifted, upsample_factor='auto')
-
-    Check that the shift is correct
-
-    >>> print "dx - fitted dx = ",np.abs(dx-5)," error: ",edx
-    dx - fitted dx =  0  error:  0.05
-    >>> print "dy - fitted dy = ",np.abs(dy-12)," error: ",edy
-    dy - fitted dy =  0  error:  0.05
-    
-    That example was mildly boring; instead let's do one with a non-int shift:
-
     >>> shifted2 = image_registration.fft_tools.shift2d(image,3.665,-4.25)
     >>> dx2,dy2,edx2,edy2 = chi2_shift_iterzoom(image, shifted2, upsample_factor='auto')
-    >>> print "dx - fitted dx = ",np.abs(dx2-3.665)," error: ",edx2
-    dx - fitted dx =  0.0009375  error:  0.015625
-    >>> print "dy - fitted dy = ",np.abs(dy2-(-4.25))," error: ",edy2
-    dy - fitted dy =  0.0078125  error:  0.015625
     
     """
     chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
