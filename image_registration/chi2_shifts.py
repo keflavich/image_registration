@@ -1,4 +1,4 @@
-from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image,zoom
+from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image,zoom,shift
 import image_registration # for doctests
 import iterative_zoom
 import warnings
@@ -478,8 +478,9 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nthreads=1,
         return chi2
 
 
-def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_error=True,
-        guessx=0, guessy=0, use_fft=False, ignore_outside=True, **kwargs):
+def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None,
+        return_error=True, guessx=0, guessy=0, use_fft=False,
+        ignore_outside=True, verbose=False, **kwargs):
     """
     Determine the best fit offset using `scipy.ndimage.map_coordinates` to
     shift the offset image.
@@ -528,14 +529,19 @@ def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_erro
     ylen,xlen = im1.shape
     xcen = xlen/2-(1-xlen%2) 
     ycen = ylen/2-(1-ylen%2) 
-    import scipy.ndimage,scipy.optimize
 
-    def residuals(p, **kwargs):
-        xsh,ysh = p
+    # possible requirements for only this function
+    import lmfit
+    if not use_fft:
+        import scipy.ndimage
+
+    def residuals(p, im1, im2):
+        xsh, ysh = p['xsh'].value,p['ysh'].value
         if use_fft:
-            shifted_img = shift(im2, -ysh, -xsh)
-        else:
-            shifted_img = scipy.ndimage.map_coordinates(im2, [yy+ysh,xx+xsh], mode=mode, **kwargs)
+            shifted_img = shift.shiftnd(im2, (-ysh, -xsh))
+        else: # identical to skimage
+            shifted_img = scipy.ndimage.map_coordinates(im2, [yy+ysh,xx+xsh],
+                    mode=mode)
         if maxoff is not None:
             xslice = slice(xcen-maxoff,xcen+maxoff,None)
             yslice = slice(ycen-maxoff,ycen+maxoff,None)
@@ -558,39 +564,33 @@ def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_erro
             return residuals
         elif hasattr(err,'shape'):
             if use_fft:
-                shifted_err = shift(err, -ysh, -xsh)
+                shifted_err = shift.shiftnd(err, (-ysh, -xsh))
             else:
-                shifted_err = scipy.ndimage.map_coordinates(err, [yy+ysh,xx+xsh], mode=mode, **kwargs)
+                shifted_err = scipy.ndimage.map_coordinates(err, [yy+ysh,xx+xsh], mode=mode)
             return residuals / shifted_err[yslice,xslice].flat
         else:
             return residuals / err
 
-    bestfit,cov,info,msg,ier = scipy.optimize.leastsq(residuals, [guessx,guessy], full_output=1)
-    #bestfit,cov = scipy.optimize.curve_fit(shift, im2, im1, p0=[guessx,guessy], sigma=err)
+    fit_params = lmfit.Parameters()
+    fit_params['xsh'] = lmfit.Parameter(value=guessx, max=maxoff)
+    fit_params['ysh'] = lmfit.Parameter(value=guessy, max=maxoff)
+    if maxoff is not None:
+        fit_params['xsh'].min = -maxoff
+        fit_params['ysh'].min = -maxoff
 
-    chi2n = (residuals(bestfit)**2).sum() / (im1.size-2)
+    iter_cb = per_iteration if verbose else None
 
-    if bestfit is None or cov is None:
-        print bestfit-np.array([guessx,guessy])
-        print bestfit
-        print cov
-        print info
-        print msg
-        print ier
-        if cov is None:
-            from numpy.dual import inv
-            from numpy.linalg import LinAlgError
-            n = 2 # number of free pars
-            perm = np.take(np.eye(n),info['ipvt']-1,0)
-            r = np.triu(np.transpose(info['fjac'])[:n,:])
-            R = np.dot(r, perm)
-            try:
-                cov = inv(np.dot(np.transpose(R),R))
-            except LinAlgError:
-                print "Could not compute cov because of linalgerr"
-                pass
-                
+    lmfitter = lmfit.minimize(residuals, fit_params, args=(im1,im2), iter_cb=iter_cb, **kwargs)
+
+    px,py = lmfitter.params.values()
+    fxsh,fysh = px.value,py.value
+    efxsh,efysh = px.stderr,py.stderr
+    if return_error:
+        return fxsh,fysh,efxsh,efysh
+    else:
+        return fxsh,fysh
         
+    # ignore
     if return_error:
         if cov is None:
             return bestfit[0],bestfit[1],0,0
@@ -599,4 +599,11 @@ def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None, return_erro
     else:
         return bestfit[0],bestfit[1]
 
+
+def per_iteration(pars, i, resid, *args, **kws):
+    if i < 100 or i % 10 == 0:
+        print '====== Iteration %03i:  ' % (i),
+        for p in pars.values():
+            print p.name , p.value, 
+        print " chi^2: ",(resid**2).sum()
 
