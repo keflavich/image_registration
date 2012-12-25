@@ -115,7 +115,7 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
     >>> convolvend([1,0,3],[1,1,1])
     array([ 1.,  4.,  3.])
 
-    >>> convolvend([1,np.nan,3],[1,1,1])
+    >>> convolvend([1,np.nan,3],[1,1,1],quiet=True)
     array([ 1.,  4.,  3.])
 
     >>> convolvend([1,0,3],[0,1,0])
@@ -128,12 +128,12 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
     array([ 1.,  0.,  3.])
 
     >>> convolvend([1,np.nan,3],[0,1,0], interpolate_nan=True, min_wt=1e-8)
-    array([ 1.,  nan,  3.])
+    array([  1.,  nan,   3.])
 
     >>> convolvend([1,np.nan,3],[1,1,1], interpolate_nan=True)
     array([ 1.,  4.,  3.])
 
-    >>> convolvend([1,np.nan,3],[1,1,1], interpolate_nan=True, normalize_kernel=True)
+    >>> convolvend([1,np.nan,3],[1,1,1], interpolate_nan=True, normalize_kernel=True, ignore_edge_zeros=True)
     array([ 1.,  2.,  3.])
 
     """

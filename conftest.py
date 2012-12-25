@@ -11,3 +11,8 @@ collect_ignore = ["setup.py", "debug_test.py",
         ".git"
         ]
 
+import warnings
+warnings.filterwarnings("ignore",
+    category=RuntimeWarning)
+
+#    WARNING: RuntimeWarning: invalid value encountered in divide [image_registration.fft_tools.convolve_nd]
