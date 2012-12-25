@@ -114,18 +114,18 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     the fitted and "true" errors is abouve a factor of 10 less than the
     1-sigma expected error.
 
-    >>> print "dx - fitted dx = ",dx-5," error: ",edx
+    >>> print "dx - fitted dx = ",np.abs(dx-5)," error: ",edx
     dx - fitted dx =  0.001953125  error:  0.013671875
-    >>> print "dy - fitted dy = ",dy-12," error: ",edy
-    dy - fitted dy =  -0.001953125  error:  0.013671875
+    >>> print "dy - fitted dy = ",np.abs(dy-12)," error: ",edy
+    dy - fitted dy =  0.001953125  error:  0.013671875
     
     That example was mildly boring; instead let's do one with a non-int shift:
 
     >>> shifted2 = image_registration.fft_tools.shift2d(image,3.665,-4.25)
     >>> dx2,dy2,edx2,edy2 = chi2_shift(image, shifted2, upsample_factor='auto')
-    >>> print "dx - fitted dx = ",dx2-3.665," error: ",edx2
+    >>> print "dx - fitted dx = ",np.abs(dx2-3.665)," error: ",edx2
     dx - fitted dx =  0.001015625  error:  0.013671875
-    >>> print "dy - fitted dy = ",dy2-(-4.25)," error: ",edy2
+    >>> print "dy - fitted dy = ",np.abs(dy2-(-4.25))," error: ",edy2
     dy - fitted dy =  0.005859375  error:  0.015625
     
     """
@@ -373,18 +373,18 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
 
     Check that the shift is correct
 
-    >>> print "dx - fitted dx = ",dx-5," error: ",edx
+    >>> print "dx - fitted dx = ",np.abs(dx-5)," error: ",edx
     dx - fitted dx =  0  error:  0.05
-    >>> print "dy - fitted dy = ",dy-12," error: ",edy
+    >>> print "dy - fitted dy = ",np.abs(dy-12)," error: ",edy
     dy - fitted dy =  0  error:  0.05
     
     That example was mildly boring; instead let's do one with a non-int shift:
 
     >>> shifted2 = image_registration.fft_tools.shift2d(image,3.665,-4.25)
     >>> dx2,dy2,edx2,edy2 = chi2_shift_iterzoom(image, shifted2, upsample_factor='auto')
-    >>> print "dx - fitted dx = ",dx2-3.665," error: ",edx2
-    dx - fitted dx =  -0.0009375  error:  0.015625
-    >>> print "dy - fitted dy = ",dy2-(-4.25)," error: ",edy2
+    >>> print "dx - fitted dx = ",np.abs(dx2-3.665)," error: ",edx2
+    dx - fitted dx =  0.0009375  error:  0.015625
+    >>> print "dy - fitted dy = ",np.abs(dy2-(-4.25))," error: ",edy2
     dy - fitted dy =  0.0078125  error:  0.015625
     
     """
