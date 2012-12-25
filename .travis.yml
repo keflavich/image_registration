@@ -17,4 +17,5 @@ install:
    - pip install --upgrade "numpy==$NUMPY_VERSION" --use-mirrors
    - pip install matplotlib --use-mirrors
    - pip install pyfits --use-mirrors
+   - pip install pywcs --use-mirrors
 script: python setup.py test
