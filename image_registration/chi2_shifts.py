@@ -4,7 +4,7 @@ import iterative_zoom
 import warnings
 import numpy as np
 
-__all__ = ['chi2_shift','chi2n_map']
+__all__ = ['chi2_shift','chi2_shift_iterzoom','chi2n_map']
 
 def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2,
