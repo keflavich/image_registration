@@ -82,10 +82,11 @@ def iterative_zoom(image, mindiff=1., zoomshape=[10,10],
             break
 
         if verbose:
-            print ("Zoom factor %6i, center = %30s, offset=%30s, minpos=%30s" %
+            print ("Zoom factor %6i, center = %30s, offset=%30s, minpos=%30s, min|diff|=%15g" %
                     (zf, ",".join(["%15g" % c for c in center]),
                          ",".join(["%15g" % c for c in offset]),
-                         ",".join(["%15g" % c for c in minpos]),
+                         ",".join(["%5i" % c for c in minpos]),
+                         np.abs(delta_image[np.abs(delta_image)>0]).min()
                          ))
         if ploteach:
             ii += 1
