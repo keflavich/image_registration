@@ -25,9 +25,10 @@ class PyTest(Command):
         errno = subprocess.call([sys.executable, 'runtests.py'])
         raise SystemExit(errno)
 
+execfile('image_registration/version.py')
 
 setup(name='image_registration',
-      version='0.2',
+      version=__version__,
       description='Image Registration Tools for extended images in astronomy.',
       long_description=long_description,
       author='Adam Ginsburg',
