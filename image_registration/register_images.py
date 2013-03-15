@@ -317,7 +317,7 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             Nr = np.fft.ifftshift(np.linspace(-np.fix(nr/2),np.ceil(nr/2)-1,nr))
             Nc = np.fft.ifftshift(np.linspace(-np.fix(nc/2),np.ceil(nc/2)-1,nc))
             [Nc,Nr] = np.meshgrid(Nc,Nr);
-            Greg = buf2ft * np.exp(1j*2*pi*(-row_shift*Nr/nr-col_shift*Nc/nc));
+            Greg = buf2ft * np.exp(1j*2*np.pi*(-row_shift*Nr/nr-col_shift*Nc/nc));
             Greg = Greg*np.exp(1j*diffphase);
         elif (usfac == 0):
             Greg = buf2ft*np.exp(1j*diffphase);
