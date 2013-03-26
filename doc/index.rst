@@ -48,8 +48,8 @@ Module APIs:
    and in pdf `here
    <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`_
 
-Related Programs
-----------------
+Related Methods
+---------------
 There are many other approaches to performing image registration.  Some are
 summarized here.  Note that this package is intended for image registration
 where the brightness is "extended" or "spread out" - stellar images are best to
@@ -68,6 +68,8 @@ The main advantage of the `chi2_shift` approach is that it can return
 *statistical errors* on the best-fit shift.  It is also fast and efficient for
 many image types and sizes.
 
+Programs implementing these methods in various languages:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     `Varosi + Landsman astrolib correl_optimize <http://idlastro.gsfc.nasa.gov/ftp/pro/image/correl_optimize.pro>`_ :
         Uses cross-correlation with "reduction" and "magnification" factors for
