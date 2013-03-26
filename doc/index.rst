@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Astronomical Image Registration
-===============================
+(Astronomical) Image Registration
+=================================
 
 `Github: Image Registration <https://github.com/keflavich/image_registration>`_
 
@@ -14,7 +14,7 @@ Astronomical Image Registration
 
 
 A toolkit for registering images of astronomical images containing primarily
-extended flux (e.g., nebulae, radio and millimeter maps).
+extended flux (e.g., nebulae, radio and millimeter maps). [*]_
 
 There are related packages scattered throughout the internet that do the same
 thing, but with different features.
@@ -144,4 +144,7 @@ Indices and tables
 * :doc:`image_registration`
 * :doc:`image_registration.tests`
   
+
+.. [*] Apparently astronomical images look a lot like microscopic images.  So
+  maybe this code is good for coaligning bacteria!
 
