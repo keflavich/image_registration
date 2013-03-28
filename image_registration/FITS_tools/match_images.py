@@ -112,7 +112,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
     return returns
 
 def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
-        register_method=chi2_shift, return_cropped_images=False,
+        register_method=chi2_shift_iterzoom, return_cropped_images=False,
         return_header=False, **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
