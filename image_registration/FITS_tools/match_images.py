@@ -1,5 +1,5 @@
 import numpy as np
-from image_registration import chi2_shift
+from image_registration import chi2_shift,chi2_shift_iterzoom
 try:
     import astropy.io.fits as pyfits
     import astropy.wcs as pywcs
