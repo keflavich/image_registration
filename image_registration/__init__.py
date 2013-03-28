@@ -4,3 +4,4 @@ from register_images import register_images
 import fft_tools
 import tests
 import FITS_tools
+from .version import __version__

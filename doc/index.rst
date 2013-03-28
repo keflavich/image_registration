@@ -3,13 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Astronomical Image Registration
-===============================
+(Astronomical) Image Registration
+=================================
 
-`Image Registration <https://github.com/keflavich/image_registration>`_
+`Github: Image Registration <https://github.com/keflavich/image_registration>`_
+
+.. admonition:: TL;DR version
+
+    Use :obj:`~image_registration.chi2_shifts.chi2_shift` to match images.
+
 
 A toolkit for registering images of astronomical images containing primarily
-extended flux (e.g., nebulae, radio and millimeter maps).
+extended flux (e.g., nebulae, radio and millimeter maps). [*]_
 
 There are related packages scattered throughout the internet that do the same
 thing, but with different features.
@@ -24,14 +29,15 @@ The general goal is to align images that look kind of like these:
     :width: 400px
     :alt: The input image shifted and corrupted with gaussian noise
 
+
 Module APIs:
 ------------
 
-   :doc:`image_registration` Module
+   :doc:`image_registration` 
 
-   :doc:`image_registration.fft_tools` Module (and a description of the :doc:`fourier_tools`)
+   :doc:`image_registration.fft_tools` (and a description of the :doc:`fourier_tools`)
 
-   :doc:`image_registration.tests` Module
+   :doc:`image_registration.tests` 
 
 
    The most successful of the methods implemented here is
@@ -42,8 +48,29 @@ Module APIs:
    and in pdf `here
    <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`_
 
-Related Programs
-----------------
+Related Methods
+---------------
+There are many other approaches to performing image registration.  Some are
+summarized here.  Note that this package is intended for image registration
+where the brightness is "extended" or "spread out" - stellar images are best to
+register by treating the stars as control points.
+
+The methods below have various advantages and deficiencies.  The most dangerous
+approach that should be avoided is that of fitting a gaussian to the peak of a
+cross-correlation image: this is the only other method that allows for
+measurements of the errors on the best-fit shift, but it is likely to be
+systematically wrong.  The peak-fitting approach is unstable to fitting
+cross-correlated structure (which may be "beam-shaped") instead of the
+cross-correlation shift peak (which may have effectively no shape because it is
+sub-pixel).
+
+The main advantage of the `chi2_shift` approach is that it can return
+*statistical errors* on the best-fit shift.  It is also fast and efficient for
+many image types and sizes.
+
+Programs implementing these methods in various languages:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     `Varosi + Landsman astrolib correl_optimize <http://idlastro.gsfc.nasa.gov/ftp/pro/image/correl_optimize.pro>`_ :
         Uses cross-correlation with "reduction" and "magnification" factors for
         speed and accuracy respectively; this method is relatively slow when
@@ -117,4 +144,7 @@ Indices and tables
 * :doc:`image_registration`
 * :doc:`image_registration.tests`
   
+
+.. [*] Apparently astronomical images look a lot like microscopic images.  So
+  maybe this code is good for coaligning bacteria!
 
