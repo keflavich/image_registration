@@ -1,4 +1,5 @@
 Image Registration Methods for Astronomy
+========================================
 (intended for *extended emission*, not stellar images!)
 
 Documentation:
