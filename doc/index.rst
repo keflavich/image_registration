@@ -98,6 +98,9 @@ Programs implementing these methods in various languages:
         junk, but it didn't end up changing the shape of the peak in a helpful
         way.
 
+    `Christoph Gohlke's python fft image registration code <http://www.lfd.uci.edu/~gohlke/code/imreg.py.html>`_ :
+        Allows for rescaling and rotation. 
+
     Related bibliographic items (with no attached code):
     `"Sub-pixel image registration with a maximum likelihood estimator" <http://adsabs.harvard.edu/abs/2005A&A...443..357G>`_
     The method they describe is statistically equivalent to what I have implemented, though my method measures the *error*
