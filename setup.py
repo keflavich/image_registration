@@ -6,7 +6,7 @@ if 'build_sphinx' in sys.argv:
 else:
     from distutils.core import setup, Command
 
-with open('README') as file:
+with open('README.rst') as file:
     long_description = file.read()
 
 with open('CHANGES') as file:
