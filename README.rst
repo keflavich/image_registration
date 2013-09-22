@@ -13,3 +13,9 @@ http://www.astro.ucla.edu/~mperrin/IDL/sources/subreg.pro
 
 and implements 
 http://solarmuri.ssl.berkeley.edu/~welsch/public/software/cross_cor_taylor.pro
+
+
+.. image:: https://d2weczhvl823v0.cloudfront.net/keflavich/image_registration/trend.png
+   :alt: Bitdeli badge
+   :target: https://bitdeli.com/free
+
