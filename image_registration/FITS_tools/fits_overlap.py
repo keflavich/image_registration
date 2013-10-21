@@ -88,9 +88,9 @@ def header_overlap(hdr1,hdr2,max_separation=180):
     new_header['CRVAL2'] = (ymin+ymax)/2.
     new_header['CDELT1'] = cdelt1
     new_header['CDELT2'] = cdelt2
-    new_header['NAXIS1'] = naxis1
-    new_header['NAXIS2'] = naxis2
-    new_header['CRPIX1'] = new_header['NAXIS1']/2
-    new_header['CRPIX2'] = new_header['NAXIS2']/2
+    new_header['NAXIS1'] = int(naxis1)
+    new_header['NAXIS2'] = int(naxis2)
+    new_header['CRPIX1'] = new_header['NAXIS1']/2.
+    new_header['CRPIX2'] = new_header['NAXIS2']/2.
 
     return new_header
