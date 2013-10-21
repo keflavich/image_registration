@@ -6,7 +6,7 @@ except ImportError:
     import pyfits
     import pywcs
 
-def fits_overlap(file1,file2):
+def fits_overlap(file1,file2,**kwargs):
     """
     Create a header containing the exact overlap region between two .fits files
 
@@ -20,7 +20,7 @@ def fits_overlap(file1,file2):
 
     hdr1 = pyfits.getheader(file1)
     hdr2 = pyfits.getheader(file2)
-    return header_overlap(hdr1,hdr2)
+    return header_overlap(hdr1,hdr2,**kwargs)
 
 def header_overlap(hdr1,hdr2,max_separation=180,overlap="union"):
     """
