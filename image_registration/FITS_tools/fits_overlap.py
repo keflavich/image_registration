@@ -22,7 +22,7 @@ def fits_overlap(file1,file2):
     hdr2 = pyfits.getheader(file2)
     return header_overlap(hdr1,hdr2)
 
-def header_overlap(hdr1,hdr2,max_separation=180):
+def header_overlap(hdr1,hdr2,max_separation=180,overlap="union"):
     """
     Create a header containing the exact overlap region between two .fits files
 
@@ -35,6 +35,8 @@ def header_overlap(hdr1,hdr2,max_separation=180):
     max_separation : int
         Maximum number of degrees between two headers to consider before flipping
         signs on one of them (this to deal with the longitude=0 region)
+    overlap: 'union' or 'intersection'
+        Which merger to do
     """
     wcs1 = pywcs.WCS(hdr1)
     wcs2 = pywcs.WCS(hdr2)
@@ -51,6 +53,7 @@ def header_overlap(hdr1,hdr2,max_separation=180):
         for xm in xmin1,xmax1,xmin2,xmax2]
     xmin1,xmax1,xmin2,xmax2 = xmlist
 
+    # check signs
     if xmin2 > xmax2:
         xmax2,xmin2 = xmin2,xmax2
     if xmin1 > xmax1:
@@ -60,10 +63,18 @@ def header_overlap(hdr1,hdr2,max_separation=180):
     if ymin1 > ymax1:
         ymax1,ymin1 = ymin1,ymax1
 
-    xmin = min(xmin1,xmin2)
-    xmax = max(xmax1,xmax2)
-    ymin = min(ymin1,ymin2)
-    ymax = max(ymax1,ymax2)
+    if overlap=='union':
+        xmin = min(xmin1,xmin2)
+        xmax = max(xmax1,xmax2)
+        ymin = min(ymin1,ymin2)
+        ymax = max(ymax1,ymax2)
+    elif overlap=='intersection':
+        xmin = max(xmin1,xmin2)
+        xmax = min(xmax1,xmax2)
+        ymin = max(ymin1,ymin2)
+        ymax = min(ymax1,ymax2)
+    else:
+        raise ValueError("Overlap must be 'union' or 'intersection'")
 
     try:
         cdelt1,cdelt2 = np.abs(np.vstack([wcs1.wcs.cd.diagonal(), wcs2.wcs.cd.diagonal()])).min(axis=0) * np.sign(wcs1.wcs.cd).diagonal()
