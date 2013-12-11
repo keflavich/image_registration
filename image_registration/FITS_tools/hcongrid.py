@@ -74,6 +74,51 @@ try:
         newimage = scipy.ndimage.map_coordinates(np.nan_to_num(image), grid1, **kwargs)
         
         return newimage
+
+    def zoom_fits(fitsfile, scalefactor, preserve_bad_pixels=True, **kwargs):
+        """
+        Zoom in on a FITS image by interpolating using scipy.ndimage.zoom
+
+        Parameters
+        ----------
+        fitsfile: str
+            FITS file name
+        scalefactor: float
+            Zoom factor along all axes
+        preserve_bad_pixels: bool
+            Try to set NAN pixels to NAN in the zoomed image.  Otherwise, bad
+            pixels will be set to zero
+        """
+
+        arr = pyfits.getdata(fitsfile)
+        h = pyfits.getheader(fitsfile)
+
+        h['CRPIX1'] = (h['CRPIX1']-1)*scalefactor + 1*scalefactor
+        h['CRPIX2'] = (h['CRPIX2']-1)*scalefactor + 1*scalefactor
+        if 'CD1_1' in h:
+            for ii in (1,2):
+                for jj in (1,2):
+                    k = "CD%i_%i" % (ii,jj)
+                    if k in h: # allow for CD1_1 but not CD1_2
+                        h[k] = h[k]/scalefactor
+        elif 'CDELT1' in h:
+            h['CDELT1'] = h['CDELT1']/scalefactor
+            h['CDELT2'] = h['CDELT2']/scalefactor
+
+        bad_pixels = np.isnan(arr) + np.isinf(arr)
+
+        arr[bad_pixels] = 0
+
+        upscaled = scipy.ndimage.zoom(arr,scalefactor,**kwargs)
+
+        if preserve_bad_pixels:
+            bp_up = scipy.ndimage.zoom(bad_pixels,scalefactor,mode='constant',cval=np.nan,order=0)
+            upscaled[bp_up] = np.nan
+
+        up_hdu = pyfits.PrimaryHDU(data=upscaled, header=h)
+        
+        return up_hdu
+
 except ImportError:
     # needed to do this to get travis-ci tests to pass, even though scipy is installed...
     def hcongrid(*args, **kwargs):
