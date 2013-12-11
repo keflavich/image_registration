@@ -8,7 +8,7 @@ except ImportError:
 try:
     import scipy.ndimage
 
-    def hcongrid(image, header1, header2, **kwargs):
+    def hcongrid(image, header1, header2, preserve_bad_pixels=True, **kwargs):
         """
         Interpolate an image from one FITS header onto another
 
@@ -22,6 +22,9 @@ try:
             The header or WCS corresponding to the image
         header2 : `pyfits.Header` or `pywcs.WCS`
             The header or WCS to interpolate onto
+        preserve_bad_pixels: bool
+            Try to set NAN pixels to NAN in the zoomed image.  Otherwise, bad
+            pixels will be set to zero
 
         Returns
         -------
@@ -71,7 +74,15 @@ try:
         xx1,yy1 = wcs1.wcs_sky2pix(lon2, lat2, 0)
         grid1 = np.array([yy1.reshape(outshape),xx1.reshape(outshape)])
 
-        newimage = scipy.ndimage.map_coordinates(np.nan_to_num(image), grid1, **kwargs)
+        bad_pixels = np.isnan(image) + np.isinf(image)
+
+        image[bad_pixels] = 0
+
+        newimage = scipy.ndimage.map_coordinates(image, grid1, **kwargs)
+
+        if preserve_bad_pixels:
+            newbad = scipy.ndimage.map_coordinates(bad_pixels, grid1, order=0, mode='constant', cval=np.nan)
+            newimage[newbad] = np.nan
         
         return newimage
 
@@ -93,8 +104,8 @@ try:
         arr = pyfits.getdata(fitsfile)
         h = pyfits.getheader(fitsfile)
 
-        h['CRPIX1'] = (h['CRPIX1']-1)*scalefactor + 1*scalefactor
-        h['CRPIX2'] = (h['CRPIX2']-1)*scalefactor + 1*scalefactor
+        h['CRPIX1'] = (h['CRPIX1']-1)*scalefactor + scalefactor/2. + 0.5
+        h['CRPIX2'] = (h['CRPIX2']-1)*scalefactor + scalefactor/2. + 0.5
         if 'CD1_1' in h:
             for ii in (1,2):
                 for jj in (1,2):
