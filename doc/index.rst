@@ -88,7 +88,7 @@ Programs implementing these methods in various languages:
         and accurate.  The speed comes from making use of the fourier zoom /
         fourier scaling property.
 
-    `Marshall Perrin's sub-pixel image registration <http://www.astro.ucla.edu/~mperrin/IDL/sources/subreg.pro>`_ :
+    `Marshall Perrin's sub-pixel image registration <http://www.stsci.edu/~mperrin/software/sources/subreg.pro>`_ :
         Implements many cross-correlation based methods, with sub-pixel
         registration based off of centroiding,  gaussian fitting, and many
         variations thereupon.  The gaussian approach is also implemented here,
