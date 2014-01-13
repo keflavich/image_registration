@@ -6,6 +6,7 @@ try:
 except ImportError:
     import pyfits
     import pywcs
+from .load_header import load_data,load_header
 
 def project_to_header(fitsfile, header, use_montage=True, quiet=True, **kwargs):
     """
@@ -44,16 +45,19 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True, **kwargs):
         header.toTxtFile(temp_headerfile.name)
 
         outfile = tempfile.NamedTemporaryFile()
-        montage.wrappers.reproject(fitsfile, outfile.name,
-                temp_headerfile.name, exact_size=True,
-                silent_cleanup=quiet)
+        montage.wrappers.reproject(fitsfile,
+                                   outfile.name,
+                                   temp_headerfile.name,
+                                   exact_size=True,
+                                   silent_cleanup=quiet)
         image = pyfits.getdata(outfile.name)
         
         outfile.close()
         temp_headerfile.close()
     elif hcongridOK:
-        image = hcongrid( pyfits.getdata(fitsfile),
-                pyfits.getheader(fitsfile), header)
+        image = hcongrid(load_data(fitsfile),
+                         load_header(fitsfile),
+                         header)
 
     return image
 
@@ -83,8 +87,8 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
     """
 
     if header is None:
-        header = pyfits.getheader(fitsfile1)
-        image1 = pyfits.getdata(fitsfile1)
+        header = load_header(fitsfile1)
+        image1 = load_data(fitsfile1)
     else: # project image 1 to input header coordinates
         image1 = project_to_header(fitsfile1, header)
 
