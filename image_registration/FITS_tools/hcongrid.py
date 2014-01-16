@@ -134,3 +134,6 @@ except ImportError:
     # needed to do this to get travis-ci tests to pass, even though scipy is installed...
     def hcongrid(*args, **kwargs):
         raise ImportError("scipy.ndimage could not be imported; hcongrid is not available")
+
+    def zoom_fits(*args, **kwargs):
+        raise ImportError("scipy.ndimage could not be imported; zoom_fits is not available")
