@@ -6,10 +6,13 @@ def load_header(header):
     """
     Attempt to load a header specified as a header, a string pointing to a FITS
     file, or a string pointing to a Header text file, or a string that contains
-    the actual header
+    the actual header, or an HDU
     """
     if hasattr(header,'get'):
         return fits.Header(header)
+    elif hasattr(header,'header'):
+        # It's an HDU!
+        return header.header
     try:
         # assume fits file first
         return fits.getheader(header)
@@ -22,15 +25,14 @@ def load_header(header):
 
 def load_data(data):
     """
-    Attempt to load a header specified as a header, a string pointing to a FITS
-    file, or a string pointing to a Header text file, or a string that contains
-    the actual header
+    Attempt to load an image specified as an HDU, a string pointing to a FITS
+    file, an HDUlist, or an actual data array
     """
     if isinstance(data,np.ndarray):
         return data
     try:
         # assume fits file first
-        return fits.getheader(data)
+        return fits.getdata(data)
     except IOError:
         # assume an HDU
         if hasattr(data,'data') and isinstance(data.data,np.ndarray):
