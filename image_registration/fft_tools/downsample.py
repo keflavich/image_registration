@@ -1,6 +1,14 @@
 import numpy as np
+try:
+    try:
+        from numpy import nanmean
+    except ImportError:
+        from scipy.stats import nanmean
+except ImportError as ex:
+    print "Image-registration requires either numpy >= 1.8 or scipy."
+    raise ex
 
-def downsample(myarr,factor,estimator=np.nanmean):
+def downsample(myarr,factor,estimator=nanmean):
     """
     Downsample a 2D array by averaging over *factor* pixels in each axis.
     Crops upper edge if the shape is not a multiple of factor.
@@ -33,7 +41,7 @@ def downsample_cube(myarr,factor,ignoredim=0):
     if ignoredim > 0: dsarr = dsarr.swapaxes(0,ignoredim)
     return dsarr
 
-def downsample_1d(myarr,factor,estimator=np.nanmean):
+def downsample_1d(myarr,factor,estimator=nanmean):
     """
     Downsample a 1D array by averaging over *factor* pixels.
     Crops right side if the shape is not a multiple of factor.
@@ -51,7 +59,7 @@ def downsample_1d(myarr,factor,estimator=np.nanmean):
         for i in range(factor)] ]),axis=0)
     return dsarr
 
-def downsample_axis(myarr, factor, axis, estimator=np.nanmean, truncate=False):
+def downsample_axis(myarr, factor, axis, estimator=nanmean, truncate=False):
     """
     Downsample an ND array by averaging over *factor* pixels along an axis.
     Crops right side if the shape is not a multiple of factor.
