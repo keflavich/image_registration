@@ -14,8 +14,8 @@ env:
         - ASTROPY_VERSION=stable
         - CONDA_INSTALL='conda install -c astropy-ci-extras --yes'
         - PIP_INSTALL='pip install'
-    matrix:
-        - SETUP_CMD='egg_info'
+    #matrix:
+    #    - SETUP_CMD='egg_info'
 
 matrix:
     include:
