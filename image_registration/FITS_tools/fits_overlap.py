@@ -41,11 +41,11 @@ def header_overlap(hdr1,hdr2,max_separation=180,overlap="union"):
     wcs1 = pywcs.WCS(hdr1)
     wcs2 = pywcs.WCS(hdr2)
 
-    ((xmax1,ymax1),) = wcs1.wcs_pix2sky([[hdr1['NAXIS1'],hdr1['NAXIS2']]],1)
-    ((xmax2,ymax2),) = wcs2.wcs_pix2sky([[hdr2['NAXIS1'],hdr2['NAXIS2']]],1)
+    ((xmax1,ymax1),) = wcs1.wcs_pix2world([[hdr1['NAXIS1'],hdr1['NAXIS2']]],1)
+    ((xmax2,ymax2),) = wcs2.wcs_pix2world([[hdr2['NAXIS1'],hdr2['NAXIS2']]],1)
 
-    ((xmin1,ymin1),) = wcs1.wcs_pix2sky([[1,1]],1)
-    ((xmin2,ymin2),) = wcs2.wcs_pix2sky([[1,1]],1)
+    ((xmin1,ymin1),) = wcs1.wcs_pix2world([[1,1]],1)
+    ((xmin2,ymin2),) = wcs2.wcs_pix2world([[1,1]],1)
 
     # make sure the edges are all in the same quadrant-ish
     xmlist = [xm - 360 if xm > max_separation else 

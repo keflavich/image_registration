@@ -74,8 +74,8 @@ try:
             raise NotImplementedError("Unit conversions have not yet been implemented.")
 
         yy2,xx2 = np.indices(outshape)
-        lon2,lat2 = wcs2.wcs_pix2sky(xx2, yy2, 0)
-        xx1,yy1 = wcs1.wcs_sky2pix(lon2, lat2, 0)
+        lon2,lat2 = wcs2.wcs_pix2world(xx2, yy2, 0)
+        xx1,yy1 = wcs1.wcs_world2pix(lon2, lat2, 0)
         grid1 = np.array([yy1.reshape(outshape),xx1.reshape(outshape)])
 
         bad_pixels = np.isnan(image) + np.isinf(image)
