@@ -16,7 +16,7 @@ before_install:
 install: 
    - export PYTHONIOENCODING=UTF8 # just in case
    - pip install --upgrade "numpy==$NUMPY_VERSION" --use-mirrors
-   - pip install FITS_tools
+   - pip install https://github.com/keflavich/FITS_tools/archive/master.zip
    - pip install matplotlib --use-mirrors
    - pip install pyfits --use-mirrors
    - pip install pywcs --use-mirrors
