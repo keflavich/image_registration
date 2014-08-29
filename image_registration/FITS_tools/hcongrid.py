@@ -8,7 +8,8 @@ except ImportError:
 try:
     import scipy.ndimage
 
-    def hcongrid(image, header1, header2, preserve_bad_pixels=True, **kwargs):
+    def hcongrid(image, header1, header2, outshape=None,
+                 preserve_bad_pixels=True, **kwargs):
         """
         Interpolate an image from one FITS header onto another
 
@@ -25,6 +26,10 @@ try:
         preserve_bad_pixels: bool
             Try to set NAN pixels to NAN in the zoomed image.  Otherwise, bad
             pixels will be set to zero
+        outshape : None or (naxis1,naxis2)
+            The output shape of the image in Header2's WCS.  If Header2 is a
+            Header object, outshape will be set by default, but if Header2 is a
+            WCS object, this parameter must be specified.
 
         Returns
         -------
@@ -33,7 +38,6 @@ try:
         Raises
         ------
         TypeError if either is not a Header or WCS instance
-        Exception if image1's shape doesn't match header1's naxis1/naxis2
 
         Examples
         --------
@@ -53,13 +57,19 @@ try:
                 raise TypeError("Header1 must either be a pyfits.Header or pywcs.WCS instance")
 
         if not (wcs1.naxis1 == image.shape[1] and wcs1.naxis2 == image.shape[0]):
-            raise Exception("Image shape must match header shape.")
+            wcs1.naxis1 = image.shape[1]
+            wcs1.naxis2 = image.shape[0]
 
         if issubclass(pywcs.WCS, header2.__class__):
             wcs2 = header2
+            if outshape is None and not hasattr(wcs2,'naxis1'):
+                raise ValueError("Must specify an output shape when passing a WCS object.")
+            elif outshape is None:
+                outshape = [wcs2.naxis2,wcs2.naxis1]
         else:
             try:
                 wcs2 = pywcs.WCS(header2)
+                outshape = [header2['NAXIS2'], header2['NAXIS1']]
             except:
                 raise TypeError("Header2 must either be a pyfits.Header or pywcs.WCS instance")
 
@@ -67,8 +77,6 @@ try:
             # do unit conversions
             raise NotImplementedError("Unit conversions have not yet been implemented.")
 
-        # sigh... why does numpy use matrix convention?  Makes everything so much harder...
-        outshape = [wcs2.naxis2,wcs2.naxis1]
         yy2,xx2 = np.indices(outshape)
         lon2,lat2 = wcs2.wcs_pix2sky(xx2, yy2, 0)
         xx1,yy1 = wcs1.wcs_sky2pix(lon2, lat2, 0)

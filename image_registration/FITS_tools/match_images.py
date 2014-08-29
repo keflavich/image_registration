@@ -44,6 +44,12 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True, **kwargs):
         temp_headerfile = tempfile.NamedTemporaryFile()
         header.toTxtFile(temp_headerfile.name)
 
+        if hasattr(fitsfile, 'writeto'):
+            fitsobj = fitsfile
+            fitsfileobj = tempfile.NamedTemporaryFile()
+            fitsfile = fitsfileobj.name
+            fitsobj.writeto(fitsfile)
+
         outfile = tempfile.NamedTemporaryFile()
         montage.wrappers.reproject(fitsfile,
                                    outfile.name,
@@ -54,6 +60,10 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True, **kwargs):
         
         outfile.close()
         temp_headerfile.close()
+        try:
+            fitsfileobj.close()
+        except NameError:
+            pass
     elif hcongridOK:
         image = hcongrid(load_data(fitsfile),
                          load_header(fitsfile),
