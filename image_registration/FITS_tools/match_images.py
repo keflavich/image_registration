@@ -7,8 +7,10 @@ except ImportError:
     import pyfits
     import pywcs
 from .load_header import load_data,load_header
+from ..fft_tools.shift import shift2d
 
-def project_to_header(fitsfile, header, use_montage=True, quiet=True, **kwargs):
+def project_to_header(fitsfile, header, use_montage=True, quiet=True,
+                      **kwargs):
     """
     Light wrapper of montage with hcongrid as a backup
 
@@ -72,7 +74,7 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True, **kwargs):
     return image
 
 def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
-        return_header=False, **kwargs):
+               return_header=False, use_montage=False, **kwargs):
     """
     Project one FITS file into another's coordinates
     If sigma_cut is used, will try to find only regions that are significant
@@ -88,6 +90,9 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         Optional - can pass a header to projet both images to
     sigma_cut: bool or int
         Perform a sigma-cut on the returned images at this level
+    use_montage: bool
+        Use montage for the reprojection into the same pixel space?  Otherwise,
+        use scipy.
 
     Returns
     -------
@@ -100,10 +105,10 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         header = load_header(fitsfile1)
         image1 = load_data(fitsfile1)
     else: # project image 1 to input header coordinates
-        image1 = project_to_header(fitsfile1, header)
+        image1 = project_to_header(fitsfile1, header, use_montage=use_montage)
 
     # project image 2 to image 1 coordinates
-    image2_projected = project_to_header(fitsfile2, header)
+    image2_projected = project_to_header(fitsfile2, header, use_montage=use_montage)
 
     if image1.shape != image2_projected.shape:
         raise ValueError("Failed to reproject images to same shape.")
@@ -126,8 +131,9 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
     return returns
 
 def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
-        register_method=chi2_shift_iterzoom, return_cropped_images=False,
-        return_header=False, **kwargs):
+                  register_method=chi2_shift_iterzoom,
+                  return_cropped_images=False, return_shifted_image=False,
+                  return_header=False, use_montage=False, **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
     technique.  Requires montage or hcongrid.
@@ -150,6 +156,8 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     return_cropped_images: bool
         Returns the images used for the analysis in addition to the measured
         offsets
+    return_shifted_images: bool
+        Return image 2 shifted into image 1's space
     return_header : bool
         Return the header the images have been projected to
     quiet: bool
@@ -157,6 +165,9 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     sigma_cut: bool or int
         Perform a sigma-cut before cross-correlating the images to minimize
         noise correlation?
+    use_montage: bool
+        Use montage for the reprojection into the same pixel space?  Otherwise,
+        use scipy.
 
     Returns
     -------
@@ -174,15 +185,15 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         The header the images have been projected to
 
     """
-    corr_image1, corr_image2, header = match_fits(fitsfile1, fitsfile2,
+    proj_image1, proj_image2, header = match_fits(fitsfile1, fitsfile2,
             return_header=True, **kwargs)
 
     if errfile is not None:
-        errimage = project_to_header(errfile, header, **kwargs)
+        errimage = project_to_header(errfile, header, use_montage=use_montage, **kwargs)
     else:
         errimage = None
 
-    xoff,yoff,exoff,eyoff = register_method(corr_image1, corr_image2,
+    xoff,yoff,exoff,eyoff = register_method(proj_image1, proj_image2,
             err=errimage, return_error=True, **kwargs)
     
     wcs = pywcs.WCS(header)
@@ -202,10 +213,10 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     if return_error:
         returns = returns + (exoff,eyoff,exoff_wcs,eyoff_wcs)
     if return_cropped_images:
-        returns = returns + (corr_image1,corr_image2)
+        returns = returns + (proj_image1,proj_image2)
+    if return_shifted_image:
+        shifted_im2 = shift2d(proj_image2, xoff, yoff)
+        returns = returns + (shifted_im2,)
     if return_header:
         returns = returns + (header,)
     return returns
-    
-
-

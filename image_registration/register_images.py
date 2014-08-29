@@ -66,8 +66,9 @@ def register_images(im1, im2, usfac=1, return_registered=False,
     im2fft = fft2(im2)
 
     output = dftregistration(im1fft,im2fft,usfac=usfac,
-            return_registered=return_registered, return_error=return_error,
-            zeromean=zeromean, DEBUG=DEBUG, maxoff=maxoff)
+                             return_registered=return_registered,
+                             return_error=return_error, zeromean=zeromean,
+                             DEBUG=DEBUG, maxoff=maxoff)
 
     output = [-output[1], -output[0], ] + [o for o in output[2:]]
 
