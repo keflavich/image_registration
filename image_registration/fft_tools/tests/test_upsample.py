@@ -52,7 +52,6 @@ iterpars_even = (
     list(itertools.product((25,26,),(25,26,50),(4,-5),(6,-3),upsample_factors))
     )
 
-from pylab import * # debug
 
 #@pytest.mark.parametrize(('imsize','upsample_factor'),
 #    list(itertools.product((24,25,26,27),upsample_factors)))
@@ -268,6 +267,9 @@ def obsolete_test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=F
 
 def plotthings(image,image_shifted,image_shifted_zoomed,zoom,cx,cy,upsample_factor,imsize,outsize,x,y,
         fullzoom=None):
+
+    from pylab import * # debug
+
     figure(1)
     clf()
     imshow(zoom-image_shifted_zoomed)
