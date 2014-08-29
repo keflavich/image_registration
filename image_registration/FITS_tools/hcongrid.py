@@ -56,10 +56,6 @@ try:
             except:
                 raise TypeError("Header1 must either be a pyfits.Header or pywcs.WCS instance")
 
-        if not (wcs1.naxis1 == image.shape[1] and wcs1.naxis2 == image.shape[0]):
-            wcs1.naxis1 = image.shape[1]
-            wcs1.naxis2 = image.shape[0]
-
         if issubclass(pywcs.WCS, header2.__class__):
             wcs2 = header2
             if outshape is None and not hasattr(wcs2,'naxis1'):
