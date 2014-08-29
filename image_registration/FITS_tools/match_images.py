@@ -215,7 +215,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     if return_cropped_images:
         returns = returns + (proj_image1,proj_image2)
     if return_shifted_image:
-        shifted_im2 = shift2d(proj_image2, xoff, yoff)
+        shifted_im2 = shift2d(proj_image2, -xoff, -yoff)
         returns = returns + (shifted_im2,)
     if return_header:
         returns = returns + (header,)
