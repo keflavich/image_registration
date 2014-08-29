@@ -37,5 +37,5 @@ setup(name='image_registration',
       packages=['image_registration', 'image_registration/fft_tools',
           'image_registration/tests','image_registration/FITS_tools'], 
       cmdclass = {'test': PyTest},
-      requires=['pytest'],
+      requires=['pytest','FITS_tools'],
      )
