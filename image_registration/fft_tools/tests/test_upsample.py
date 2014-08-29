@@ -209,61 +209,61 @@ def obsolete_test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=F
 
 
 """
-@pytest.mark.parametrize(('imsize','outsize','cx','cy','upsample_factor'),iterpars_odd)
-def test_center_zoom_odd(imsize,outsize,cx,cy,upsample_factor):
-    image = gaussian(imsize)
-    pixspace = np.mean(np.diff(np.linspace(-5,5,imsize)))
-    image_shifted = gaussian(imsize,cx*pixspace,cy*pixspace)
-    zoom_pixspace = np.mean(np.diff(np.linspace(-5/float(upsample_factor),5/float(upsample_factor),imsize)))
-    image_shifted_zoomed = zoomed_gaussian(outsize,cx*zoom_pixspace,cy*zoom_pixspace,upsample_factor)
-    image_shifted_zoomed = zoomed_gaussian(outsize,0,0,upsample_factor)
-    dmax = np.unravel_index(image_shifted_zoomed.argmax(),image.shape)
-    ismax = np.unravel_index(image_shifted.argmax(),image.shape)
-    assert ismax == (cy,cx)
-    x,y,zoom = upsample.center_zoom_image(image, upsample_factor=upsample_factor, output_size=outsize, nthreads=4,
-            xshift=cx, yshift=cy, return_axes=True)
-
-
-    zmax = np.unravel_index(zoom.argmax(),zoom.shape)
-    #print 'image position of max:',dmax,' zoom position of max:',zmax
-    #print 'x,y max: ',x[zmax],y[zmax]
-    clf()
-    if image.shape == zoom.shape:
-        figure(1)
-        clf()
-        imshow(zoom-image_shifted_zoomed)
-        colorbar()
-        title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
-        figure(2)
-        clf()
-        subplot(121)
-        imshow(zoom)
-        colorbar()
-        subplot(122)
-        imshow(image_shifted_zoomed)
-        colorbar()
-        title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
-        figure(3)
-        clf()
-        imshow(image_shifted)
-        contour(x,y,zoom,cmap=cm.gray)
-        title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
-    vshape = image.shape[0]*upsample_factor,image.shape[1]*upsample_factor
-    s1,s2 = outsize,outsize
-    roff = -int(np.round(float(vshape[0] - upsample_factor - s1)/2)) - (upsample_factor%2==0)
-    coff = -int(np.round(float(vshape[1] - upsample_factor - s2)/2)) - (upsample_factor%2==0)
-
-
-    print " ".join(["%8.4f" % q for q in 
-        (upsample_factor,imsize,outsize,cx,cy,x[zmax],y[zmax],dmax[1],dmax[0],x[zmax]-dmax[1],y[zmax]-dmax[0],
-            cx/float(upsample_factor),cy/float(upsample_factor),((zoom-image_shifted_zoomed)**2).sum())])
-    # dmax can never be non-int
-    assert (x[zmax]) == dmax[1]
-    assert (y[zmax]) == dmax[0]
-    #if upsample_factor == 1:
-    #    assert dmax[0] == zmax[0]
-    #    assert dmax[1] == zmax[1]
-    assert ((zoom-image_shifted_zoomed)**2).sum() < 0.001
+#@pytest.mark.parametrize(('imsize','outsize','cx','cy','upsample_factor'),iterpars_odd)
+#def test_center_zoom_odd(imsize,outsize,cx,cy,upsample_factor):
+#    image = gaussian(imsize)
+#    pixspace = np.mean(np.diff(np.linspace(-5,5,imsize)))
+#    image_shifted = gaussian(imsize,cx*pixspace,cy*pixspace)
+#    zoom_pixspace = np.mean(np.diff(np.linspace(-5/float(upsample_factor),5/float(upsample_factor),imsize)))
+#    image_shifted_zoomed = zoomed_gaussian(outsize,cx*zoom_pixspace,cy*zoom_pixspace,upsample_factor)
+#    image_shifted_zoomed = zoomed_gaussian(outsize,0,0,upsample_factor)
+#    dmax = np.unravel_index(image_shifted_zoomed.argmax(),image.shape)
+#    ismax = np.unravel_index(image_shifted.argmax(),image.shape)
+#    assert ismax == (cy,cx)
+#    x,y,zoom = upsample.center_zoom_image(image, upsample_factor=upsample_factor, output_size=outsize, nthreads=4,
+#            xshift=cx, yshift=cy, return_axes=True)
+#
+#
+#    zmax = np.unravel_index(zoom.argmax(),zoom.shape)
+#    #print 'image position of max:',dmax,' zoom position of max:',zmax
+#    #print 'x,y max: ',x[zmax],y[zmax]
+#    clf()
+#    if image.shape == zoom.shape:
+#        figure(1)
+#        clf()
+#        imshow(zoom-image_shifted_zoomed)
+#        colorbar()
+#        title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
+#        figure(2)
+#        clf()
+#        subplot(121)
+#        imshow(zoom)
+#        colorbar()
+#        subplot(122)
+#        imshow(image_shifted_zoomed)
+#        colorbar()
+#        title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
+#        figure(3)
+#        clf()
+#        imshow(image_shifted)
+#        contour(x,y,zoom,cmap=cm.gray)
+#        title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
+#    vshape = image.shape[0]*upsample_factor,image.shape[1]*upsample_factor
+#    s1,s2 = outsize,outsize
+#    roff = -int(np.round(float(vshape[0] - upsample_factor - s1)/2)) - (upsample_factor%2==0)
+#    coff = -int(np.round(float(vshape[1] - upsample_factor - s2)/2)) - (upsample_factor%2==0)
+#
+#
+#    print " ".join(["%8.4f" % q for q in 
+#        (upsample_factor,imsize,outsize,cx,cy,x[zmax],y[zmax],dmax[1],dmax[0],x[zmax]-dmax[1],y[zmax]-dmax[0],
+#            cx/float(upsample_factor),cy/float(upsample_factor),((zoom-image_shifted_zoomed)**2).sum())])
+#    # dmax can never be non-int
+#    assert (x[zmax]) == dmax[1]
+#    assert (y[zmax]) == dmax[0]
+#    #if upsample_factor == 1:
+#    #    assert dmax[0] == zmax[0]
+#    #    assert dmax[1] == zmax[1]
+#    assert ((zoom-image_shifted_zoomed)**2).sum() < 0.001
 """
 
 def plotthings(image,image_shifted,image_shifted_zoomed,zoom,cx,cy,upsample_factor,imsize,outsize,x,y,
