@@ -3,7 +3,7 @@ Image Registration Methods for Astronomy
 (intended for *extended emission*, not stellar images!)
 
 Documentation:
-image-registration.rtfd.org
+image-registration.rtfd.org_
 
 Borrows heavily from
 http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html
