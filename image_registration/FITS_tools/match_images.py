@@ -181,6 +181,8 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         Standard error on the fitted world coordinate offsets
     proj_image1, proj_image2 : (ndarray,ndarray) (only if `return_cropped_images` is True)
         The images projected into the same coordinates
+    shifted_image2 : ndarray (if `return_shifted_image` is True)
+        The second image projected *and shifted* to match image 1.
     header : :class:`pyfits.Header` (only if `return_header` is True)
         The header the images have been projected to
 
