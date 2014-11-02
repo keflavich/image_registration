@@ -19,3 +19,6 @@ http://solarmuri.ssl.berkeley.edu/~welsch/public/software/cross_cor_taylor.pro
    :alt: Bitdeli badge
    :target: https://bitdeli.com/free
 
+.. image:: https://zenodo.org/badge/3821/keflavich/image_registration.png
+   :target: http://dx.doi.org/10.5281/zenodo.12528
+
