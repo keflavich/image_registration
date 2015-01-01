@@ -163,7 +163,8 @@ def zoomnd(inp, offsets=(), middle_convention=np.float, **kwargs):
     # plus whatever offset is specified
     # outsize is always 1+(highest index of input)
 
-    middlepix = [middle_convention((insize-1)/2.) + off for insize,off in zip(inp.shape,offsets)]
+    middlepix = [middle_convention((insize-1)/2.) + off
+                 for insize,off in zip(inp.shape,offsets)]
 
     return zoom_on_pixel(inp, middlepix, **kwargs)
 
