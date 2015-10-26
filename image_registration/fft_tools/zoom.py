@@ -106,7 +106,8 @@ def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
                 use_numpy_fft=use_numpy_fft, return_real=return_real)
     elif inp.ndim == 2:
         result = scale.fourier_interp2d(inp, outarr, nthreads=nthreads,
-                use_numpy_fft=use_numpy_fft, return_real=return_real)
+                                        use_numpy_fft=use_numpy_fft,
+                                        return_real=return_real)
     else:
         raise NotImplementedError("Can't do more than 2D yet")
 

@@ -25,7 +25,9 @@ class PyTest(Command):
         errno = subprocess.call([sys.executable, 'runtests.py'])
         raise SystemExit(errno)
 
-execfile('image_registration/version.py')
+with open('image_registration/version.py','r') as f:
+    code = f.read()
+    exec(code)
 
 setup(name='image_registration',
       version=__version__,
