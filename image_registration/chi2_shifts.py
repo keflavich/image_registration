@@ -1,6 +1,5 @@
-from image_registration.fft_tools import correlate2d,fast_ffts,dftups,upsample_image,zoom,shift
-import image_registration # for doctests
-import iterative_zoom
+from .fft_tools import correlate2d,fast_ffts,dftups,upsample_image,zoom,shift
+from . import iterative_zoom
 import warnings
 import numpy as np
 
@@ -105,6 +104,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     shift it in both directions,
     then use chi2_shift to determine the shift
 
+    >>> import image_registration
     >>> rr = ((np.indices([100,100]) - np.array([50.,50.])[:,None,None])**2).sum(axis=0)**0.5
     >>> image = np.exp(-rr**2/(3.**2*2.)) * 20
     >>> shifted = np.roll(np.roll(image,12,0),5,1) + np.random.randn(100,100)
@@ -131,7 +131,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     xshift = xmax-xcen
 
     if verbose:
-        print "Coarse xmax/ymax = %i,%i, for offset %f,%f" % (xmax,ymax,xshift,yshift)
+        print("Coarse xmax/ymax = %i,%i, for offset %f,%f" % (xmax,ymax,xshift,yshift))
 
     # below is sub-pixel zoom-in stuff
 
@@ -155,7 +155,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         # deltachi2 is not reduced deltachi2
         deltachi2_lowres = (chi2 - chi2.min())
         if verbose:
-            print "Minimum chi2: %g   Max delta-chi2 (lowres): %g  Min delta-chi2 (lowres): %g" % (chi2.min(),deltachi2_lowres.max(),deltachi2_lowres[deltachi2_lowres>0].min())
+            print("Minimum chi2: %g   Max delta-chi2 (lowres): %g  Min delta-chi2 (lowres): %g" % (chi2.min(),deltachi2_lowres.max(),deltachi2_lowres[deltachi2_lowres>0].min()))
         sigmamax_area = deltachi2_lowres<m_auto
         if sigmamax_area.sum() > 1:
             yy,xx = np.indices(sigmamax_area.shape)
@@ -173,7 +173,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         # zoom factor = s1 / upsample_factor = 2*size
         zoom_factor = 2.*size
         if verbose:
-            print "Selected upsample factor %0.1f for image size %i and zoom factor %0.1f (max-sigma range was %i for area %i)" % (upsample_factor, s1, zoom_factor, size, sigmamax_area.sum())
+            print("Selected upsample factor %0.1f for image size %i and zoom factor %0.1f (max-sigma range was %i for area %i)" % (upsample_factor, s1, zoom_factor, size, sigmamax_area.sum()))
     else:
         s1,s2 = im1.shape
 
@@ -190,7 +190,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     # deltachi2 is not reduced deltachi2
     deltachi2_ups = (chi2_ups - chi2_ups.min())
     if verbose:
-        print "Minimum chi2_ups: %g   Max delta-chi2 (highres): %g  Min delta-chi2 (highres): %g" % (chi2_ups.min(),deltachi2_ups.max(),deltachi2_ups[deltachi2_ups>0].min())
+        print("Minimum chi2_ups: %g   Max delta-chi2 (highres): %g  Min delta-chi2 (highres): %g" % (chi2_ups.min(),deltachi2_ups.max(),deltachi2_ups[deltachi2_ups>0].min()))
         if verbose > 1:
             pass
             #if hasattr(term3_ups,'len'):
@@ -350,6 +350,7 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
     shift it in both directions,
     then use chi2_shift_iterzoom to determine the shift
 
+    >>> import image_registration
     >>> np.random.seed(42) # so the doctest will pass
     >>> image = np.random.randn(50,55)
     >>> shifted = np.roll(np.roll(image,12,0),5,1)
@@ -602,8 +603,8 @@ def chi2_shift_leastsq(im1, im2, err=None, mode='wrap', maxoff=None,
 
 def per_iteration(pars, i, resid, *args, **kws):
     if i < 100 or i % 10 == 0:
-        print '====== Iteration %03i:  ' % (i),
+        print('====== Iteration %03i:  ' % (i),)
         for p in pars.values():
-            print p.name , p.value, 
-        print " chi^2: ",(resid**2).sum()
+            print(p.name , p.value, )
+        print(" chi^2: ",(resid**2).sum())
 

@@ -1,4 +1,4 @@
-from registration_testing import (upsample_ft_raw, make_offset_images,
+from .registration_testing import (upsample_ft_raw, make_offset_images,
         make_extended, make_offset_extended, test_shifts, do_n_fits,
         do_n_fits_register, do_n_extended_fits, run_tests, plot_tests,
         plot_extended_tests, determine_error_offsets, test_upsample,

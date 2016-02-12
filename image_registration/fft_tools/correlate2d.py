@@ -1,5 +1,5 @@
 import numpy as np
-from convolve_nd import convolvend as convolve
+from .convolve_nd import convolvend as convolve
 
 def correlate2d(im1,im2, boundary='wrap', **kwargs):
     """

@@ -5,7 +5,7 @@ try:
     except ImportError:
         from scipy.stats import nanmean
 except ImportError as ex:
-    print "Image-registration requires either numpy >= 1.8 or scipy."
+    print("Image-registration requires either numpy >= 1.8 or scipy.")
     raise ex
 
 def downsample(myarr,factor,estimator=nanmean):

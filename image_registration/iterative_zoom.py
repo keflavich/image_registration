@@ -1,4 +1,4 @@
-from image_registration.fft_tools import zoom
+from .fft_tools import zoom
 import numpy as np
 import matplotlib.pyplot as pl
 
@@ -78,16 +78,16 @@ def iterative_zoom(image, mindiff=1., zoomshape=[10,10],
         # (at this point, you're all the way zoomed)
         if np.all(delta_image == 0):
             if verbose:
-                print "Can't zoom any further.  zf=%i" % zf
+                print("Can't zoom any further.  zf=%i" % zf)
             break
 
         if verbose:
-            print ("Zoom factor %6i, center = %30s, offset=%30s, minpos=%30s, min|diff|=%15g" %
+            print(("Zoom factor %6i, center = %30s, offset=%30s, minpos=%30s, min|diff|=%15g" %
                     (zf, ",".join(["%15g" % c for c in center]),
                          ",".join(["%15g" % c for c in offset]),
                          ",".join(["%5i" % c for c in minpos]),
                          np.abs(delta_image[np.abs(delta_image)>0]).min()
-                         ))
+                         )))
         if ploteach:
             ii += 1
             pl.figure(ii)
@@ -186,21 +186,21 @@ def iterative_zoom_1d(data, mindiff=1., zoomshape=(10,),
         # (at this point, you're all the way zoomed)
         if np.all(delta_data == 0):
             if verbose:
-                print "Can't zoom any further.  zf=%i" % zf
+                print("Can't zoom any further.  zf=%i" % zf)
             break
 
         if verbose:
-            print ("Zoom factor %6i, center = %30s, offset=%30s, minpos=%30s, mindiff=%30s" %
+            print(("Zoom factor %6i, center = %30s, offset=%30s, minpos=%30s, mindiff=%30s" %
                     (zf, "%15g" % center,
                          "%15g" % offset,
                          "%15g" % minpos,
                          "%15g" % np.abs(delta_data[np.abs(delta_data)>0]).min(),
-                         ))
+                         )))
                     
     if return_center:
         result = center
     else:
-        result = offset 
+        result = offset
 
     if return_zoomed:
         return data_zoom,zf,result

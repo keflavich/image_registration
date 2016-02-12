@@ -1,9 +1,5 @@
-try: 
-    from AG_fft_tools import correlate2d,fast_ffts
-    from AG_fft_tools import dftups,upsample_image,shift
-except ImportError:
-    from image_registration.fft_tools import correlate2d,fast_ffts
-    from image_registration.fft_tools import dftups,upsample_image,shift
+from .fft_tools import correlate2d,fast_ffts
+from .fft_tools import dftups,upsample_image,shift
 import warnings
 import numpy as np
 
@@ -213,7 +209,7 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             pylab.imshow(real(((ups))))
             pylab.subplot(133)
             pylab.imshow(real(CC)/real(ups)); pylab.title("Ratio upsampled/dftupsampled")
-            print "Upsample by 2 peak: ",rloc,cloc," using dft version: ",np.unravel_index(abs(ups).argmax(), ups.shape)
+            print("Upsample by 2 peak: ",rloc,cloc," using dft version: ",np.unravel_index(abs(ups).argmax(), ups.shape))
             #print np.unravel_index(ups.argmax(),ups.shape)
         
         # Obtain shift in original pixel grid from the position of the
@@ -229,18 +225,18 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             col_shift2 = cloc;
         row_shift2=row_shift2/2.;
         col_shift2=col_shift2/2.;
-        if DEBUG: print "row_shift/col_shift from ups2: ",row_shift2,col_shift2
+        if DEBUG: print("row_shift/col_shift from ups2: ",row_shift2,col_shift2)
 
         # If upsampling > 2, then refine estimate with matrix multiply DFT
         if usfac > 2:
             #%% DFT computation %%%
             # Initial shift estimate in upsampled grid
             zoom_factor=1.5
-            if DEBUG: print row_shift2, col_shift2
+            if DEBUG: print(row_shift2, col_shift2)
             row_shift0 = round(row_shift2*usfac)/usfac; 
             col_shift0 = round(col_shift2*usfac)/usfac;     
             dftshift = trunc(ceil(usfac*zoom_factor)/2); #% Center of output array at dftshift+1
-            if DEBUG: print 'dftshift,rs,cs,zf:',dftshift, row_shift0, col_shift0, usfac*zoom_factor
+            if DEBUG: print('dftshift,rs,cs,zf:',dftshift, row_shift0, col_shift0, usfac*zoom_factor)
             # Matrix multiply DFT around the current shift estimate
             roff = dftshift-row_shift0*usfac
             coff = dftshift-col_shift0*usfac
@@ -283,11 +279,11 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             row_shift = row_shift0 + rloc/usfac;
             col_shift = col_shift0 + cloc/usfac;    
             #if DEBUG: print rloc/usfac,row_shift,cloc/usfac,col_shift
-            if DEBUG: print "Off by: ",(0.25 - float(rloc)/usfac)*usfac , (-0.25 - float(cloc)/usfac)*usfac 
-            if DEBUG: print "correction was: ",rloc/usfac, cloc/usfac
-            if DEBUG: print "Coordinate went from",row_shift2,col_shift2,"to",row_shift0,col_shift0,"to", row_shift, col_shift
-            if DEBUG: print "dftsh - usfac:", dftshift-usfac
-            if DEBUG: print  rloc,cloc,row_shift,col_shift,CCmax,dftshift,rloc0,cloc0
+            if DEBUG: print("Off by: ",(0.25 - float(rloc)/usfac)*usfac , (-0.25 - float(cloc)/usfac)*usfac )
+            if DEBUG: print("correction was: ",rloc/usfac, cloc/usfac)
+            if DEBUG: print("Coordinate went from",row_shift2,col_shift2,"to",row_shift0,col_shift0,"to", row_shift, col_shift)
+            if DEBUG: print("dftsh - usfac:", dftshift-usfac)
+            if DEBUG: print( rloc,cloc,row_shift,col_shift,CCmax,dftshift,rloc0,cloc0)
 
         # If upsampling = 2, no additional pixel shift refinement
         else:    

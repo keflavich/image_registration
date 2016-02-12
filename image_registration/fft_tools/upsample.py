@@ -1,8 +1,8 @@
-import fast_ffts
+from . import fast_ffts
 import warnings
 import numpy as np
-import scale
-import zoom
+from . import scale
+from . import zoom
 
 def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     """
@@ -153,7 +153,7 @@ if __name__ == "__main__" and False:
     # a Gaussian image
     data = np.exp(-(xx**2+yy**2)/(0.5**2 * 2.))
     fftn,ifftn = fast_ffts.get_ffts(nthreads=4, use_numpy_fft=False)
-    print "input max pixel: ",np.unravel_index(data.argmax(),data.shape)
+    print("input max pixel: ",np.unravel_index(data.argmax(),data.shape))
     inp = ifftn(data)
 
     nr,nc=np.shape(inp);
@@ -231,9 +231,8 @@ if __name__ == "__main__" and False:
         imshow(np.abs(out))
         title('zoomed')
 
-        print "usfac: ",usfac,"max pixel: ",np.unravel_index(np.abs(out).argmax(),out.shape)
+        print("usfac: ",usfac,"max pixel: ",np.unravel_index(np.abs(out).argmax(),out.shape))
 
         figure(11)
         clf()
         imshow(np.abs(dftups(inp,inp.shape[0]*2,inp.shape[1]*2,usfac=2)))
-

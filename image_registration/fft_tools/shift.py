@@ -5,7 +5,7 @@ Shift
 Fourier-transform based shifting.  scipy.fftpack.shift does about the same
 thing, but only in one dimension
 """
-import fast_ffts
+from . import fast_ffts
 import numpy as np
 
 def shift2d(data, deltax, deltay, phase=0, nthreads=1, use_numpy_fft=False,

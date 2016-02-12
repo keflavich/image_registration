@@ -1,4 +1,4 @@
-import fast_ffts
+from . import fast_ffts
 import numpy as np
 
 def fourier_interp1d(data, out_x, data_x=None, nthreads=1, use_numpy_fft=False,
