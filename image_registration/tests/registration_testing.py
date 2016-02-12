@@ -1,7 +1,7 @@
-from .cross_correlation_shifts import cross_correlation_shifts
-from .register_images import register_images
-from .chi2_shifts import chi2_shift
-from .fft_tools import dftups,upsample_image,shift,smooth
+from ..cross_correlation_shifts import cross_correlation_shifts
+from ..register_images import register_images
+from ..chi2_shifts import chi2_shift
+from ..fft_tools import dftups,upsample_image,shift,smooth
 
 import numpy as np
 
