@@ -4,4 +4,3 @@ from .register_images import register_images
 from . import fft_tools
 from . import tests
 from . import FITS_tools
-from .version import __version__
