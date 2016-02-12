@@ -205,7 +205,7 @@ def obsolete_test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=F
     #    assert dmax[1] == zmax[1]
     assert ((zoom-image_zoomed)**2).sum() < 0.001
 
-def regression_test_issue6():
+def test_issue6_regression():
     i = -1.0*np.ones((2,2))
     r = upsample.upsample_image(i,upsample_factor=1,use_numpy_fft=True)
     assert((r==i).all()), 'with upsample_factor=1, should give back the original array'
