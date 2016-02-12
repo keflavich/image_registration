@@ -1,4 +1,4 @@
-from ..fft_tools import shift
+from .. import shift
 import numpy as np
 import pytest
 import itertools

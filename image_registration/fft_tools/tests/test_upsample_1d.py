@@ -1,4 +1,4 @@
-from ..fft_tools import zoom
+from .. import zoom
 import numpy as np
 import pytest
 import itertools
