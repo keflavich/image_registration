@@ -84,7 +84,7 @@ def dftups1d(inp,usfac=1,outsize=None,offset=0, return_xouts=False):
 
 
 def upsample_image(image, upsample_factor=1, output_size=None, nthreads=1,
-        use_numpy_fft=False, xshift=0, yshift=0):
+                   use_numpy_fft=False, xshift=0, yshift=0):
     """
     Use dftups to upsample an image (but takes an image and returns an image with all reals)
     """
@@ -104,7 +104,7 @@ def upsample_image(image, upsample_factor=1, output_size=None, nthreads=1,
 
     ups = dftups(imfft, s1, s2, upsample_factor, roff=yshift, coff=xshift)
 
-    return np.abs(ups)
+    return ups
 
 def odddftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     from numpy.fft import ifftshift
