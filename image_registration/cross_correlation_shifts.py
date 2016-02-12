@@ -1,3 +1,4 @@
+from __future__ import print_function
 try: 
     from AG_fft_tools import correlate2d,fast_ffts
 except ImportError:
@@ -96,7 +97,7 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
         return 0,0
 
     if maxoff is not None:
-        if verbose: print "Limiting maximum offset to %i" % maxoff
+        if verbose: print("Limiting maximum offset to %i" % maxoff)
         subccorr = ccorr[ycen-maxoff:ycen+maxoff+1,xcen-maxoff:xcen+maxoff+1]
         ymax,xmax = np.unravel_index(subccorr.argmax(), subccorr.shape)
         xmax = xmax+xcen-maxoff
@@ -132,7 +133,7 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
         xshift = maxoff - pars[2] if maxoff is not None else xcen - pars[2]
         yshift = maxoff - pars[3] if maxoff is not None else ycen - pars[3]
         if verbose: 
-            print "Gaussian fit pars: ",xshift,yshift,epars[2],epars[3],pars[4],pars[5],epars[4],epars[5]
+            print("Gaussian fit pars: ",xshift,yshift,epars[2],epars[3],pars[4],pars[5],epars[4],epars[5])
 
     else:
 
@@ -263,7 +264,7 @@ def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
         corr_image2 = image2_projected*(image2_projected > image2_projected.std()*sigma_cut)
         OK = (corr_image1==corr_image1)*(corr_image2==corr_image2) 
         if (corr_image1[OK]*corr_image2[OK]).sum() == 0:
-            print "Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut
+            print("Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut)
             corr_image1 = image1
             corr_image2 = image2_projected
     else:
