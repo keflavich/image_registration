@@ -1,4 +1,4 @@
-from image_registration.fft_tools import zoom
+from ..fft_tools import zoom
 import numpy as np
 import pytest
 import itertools
@@ -24,17 +24,17 @@ def test_plot_tests(imsize, upsample_factor,doplot=False):
     xz,z = zoom.zoom1d(g,upsample_factor,outsize=g.size*upsample_factor,return_xouts=True)
 
     if doplot:
-        print x,xz
-        from pylab import *
-        figure(1); clf()
-        plot(xz,z)
-        plot(x,g,label='input')
-        plot(xz,gaussian(xz-(imsize-1)/2.))
-        figure(2); clf()
-        plot(z[::upsample_factor])
-        plot(g)
-        figure(3); clf()
-        plot(gaussian(xz-(imsize-1)/2.)-z)
+        print(x,xz)
+        import pylab as pl
+        pl.figure(1).clf()
+        pl.plot(xz,z)
+        pl.plot(x,g,label='input')
+        pl.plot(xz,gaussian(xz-(imsize-1)/2.))
+        pl.figure(2).clf()
+        pl.plot(z[::upsample_factor])
+        pl.plot(g)
+        pl.figure(3).clf()
+        pl.plot(gaussian(xz-(imsize-1)/2.)-z)
     assert ((gaussian(xz - (imsize-1)/2.)-z)**2).sum() < 4e-5*upsample_factor+0.12*imsize**-1.83
 
 @pytest.mark.parametrize(('imsize','upsample_factor','offset'),

@@ -1,4 +1,4 @@
-from image_registration.fft_tools import upsample
+from ..fft_tools import upsample
 import numpy as np
 #import pytest
 import itertools
@@ -188,10 +188,10 @@ def obsolete_test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=F
         else:
             plotthings(image,image_shifted,image_zoomed[:image.shape[0],:image.shape[1]],zoom[:image.shape[0],:image.shape[1]],       cx,cy,upsample_factor,imsize,outsize,x[:image.shape[0],:image.shape[1]],y[:image.shape[0],:image.shape[1]],fullzoom=fullzoom)
 
-    print " ".join(["%6.2f" % q for q in 
+    print(" ".join(["%6.2f" % q for q in 
         (upsample_factor,imsize,outsize,cx,cy,x[zmax],y[zmax],zmax[1],zmax[0],dmax[1],dmax[0],x[zmax]-dmax[1],y[zmax]-dmax[0],
             cx/float(upsample_factor),cy/float(upsample_factor),((zoom-image_zoomed)**2).sum(),
-            ismax[0]-middle[0],ismax[1]-middle[1])])
+            ismax[0]-middle[0],ismax[1]-middle[1])]))
 
     zmax = np.where(np.abs(zoom-zoom.max()) < 1e-8)
     #assert np.round(np.mean(y[zmax])) == floor(image.shape[0]/2.+cy)

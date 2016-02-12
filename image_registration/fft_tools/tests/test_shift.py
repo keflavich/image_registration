@@ -1,4 +1,4 @@
-from image_registration.fft_tools import shift
+from ..fft_tools import shift
 import numpy as np
 import pytest
 import itertools

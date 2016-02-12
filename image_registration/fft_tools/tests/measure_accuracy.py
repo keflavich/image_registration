@@ -1,4 +1,4 @@
-from image_registration.fft_tools import zoom
+from ..fft_tools import zoom
 import numpy as np
 import pytest
 import itertools
