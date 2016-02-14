@@ -113,6 +113,7 @@ install:
     # other dependencies.
 
 script:
+   - py.test --version
    - python setup.py $SETUP_CMD
 
 after_success:
