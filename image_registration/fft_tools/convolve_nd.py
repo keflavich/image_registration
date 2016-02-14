@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
-import pytest
 import itertools
+from astropy.tests.helper import pytest
 
 try:
     import fftw3

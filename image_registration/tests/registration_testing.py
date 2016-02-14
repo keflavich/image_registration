@@ -3,6 +3,9 @@ from ..register_images import register_images
 from ..chi2_shifts import chi2_shift
 from ..fft_tools import dftups,upsample_image,shift,smooth
 
+from astropy.tests.helper import pytest
+
+import itertools
 import numpy as np
 
 def upsample_ft_raw(buf1ft,buf2ft,zoomfac=2):
@@ -49,8 +52,6 @@ def chi2(im1, im2, dx, dy, err=None, upsample=1):
     return ((im1-im2s)**2/err**2).sum()
 
 
-import pytest
-import itertools
 
 shifts = [1,1.5,-1.25,8.2,10.1]
 sizes = [99,100,101]

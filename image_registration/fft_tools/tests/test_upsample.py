@@ -1,6 +1,5 @@
 from .. import upsample
 import numpy as np
-#import pytest
 import itertools
 
 def gaussian_centered(imsize, upsample_factor=1):
