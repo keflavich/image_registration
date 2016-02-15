@@ -18,31 +18,41 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     is the model as a function of shift:
 
     .. math::
-            \chi^2(dx,dy) & = & \Sigma_{ij} \\frac{(X_{ij}-Y_{ij}(dx,dy))^2}{\sigma_{ij}^2} \\\\
+            \chi^2(dx,dy) = \Sigma_{ij} \\frac{(X_{ij}-Y_{ij}(dx,dy))^2}{\sigma_{ij}^2}
                           
-    ..                         
+    ..
           & = & \Sigma_{ij} \left[ X_{ij}^2/\sigma_{ij}^2 - 2X_{ij}Y_{ij}(dx,dy)/\sigma_{ij}^2 + Y_{ij}(dx,dy)^2/\sigma_{ij}^2 \\right]  \\\\
+                  
 
-    Equation 2-4:
+    Equation 2-4: blahha
 
     .. math::
-            Term~1: f(dx,dy) & = & \Sigma_{ij} \\frac{X_{ij}^2}{\sigma_{ij}^2}  \\\\
-                    f(dx,dy) & = & f(0,0) ,  \\forall dx,dy \\\\
-            Term~2: g(dx,dy) & = & -2 \Sigma_{ij} \\frac{X_{ij}Y_{ij}(dx,dy)}{\sigma_{ij}^2} = -2 \Sigma_{ij} \left(\\frac{X_{ij}}{\sigma_{ij}^2}\\right) Y_{ij}(dx,dy) \\\\
-            Term~3: h(dx,dy) & = & \Sigma_{ij} \\frac{Y_{ij}(dx,dy)^2}{\sigma_{ij}^2} = \Sigma_{ij} \left(\\frac{1}{\sigma_{ij}^2}\\right) Y^2_{ij}(dx,dy)
+       :nowrap:
+
+       \\begin{align}
+            \\mathrm{Term~1:} & f(dx,dy) & = & \\Sigma_{ij} \\frac{X_{ij}^2}{\\sigma_{ij}^2}  \\\\
+                              & f(dx,dy) & = & f(0,0) ,  \\forall dx,dy \\\\
+            \\mathrm{Term~2:} & g(dx,dy) & = & -2 \\Sigma_{ij} \\frac{X_{ij}Y_{ij}(dx,dy)}{\\sigma_{ij}^2} = -2 \\Sigma_{ij} \\left(\\frac{X_{ij}}{\\sigma_{ij}^2}\\right) Y_{ij}(dx,dy) \\\\
+            \\mathrm{Term~3:} & h(dx,dy) & = & \\Sigma_{ij} \\frac{Y_{ij}(dx,dy)^2}{\\sigma_{ij}^2} = \\Sigma_{ij} \\left(\\frac{1}{\\sigma_{ij}^2}\\right) Y^2_{ij}(dx,dy)
+       \\end{align}
 
     The cross-correlation can be computed with fourier transforms, and is defined
 
     .. math::
-            CC_{m,n}(x,y) = \Sigma_{ij} x^*_{ij} y_{(n+i)(m+j)}
+
+            CC_{m,n}(x,y) = \\Sigma_{ij} x^*_{ij} y_{(n+i)(m+j)}
 
     which can then be applied to our problem, noting that the cross-correlation
     has the same form as term 2 and 3 in :math:`\chi^2` (term 1 is a constant,
     with no dependence on the shift)
 
     .. math::
-            Term~2: & CC(X/\sigma^2,Y)[dx,dy] & = & \Sigma_{ij} \left(\\frac{X_{ij}}{\sigma_{ij}^2}\\right)^* Y_{ij}(dx,dy) \\\\
-            Term~3: & CC(\sigma^{-2},Y^2)[dx,dy] & = & \Sigma_{ij} \left(\\frac{1}{\sigma_{ij}^2}\\right)^* Y^2_{ij}(dx,dy) \\\\
+        :nowrap:
+
+        \\begin{align}
+            \\mathrm{Term~2:} & CC(X/\sigma^2,Y)[dx,dy] & = & \Sigma_{ij} \left(\\frac{X_{ij}}{\sigma_{ij}^2}\\right)^* Y_{ij}(dx,dy) \\\\
+            \\mathrm{Term~3:} & CC(\sigma^{-2},Y^2)[dx,dy] & = & \Sigma_{ij} \left(\\frac{1}{\sigma_{ij}^2}\\right)^* Y^2_{ij}(dx,dy)
+        \\end{align}
 
     Technically, only terms 2 and 3 has any effect on the resulting image,
     since term 1 is the same for all shifts, and the quantity of interest is
@@ -53,12 +63,12 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     ----------
     im1 : np.ndarray
     im2 : np.ndarray
-        The images to register. 
+        The images to register.
     err : np.ndarray
         Per-pixel error in image 2
     boundary : 'wrap','constant','reflect','nearest'
         Option to pass to map_coordinates for determining what to do with
-        shifts outside of the boundaries.  
+        shifts outside of the boundaries.
     upsample_factor : int or 'auto'
         upsampling factor; governs accuracy of fit (1/usfac is best accuracy)
         (can be "automatically" determined based on chi^2 error)
@@ -100,7 +110,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
 
     Examples
     --------
-    Create a 2d array, 
+    Create a 2d array,
     shift it in both directions,
     then use chi2_shift to determine the shift
 
@@ -114,8 +124,9 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     
     """
     chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
-            nthreads=nthreads, zeromean=zeromean, use_numpy_fft=use_numpy_fft,
-            return_all=True, reduced=False)
+                                       nthreads=nthreads, zeromean=zeromean,
+                                       use_numpy_fft=use_numpy_fft,
+                                       return_all=True, reduced=False)
     ymax, xmax = np.unravel_index(chi2.argmin(), chi2.shape)
 
     # needed for ffts

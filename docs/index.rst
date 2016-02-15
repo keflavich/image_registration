@@ -147,6 +147,12 @@ Indices and tables
 * :doc:`image_registration`
 * :doc:`image_registration.tests`
   
+.. toctree::
+  :maxdepth: 1
+
+  modules.rst
+  spectral_xcorr.rst
+  fourier_tools.rst
 
 .. [*] Apparently astronomical images look a lot like microscopic images.  So
   maybe this code is good for coaligning bacteria!
