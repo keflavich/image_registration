@@ -16,18 +16,18 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True,
 
     Parameters
     ----------
-        fitsfile : string
-            a FITS file name
-        header : pyfits.Header
-            A pyfits Header instance with valid WCS to project to
-        use_montage : bool
-            Use montage or hcongrid (scipy's map_coordinates)
-        quiet : bool
-            Silence Montage's output
+    fitsfile : string
+        a FITS file name
+    header : pyfits.Header
+        A pyfits Header instance with valid WCS to project to
+    use_montage : bool
+        Use montage or hcongrid (scipy's map_coordinates)
+    quiet : bool
+        Silence Montage's output
 
     Returns
     -------
-        np.ndarray image projected to header's coordinates
+    np.ndarray image projected to header's coordinates
 
     """
     try:
@@ -96,9 +96,8 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
 
     Returns
     -------
-    image1,image2,[header] : 
-        Two images projected into the same space, and optionally
-        the header used to project them
+    image1,image2,[header] : Two images projected into the same space, and
+    optionally the header used to project them
     """
 
     if header is None:
@@ -188,7 +187,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
 
     """
     proj_image1, proj_image2, header = match_fits(fitsfile1, fitsfile2,
-            return_header=True, **kwargs)
+                                                  return_header=True, **kwargs)
 
     if errfile is not None:
         errimage = project_to_header(errfile, header, use_montage=use_montage, **kwargs)
@@ -196,7 +195,8 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         errimage = None
 
     xoff,yoff,exoff,eyoff = register_method(proj_image1, proj_image2,
-            err=errimage, return_error=True, **kwargs)
+                                            err=errimage, return_error=True,
+                                            **kwargs)
     
     wcs = pywcs.WCS(header)
     try:
