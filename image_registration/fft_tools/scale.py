@@ -1,11 +1,11 @@
-import fast_ffts
+from . import fast_ffts
 import numpy as np
 
 def fourier_interp1d(data, out_x, data_x=None, nthreads=1, use_numpy_fft=False,
-        return_real=True):
+                     return_real=True):
     """
-    Use the fourier scaling theorem to interpolate (or extrapolate, without raising
-    any exceptions) data.
+    Use the fourier scaling theorem to interpolate (or extrapolate, without
+    raising any exceptions) data.
 
     Parameters
     ----------
@@ -17,9 +17,6 @@ def fourier_interp1d(data, out_x, data_x=None, nthreads=1, use_numpy_fft=False,
         The X-values corresponding to the data values.  If an ndarray, must
         have the same shape as data.  If not specified, will be set to
         np.arange(data.size)
-
-    Other Parameters
-    ----------------
     nthreads : int
         Number of threads for parallelized FFTs (if available)
     use_numpy_fft : bool
@@ -68,7 +65,7 @@ def fourier_interp1d(data, out_x, data_x=None, nthreads=1, use_numpy_fft=False,
         return result
 
 def fourier_interp2d(data, outinds, nthreads=1, use_numpy_fft=False,
-        return_real=True):
+                     return_real=True):
     """
     Use the fourier scaling theorem to interpolate (or extrapolate, without raising
     any exceptions) data.
@@ -79,10 +76,8 @@ def fourier_interp2d(data, outinds, nthreads=1, use_numpy_fft=False,
         The data values of the array to interpolate
     outinds : ndarray
         The coordinate axis values along which the data should be interpolated
-        CAN BE:
-            ndim x [n,m,...] like np.indices
-        OR (less memory intensive, more processor intensive):
-            ([n],[m],...)
+        CAN BE: `ndim x [n,m,...]` like np.indices OR (less memory intensive,
+        more processor intensive) `([n],[m],...)`
     """
 
     # load fft
@@ -121,7 +116,7 @@ def fourier_interp2d(data, outinds, nthreads=1, use_numpy_fft=False,
 
 
 def fourier_interpnd(data, outinds, nthreads=1, use_numpy_fft=False,
-        return_real=True):
+                     return_real=True):
     """
     Use the fourier scaling theorem to interpolate (or extrapolate, without raising
     any exceptions) data.
@@ -133,10 +128,8 @@ def fourier_interpnd(data, outinds, nthreads=1, use_numpy_fft=False,
         The data values of the array to interpolate
     outinds : ndarray
         The coordinate axis values along which the data should be interpolated
-        CAN BE:
-            ndim x [n,m,...] like np.indices
-        OR (less memory intensive, more processor intensive):
-            ([n],[m],...)
+        CAN BE `ndim x [n,m,...]` like np.indices OR (less memory intensive,
+        more processor intensive) `([n],[m],...)`
     """
 
     # load fft
@@ -181,5 +174,3 @@ def fourier_interpnd(data, outinds, nthreads=1, use_numpy_fft=False,
         return result.real
     else:
         return result
-
-

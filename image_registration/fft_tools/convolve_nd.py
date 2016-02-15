@@ -1,5 +1,7 @@
 import numpy as np
 import warnings
+import itertools
+from astropy.tests.helper import pytest
 
 try:
     import fftw3
@@ -326,8 +328,6 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
         return rifft.real
 
 
-import pytest
-import itertools
 params = list(itertools.product((True,False),(True,False),(True,False)))
 @pytest.mark.parametrize(('psf_pad','use_numpy_fft','force_ignore_zeros_off'),params)
 def test_3d(psf_pad, use_numpy_fft, force_ignore_zeros_off, debug=False, tolerance=1e-17):
@@ -339,8 +339,8 @@ def test_3d(psf_pad, use_numpy_fft, force_ignore_zeros_off, debug=False, toleran
 
     conv1 = convolvend(array, kern, psf_pad=psf_pad, force_ignore_zeros_off=force_ignore_zeros_off, debug=debug)
 
-    print "psf_pad=%s use_numpy=%s force_ignore_zeros_off=%s" % (psf_pad, use_numpy_fft, force_ignore_zeros_off)
-    print "side,center: %g,%g" % (conv1[15,0,15],conv1[15,15,15])
+    print("psf_pad=%s use_numpy=%s force_ignore_zeros_off=%s" % (psf_pad, use_numpy_fft, force_ignore_zeros_off))
+    print("side,center: %g,%g" % (conv1[15,0,15],conv1[15,15,15]))
     if force_ignore_zeros_off or not psf_pad:
         assert(np.abs(conv1[15,0,15] - 1./125.) < tolerance)
         assert(np.abs(conv1[15,1,15] - 1./125.) < tolerance)

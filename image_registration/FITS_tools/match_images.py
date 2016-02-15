@@ -1,5 +1,5 @@
 import numpy as np
-from image_registration import chi2_shift,chi2_shift_iterzoom
+from .. import chi2_shift,chi2_shift_iterzoom
 try:
     import astropy.io.fits as pyfits
     import astropy.wcs as pywcs
@@ -16,18 +16,18 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True,
 
     Parameters
     ----------
-        fitsfile : string
-            a FITS file name
-        header : pyfits.Header
-            A pyfits Header instance with valid WCS to project to
-        use_montage : bool
-            Use montage or hcongrid (scipy's map_coordinates)
-        quiet : bool
-            Silence Montage's output
+    fitsfile : string
+        a FITS file name
+    header : pyfits.Header
+        A pyfits Header instance with valid WCS to project to
+    use_montage : bool
+        Use montage or hcongrid (scipy's map_coordinates)
+    quiet : bool
+        Silence Montage's output
 
     Returns
     -------
-        np.ndarray image projected to header's coordinates
+    np.ndarray image projected to header's coordinates
 
     """
     try:
@@ -36,7 +36,7 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True,
     except ImportError:
         montageOK=False
     try:
-        from hcongrid import hcongrid
+        from .hcongrid import hcongrid
         hcongridOK=True
     except ImportError:
         hcongridOK=False
@@ -96,9 +96,8 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
 
     Returns
     -------
-    image1,image2,[header] : 
-        Two images projected into the same space, and optionally
-        the header used to project them
+    image1,image2,[header] : Two images projected into the same space, and
+    optionally the header used to project them
     """
 
     if header is None:
@@ -118,7 +117,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         corr_image2 = image2_projected*(image2_projected > image2_projected.std()*sigma_cut)
         OK = (corr_image1==corr_image1)*(corr_image2==corr_image2) 
         if (corr_image1[OK]*corr_image2[OK]).sum() == 0:
-            print "Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut
+            print("Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut)
             corr_image1 = image1
             corr_image2 = image2_projected
     else:
@@ -188,7 +187,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
 
     """
     proj_image1, proj_image2, header = match_fits(fitsfile1, fitsfile2,
-            return_header=True, **kwargs)
+                                                  return_header=True, **kwargs)
 
     if errfile is not None:
         errimage = project_to_header(errfile, header, use_montage=use_montage, **kwargs)
@@ -196,14 +195,14 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         errimage = None
 
     xoff,yoff,exoff,eyoff = register_method(proj_image1, proj_image2,
-            err=errimage, return_error=True, **kwargs)
+                                            err=errimage, return_error=True,
+                                            **kwargs)
     
     wcs = pywcs.WCS(header)
     try:
         cdelt = wcs.wcs.cd.diagonal()
     except AttributeError:
         cdelt = wcs.wcs.cdelt
-    #print "CDELT: ",cdelt
     xoff_wcs,yoff_wcs = np.array([xoff,yoff])*cdelt
     exoff_wcs,eyoff_wcs = np.array([exoff,eyoff])*cdelt
     #try:

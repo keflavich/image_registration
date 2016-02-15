@@ -1,8 +1,8 @@
-from image_registration.cross_correlation_shifts import cross_correlation_shifts
-from image_registration.register_images import register_images
-from image_registration import chi2_shifts
-from image_registration.fft_tools import dftups,upsample_image,shift,smooth
-from image_registration.tests import registration_testing as rt
+from .cross_correlation_shifts import cross_correlation_shifts
+from .register_images import register_images
+from . import chi2_shifts
+from .fft_tools import dftups,upsample_image,shift,smooth
+from .tests import registration_testing as rt
 
 import numpy as np
 import matplotlib.pyplot as pl

@@ -48,9 +48,9 @@ def header_overlap(hdr1,hdr2,max_separation=180,overlap="union"):
     ((xmin2,ymin2),) = wcs2.wcs_pix2world([[1,1]],1)
 
     # make sure the edges are all in the same quadrant-ish
-    xmlist = [xm - 360 if xm > max_separation else 
-              xm + 360 if xm < -max_separation else xm
-              for xm in xmin1,xmax1,xmin2,xmax2]
+    xmlist = [xm - 360 if xm > max_separation else
+              (xm + 360 if xm < -max_separation else xm)
+              for xm in (xmin1,xmax1,xmin2,xmax2)]
     xmin1,xmax1,xmin2,xmax2 = xmlist
 
     # check signs

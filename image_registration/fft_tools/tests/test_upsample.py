@@ -1,6 +1,5 @@
-from image_registration.fft_tools import upsample
+from .. import upsample
 import numpy as np
-#import pytest
 import itertools
 
 def gaussian_centered(imsize, upsample_factor=1):
@@ -188,10 +187,10 @@ def obsolete_test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=F
         else:
             plotthings(image,image_shifted,image_zoomed[:image.shape[0],:image.shape[1]],zoom[:image.shape[0],:image.shape[1]],       cx,cy,upsample_factor,imsize,outsize,x[:image.shape[0],:image.shape[1]],y[:image.shape[0],:image.shape[1]],fullzoom=fullzoom)
 
-    print " ".join(["%6.2f" % q for q in 
+    print(" ".join(["%6.2f" % q for q in 
         (upsample_factor,imsize,outsize,cx,cy,x[zmax],y[zmax],zmax[1],zmax[0],dmax[1],dmax[0],x[zmax]-dmax[1],y[zmax]-dmax[0],
             cx/float(upsample_factor),cy/float(upsample_factor),((zoom-image_zoomed)**2).sum(),
-            ismax[0]-middle[0],ismax[1]-middle[1])])
+            ismax[0]-middle[0],ismax[1]-middle[1])]))
 
     zmax = np.where(np.abs(zoom-zoom.max()) < 1e-8)
     #assert np.round(np.mean(y[zmax])) == floor(image.shape[0]/2.+cy)
@@ -205,6 +204,10 @@ def obsolete_test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=F
     #    assert dmax[1] == zmax[1]
     assert ((zoom-image_zoomed)**2).sum() < 0.001
 
+def test_issue6_regression():
+    i = -1.0*np.ones((2,2))
+    r = upsample.upsample_image(i,upsample_factor=1,use_numpy_fft=True)
+    assert((r==i).all()), 'with upsample_factor=1, should give back the original array'
 
 
 """
@@ -268,52 +271,51 @@ def obsolete_test_center_zoom_even(imsize,outsize,cx,cy,upsample_factor,doplot=F
 def plotthings(image,image_shifted,image_shifted_zoomed,zoom,cx,cy,upsample_factor,imsize,outsize,x,y,
         fullzoom=None):
 
-    from pylab import * # debug
+    import pylab as pl
 
-    figure(1)
-    clf()
-    imshow(zoom-image_shifted_zoomed)
-    colorbar()
-    title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
-    savefig("fig1_%i_%i_%i_%i_%i.png" % (imsize,outsize,cx,cy,upsample_factor))
-    figure(5)
-    clf()
-    plot(zoom[zoom.shape[0]/2.,:])
-    plot(image_shifted_zoomed[image_shifted_zoomed.shape[0]/2.,:])
-    title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
-    figure(2)
-    clf()
-    subplot(121)
-    imshow(zoom)
-    colorbar()
-    subplot(122)
-    imshow(image_shifted_zoomed)
-    contour(zoom,cmap=cm.gray)
-    colorbar()
-    title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
-    savefig("fig2_%i_%i_%i_%i_%i.png" % (imsize,outsize,cx,cy,upsample_factor))
-    fig3=figure(3)
-    clf()
-    imshow(image)
-    contour(x,y,zoom,cmap=cm.gray)
-    contour(x,y,image_shifted_zoomed,cmap=cm.spectral)
-    title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
-    savefig("fig3_%i_%i_%i_%i_%i.png" % (imsize,outsize,cx,cy,upsample_factor))
+    pl.figure(1)
+    pl.clf()
+    pl.imshow(zoom-image_shifted_zoomed)
+    pl.colorbar()
+    pl.title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
+    pl.savefig("fig1_%i_%i_%i_%i_%i.png" % (imsize,outsize,cx,cy,upsample_factor))
+    pl.figure(5)
+    pl.clf()
+    pl.plot(zoom[zoom.shape[0]/2.,:])
+    pl.plot(image_shifted_zoomed[image_shifted_zoomed.shape[0]/2.,:])
+    pl.title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
+    pl.figure(2)
+    pl.clf()
+    pl.subplot(121)
+    pl.imshow(zoom)
+    pl.colorbar()
+    pl.subplot(122)
+    pl.imshow(image_shifted_zoomed)
+    pl.contour(zoom,cmap=pl.cm.gray)
+    pl.colorbar()
+    pl.title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
+    pl.savefig("fig2_%i_%i_%i_%i_%i.png" % (imsize,outsize,cx,cy,upsample_factor))
+    fig3=pl.figure(3)
+    fig3.clf()
+    pl.imshow(image)
+    pl.contour(x,y,zoom,cmap=pl.cm.gray)
+    pl.contour(x,y,image_shifted_zoomed,cmap=pl.cm.spectral)
+    pl.title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor))
+    pl.savefig("fig3_%i_%i_%i_%i_%i.png" % (imsize,outsize,cx,cy,upsample_factor))
     xll = x.min()-np.mean(np.diff(x[0,:]))/2.
     yll = y.min()-np.mean(np.diff(y[:,0]))/2.
     xwidth = (x.max()-x.min()) + np.mean(np.diff(x[0,:]))
     ywidth = (y.max()-y.min()) + np.mean(np.diff(y[:,0]))
-    gca().add_patch(mpl.patches.Rectangle((xll,yll),xwidth,ywidth,facecolor='none',edgecolor='w'))
+    pl.gca().add_patch(pl.mpl.patches.Rectangle((xll,yll),xwidth,ywidth,facecolor='none',edgecolor='w'))
     if fullzoom is not None:
-        figure(4)
-        clf()
-        imshow(fullzoom)
-        axlim = gca().axis()
-        plot(fullzoom.shape[1]/2.,fullzoom.shape[0]/2.,'wx',mew=3)
+        pl.figure(4)
+        pl.clf()
+        pl.imshow(fullzoom)
+        axlim = pl.gca().axis()
+        pl.plot(fullzoom.shape[1]/2.,fullzoom.shape[0]/2.,'wx',mew=3)
         fzmax = np.unravel_index(fullzoom.argmax(),fullzoom.shape)
-        plot(fzmax[1], fzmax[0],'g+',mew=3)
-        title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor) + str(fzmax) + str(fullzoom.shape))
-        gca().axis(axlim)
-        colorbar()
-        savefig("fig4_%i_%i_%i_%i_%i.png" % (imsize,outsize,cx,cy,upsample_factor))
-
+        pl.plot(fzmax[1], fzmax[0],'g+',mew=3)
+        pl.title("%i,%i,%i,%i,%i" % (imsize,outsize,cx,cy,upsample_factor) + str(fzmax) + str(fullzoom.shape))
+        pl.gca().axis(axlim)
+        pl.colorbar()
+        pl.savefig("fig4_%i_%i_%i_%i_%i.png" % (imsize,outsize,cx,cy,upsample_factor))

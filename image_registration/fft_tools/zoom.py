@@ -1,6 +1,6 @@
-import fast_ffts
+from . import fast_ffts
 import numpy as np
-import scale
+from . import scale
 from matplotlib import docstring
 
 def zoom1d(inp, usfac=1, outsize=None, offset=0, nthreads=1,

@@ -1,8 +1,11 @@
-from image_registration.cross_correlation_shifts import cross_correlation_shifts
-from image_registration.register_images import register_images
-from image_registration.chi2_shifts import chi2_shift
-from image_registration.fft_tools import dftups,upsample_image,shift,smooth
+from ..cross_correlation_shifts import cross_correlation_shifts
+from ..register_images import register_images
+from ..chi2_shifts import chi2_shift
+from ..fft_tools import dftups,upsample_image,shift,smooth
 
+from astropy.tests.helper import pytest
+
+import itertools
 import numpy as np
 
 def upsample_ft_raw(buf1ft,buf2ft,zoomfac=2):
@@ -49,8 +52,6 @@ def chi2(im1, im2, dx, dy, err=None, upsample=1):
     return ((im1-im2s)**2/err**2).sum()
 
 
-import pytest
-import itertools
 
 shifts = [1,1.5,-1.25,8.2,10.1]
 sizes = [99,100,101]
@@ -125,8 +126,8 @@ def fit_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4, noise=1.0):
 @pytest.mark.parametrize(('xsh','ysh','imsize','noise_taper'),list(itertools.product(shifts,shifts,sizes,(False,))))
 def test_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=4):
     xoff,yoff,exoff,eyoff,nsigma = fit_extended_shifts(xsh,ysh,imsize, noise_taper, nsigma=nsigma)
-    print xoff,xsh,nsigma,exoff
-    print yoff,ysh,nsigma,eyoff
+    print(xoff,xsh,nsigma,exoff)
+    print(yoff,ysh,nsigma,eyoff)
     assert np.abs(xoff-xsh) < nsigma*exoff
     assert np.abs(yoff-ysh) < nsigma*eyoff
 
@@ -151,10 +152,10 @@ def test_shifts(xsh,ysh,imsize,gaussfit):
     image,new_image,tolerance = make_offset_images(xsh, ysh, imsize)
     if gaussfit:
         xoff,yoff,exoff,eyoff = cross_correlation_shifts(image,new_image,return_error=True)
-        print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh),exoff,eyoff
+        print(xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh),exoff,eyoff)
     else:
         xoff,yoff = chi2_shift(image,new_image,return_error=False)
-        print xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh) 
+        print(xoff,yoff,np.abs(xoff-xsh),np.abs(yoff-ysh))
     assert np.abs(xoff-xsh) < tolerance
     assert np.abs(yoff-ysh) < tolerance
 
@@ -274,10 +275,10 @@ def run_tests(xsh, ysh, imsize, amp, gaussfit, nfits=1000, maxoff=20):
             gaussfit=gaussfit, maxoff=maxoff, return_error=True,
             errim1=np.ones([imsize,imsize]),
             errim2=np.ones([imsize,imsize]))
-    print "StdDev: %10.3g,%10.3g  Measured: %10.3g,%10.3g "+\
+    print("StdDev: %10.3g,%10.3g  Measured: %10.3g,%10.3g "+\
             " Difference: %10.3g, %10.3g  Diff/Real: %10.3g,%10.3g" % (
             errors[0],errors[1], ex,ey,errors[0]-ex,errors[1]-ey,
-            (errors[0]-ex)/errors[0], (errors[1]-ey)/errors[1])
+            (errors[0]-ex)/errors[0], (errors[1]-ey)/errors[1]))
 
     return errors[0],errors[1],ex,ey
 
@@ -293,7 +294,7 @@ def plot_extended_tests(nfits=25,xsh=1.75,ysh=1.75, imsize=64, noise=1.0,
         maxoff=12., zeropad=64, **kwargs):
     x,y,ex,ey = np.array(do_n_extended_fits(nfits, xsh, ysh, imsize, 
         maxoff=maxoff, return_error=True, noise=noise, **kwargs)).T
-    print x,y
+    print(x,y)
     import pylab
     pylab.plot([xsh],[ysh],'kd',markersize=20)
     pylab.errorbar(x,y,xerr=ex,yerr=ey,linestyle='none')
@@ -306,8 +307,8 @@ def determine_error_offsets():
     # analytic
     A = np.array([run_tests(1.5,1.5,50,a,False,nfits=200) for a in np.logspace(1.5,3,30)]);
     G = np.array([run_tests(1.5,1.5,50,a,True,nfits=200) for a in np.logspace(1.5,3,30)]);
-    print "Analytic offset: %g" % (( (A[:,3]/A[:,1]).mean() + (A[:,2]/A[:,0]).mean() )/2. )
-    print "Gaussian offset: %g" % (( (G[:,3]/G[:,1]).mean() + (G[:,2]/G[:,0]).mean() )/2. )
+    print("Analytic offset: %g" % (( (A[:,3]/A[:,1]).mean() + (A[:,2]/A[:,0]).mean() )/2. ))
+    print("Gaussian offset: %g" % (( (G[:,3]/G[:,1]).mean() + (G[:,2]/G[:,0]).mean() )/2. ))
     
 @pytest.mark.parametrize(('imsize'),sizes)
 def test_upsample(imsize, usfac=2, xsh=2.25, ysh=2.25, noise=0.1, **kwargs):
@@ -357,15 +358,14 @@ def error_test(xsh=2.25,ysh=-1.35,noise=0.5,imsize=100,usf=101,nsamples=100,maxo
     offsets = np.array(do_n_extended_fits(nsamples, xsh, ysh, imsize,
         shift_func=register_images, sfkwargs={'usfac':usf,'maxoff':maxoff}, noise=noise))
 
-    print "Theoretical accuracy: ",1./usf
-    print "Standard Deviation x,y: ",offsets.std(axis=0)
-    #print "Standard Deviation compared to truth x,y: ",(offsets-np.array([ysh,xsh])).std(axis=0)
-    print "Mean x,y: ",offsets.mean(axis=0),"Real x,y: ",xsh,ysh
-    print "Mean x,y - true x,y: ",offsets.mean(axis=0)-np.array([xsh,ysh])
-    print "Mean x,y - true x,y / std: ",(offsets.mean(axis=0)-np.array([xsh,ysh]))/offsets.std(axis=0)
+    print("Theoretical accuracy: ",1./usf)
+    print("Standard Deviation x,y: ",offsets.std(axis=0))
+    print("Mean x,y: ",offsets.mean(axis=0),"Real x,y: ",xsh,ysh)
+    print("Mean x,y - true x,y: ",offsets.mean(axis=0)-np.array([xsh,ysh]))
+    print("Mean x,y - true x,y / std: ",(offsets.mean(axis=0)-np.array([xsh,ysh]))/offsets.std(axis=0))
     signal = 3.05 * imsize**2 # empirical: plot(array([5,25,50,75,100,125,150]),array([mean([make_extended(jj).sum() for i in xrange(100)]) for jj in [5,25,50,75,100,125,150]])/array([5,25,50,75,100,125,150])**2)
     noise = 0.8 * imsize**2 * noise
-    print "Signal / Noise: ", signal / noise
+    print("Signal / Noise: ", signal / noise)
 
     return np.array(offsets),offsets.std(axis=0),offsets.mean(axis=0)+np.array([ysh,xsh]),signal/noise
 
@@ -503,9 +503,9 @@ def plot_compare_methods(offsets, eoffsets, dx=None, dy=None, fig1=1,
     emeans = eoffsets.mean(axis=0)
     estds = eoffsets.std(axis=0)
 
-    print "Standard Deviations: ", stds
-    print "Error Means: ", emeans
-    print "emeans/stds: ", emeans/stds
+    print("Standard Deviations: ", stds)
+    print("Error Means: ", emeans)
+    print("emeans/stds: ", emeans/stds)
 
     pylab.figure(fig2)
     pylab.clf()
@@ -525,7 +525,7 @@ def plot_compare_methods(offsets, eoffsets, dx=None, dy=None, fig1=1,
 
 doplots=False
 if doplots:
-    print "Showing some nice plots"
+    print("Showing some nice plots")
 
     from pylab import *
     figure(1)

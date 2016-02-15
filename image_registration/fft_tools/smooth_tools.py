@@ -1,7 +1,7 @@
 import numpy as np
 import types
-from downsample import downsample as downsample_2d
-from convolve_nd import convolvend as convolve
+from .downsample import downsample as downsample_2d
+from .convolve_nd import convolvend as convolve
 
 def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
         silent=True, psf_pad=True, interp_nan=False, nwidths='max',
@@ -74,12 +74,12 @@ def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
         szX += szX % 2
         yy,xx = np.indices([szY,szX])
     shape = (szY,szX)
-    if not silent: print "Kernel size set to ",shape
+    if not silent: print("Kernel size set to ",shape)
 
     kernel = make_kernel(shape, kernelwidth=kernelwidth, kerneltype=kerneltype,
             normalize_kernel=normalize_kernel, trapslope=trapslope)
 
-    if not silent: print "Kernel of type %s normalized with %s has peak %g" % (kerneltype, normalize_kernel, kernel.max())
+    if not silent: print("Kernel of type %s normalized with %s has peak %g" % (kerneltype, normalize_kernel, kernel.max()))
 
     bad = (image != image)
     temp = image.copy() # to preserve NaN values

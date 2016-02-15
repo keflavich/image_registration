@@ -1,36 +1,43 @@
-import fast_ffts
+from . import fast_ffts
 import warnings
 import numpy as np
-import scale
-import zoom
+from . import scale
+from . import zoom
 
 def dftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     """
-    *translated from matlab*
-    http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html
+    Translated from matlab:
+
+     * `Original Source <http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html>`_
+     * Manuel Guizar - Dec 13, 2007
+     * Modified from dftus, by J.R. Fienup 7/31/06
 
     Upsampled DFT by matrix multiplies, can compute an upsampled DFT in just
     a small region.
-    usfac         Upsampling factor (default usfac = 1)
-    [nor,noc]     Number of pixels in the output upsampled DFT, in
-                  units of upsampled pixels (default = size(in))
-    roff, coff    Row and column offsets, allow to shift the output array to
-                  a region of interest on the DFT (default = 0)
-    Recieves DC in upper left corner, image center must be in (1,1) 
-    Manuel Guizar - Dec 13, 2007
-    Modified from dftus, by J.R. Fienup 7/31/06
 
     This code is intended to provide the same result as if the following
-    operations were performed
-      - Embed the array "in" in an array that is usfac times larger in each
+    operations were performed:
+
+      * Embed the array "in" in an array that is usfac times larger in each
         dimension. ifftshift to bring the center of the image to (1,1).
-      - Take the FFT of the larger array
-      - Extract an [nor, noc] region of the result. Starting with the 
+      * Take the FFT of the larger array
+      * Extract an [nor, noc] region of the result. Starting with the
         [roff+1 coff+1] element.
 
     It achieves this result by computing the DFT in the output array without
     the need to zeropad. Much faster and memory efficient than the
     zero-padded FFT approach if [nor noc] are much smaller than [nr*usfac nc*usfac]
+
+    Parameters
+    ----------
+    usfac : int
+        Upsampling factor (default usfac = 1)
+    nor,noc : int,int
+        Number of pixels in the output upsampled DFT, in units of upsampled
+        pixels (default = size(in))
+    roff, coff : int, int
+        Row and column offsets, allow to shift the output array to a region of
+        interest on the DFT (default = 0)
     """
     # this function is translated from matlab, so I'm just going to pretend
     # it is matlab/pylab
@@ -84,7 +91,7 @@ def dftups1d(inp,usfac=1,outsize=None,offset=0, return_xouts=False):
 
 
 def upsample_image(image, upsample_factor=1, output_size=None, nthreads=1,
-        use_numpy_fft=False, xshift=0, yshift=0):
+                   use_numpy_fft=False, xshift=0, yshift=0):
     """
     Use dftups to upsample an image (but takes an image and returns an image with all reals)
     """
@@ -104,7 +111,7 @@ def upsample_image(image, upsample_factor=1, output_size=None, nthreads=1,
 
     ups = dftups(imfft, s1, s2, upsample_factor, roff=yshift, coff=xshift)
 
-    return np.abs(ups)
+    return ups
 
 def odddftups(inp,nor=None,noc=None,usfac=1,roff=0,coff=0):
     from numpy.fft import ifftshift
@@ -153,7 +160,7 @@ if __name__ == "__main__" and False:
     # a Gaussian image
     data = np.exp(-(xx**2+yy**2)/(0.5**2 * 2.))
     fftn,ifftn = fast_ffts.get_ffts(nthreads=4, use_numpy_fft=False)
-    print "input max pixel: ",np.unravel_index(data.argmax(),data.shape)
+    print("input max pixel: ",np.unravel_index(data.argmax(),data.shape))
     inp = ifftn(data)
 
     nr,nc=np.shape(inp);
@@ -231,9 +238,8 @@ if __name__ == "__main__" and False:
         imshow(np.abs(out))
         title('zoomed')
 
-        print "usfac: ",usfac,"max pixel: ",np.unravel_index(np.abs(out).argmax(),out.shape)
+        print("usfac: ",usfac,"max pixel: ",np.unravel_index(np.abs(out).argmax(),out.shape))
 
         figure(11)
         clf()
         imshow(np.abs(dftups(inp,inp.shape[0]*2,inp.shape[1]*2,usfac=2)))
-

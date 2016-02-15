@@ -1,7 +1,7 @@
-from image_registration.fft_tools import zoom
+from .. import zoom
 import numpy as np
-import pytest
 import itertools
+from astropy.tests.helper import pytest
 
 def gaussian(x):
     return np.exp(-x**2/2.)
