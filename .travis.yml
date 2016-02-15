@@ -5,7 +5,6 @@ python:
     - 2.7
     - 3.3
     - 3.4
-    - 3.5
     # This is just for "egg_info".  All other builds are explicitly given in the matrix
 
 # Setting sudo to false opts in to Travis-CI container-based builds.
