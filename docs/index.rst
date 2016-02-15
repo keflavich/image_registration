@@ -44,9 +44,9 @@ Module APIs:
    :obj:`~image_registration.chi2_shifts.chi2_shift`
 
    There is an ipython notebook demonstration of the code `here
-   <http://nbviewer.ipython.org/urls/raw.github.com/keflavich/image_registration/master/examples/Cross%2520Correlation.ipynb>`_
+   <http://nbviewer.ipython.org/urls/raw.github.com/keflavich/image_registration/master/examples/Cross%2520Correlation.ipynb>`__
    and in pdf `here
-   <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`_
+   <https://github.com/keflavich/image_registration/blob/master/doc/CrossCorrelationSimulation.pdf?raw=true>`__
 
 Related Methods
 ---------------
@@ -150,9 +150,9 @@ Indices and tables
 .. toctree::
   :maxdepth: 1
 
-  modules.rst
   spectral_xcorr.rst
   fourier_tools.rst
+  image_registration.rst
 
 .. [*] Apparently astronomical images look a lot like microscopic images.  So
   maybe this code is good for coaligning bacteria!
