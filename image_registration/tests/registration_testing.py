@@ -80,9 +80,9 @@ def make_offset_images(xsh,ysh,imsize, width=3.0, amp=1000.0, noiseamp=1.0,
 def make_extended(imsize, imsize2=None, powerlaw=2.0):
     if imsize2 is None:
         imsize2=imsize
-    yy,xx = np.indices((imsize2,imsize))
-    xcen = imsize/2-(1-imsize%2) 
-    ycen = imsize2/2-(1-imsize2%2) 
+    yy,xx = np.indices((imsize2,imsize), dtype='float')
+    xcen = imsize/2.-(1.-imsize%2)
+    ycen = imsize2/2.-(1.-imsize2%2)
     yy -= ycen
     xx -= xcen
     rr = (xx**2+yy**2)**0.5
