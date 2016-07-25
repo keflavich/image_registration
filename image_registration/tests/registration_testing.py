@@ -3,7 +3,9 @@ from ..register_images import register_images
 from ..chi2_shifts import chi2_shift
 from ..fft_tools import dftups,upsample_image,shift,smooth
 
+from numpy.lib.stride_tricks import as_strided
 from astropy.tests.helper import pytest
+from astropy.convolution import convolve_fft, Gaussian2DKernel
 
 import itertools
 import numpy as np
@@ -522,6 +524,50 @@ def plot_compare_methods(offsets, eoffsets, dx=None, dy=None, fig1=1,
     if legend:
         pylab.legend(loc='best')
 
+
+def tile_array(arr, factor):
+    strides = tuple(x for y in zip(arr.shape, [factor]*arr.ndim) for x in y)
+    scales = tuple(x for y in zip(arr.strides, [0]*arr.ndim) for x in y)
+    ret = as_strided(arr, shape=strides, strides=scales)
+    return ret.reshape([x*factor for x in arr.shape])
+    #r, c = a.shape
+    #rs, cs = a.strides
+    #x = as_strided(a, (r, b1, c, b2), (rs, 0, cs, 0))
+    #return x.reshape(r*b1, c*b2)
+
+def make_extended_fractal(D=1.5, G=7, dims=3, C=np.inf, smooth=None):
+    #result = np.zeros([2**G]*dims)
+    result = np.zeros([2]*dims)
+    parent = np.ones([2]*dims)
+
+    if smooth:
+        expansion_factor = 5
+        inds = np.indices([np.ceil(smooth*expansion_factor)]*dims)
+        rr = ((inds-(np.ceil(smooth*expansion_factor)-1)/2.)**2).sum(axis=0)**0.5
+        kernel = np.exp(-rr**2/(2*smooth**2))
+
+    for ii in range(1,G+1):
+        randvals = np.random.rand(*[2**ii]*dims)
+
+        # maybe fertility should not be boolean except in the C=inf case...
+        # multiplicative fertility?
+        fertile = (randvals < (D/2.)) & parent.astype('bool')
+
+        new = fertile.astype('float') + (1-fertile.astype('float'))/C
+        if smooth:
+            new = convolve_fft(new, kernel)
+        result += new
+
+        if ii < G:
+            rolls = np.round((np.random.rand(dims)-0.5)*2.0).astype('int')
+            parent = tile_array(fertile, 2)
+            for ii,roll in enumerate(rolls):
+                parent = np.roll(parent, roll, axis=ii)
+            result = tile_array(result, 2)
+
+        #print(ii, G, fertile.shape, result.shape)
+
+    return result
 
 doplots=False
 if doplots:
