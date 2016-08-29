@@ -71,11 +71,9 @@ matrix:
           # astropy-stable has py.test incompatible with 3.5
           env: ASTROPY_VERSION=development SETUP_CMD='test'
 
-        # Try older numpy versions
+        # Try older numpy versions (>=1.7)
         - python: 2.7
           env: NUMPY_VERSION=1.7 SETUP_CMD='test'
-        - python: 2.7
-          env: NUMPY_VERSION=1.6 SETUP_CMD='test'
 
 before_install:
 
