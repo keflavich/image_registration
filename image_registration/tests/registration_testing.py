@@ -64,6 +64,7 @@ def make_offset_images(xsh,ysh,imsize, width=3.0, amp=1000.0, noiseamp=1.0,
     Single gaussian test images
     """
     #image = np.random.randn(imsize,imsize) * noiseamp
+    imsize = int(imsize)
     Y, X = np.indices([imsize, imsize])
     X -= xcen
     Y -= ycen
@@ -87,7 +88,7 @@ def make_extended(imsize, imsize2=None, powerlaw=2.0):
     xx -= xcen
     rr = (xx**2+yy**2)**0.5
     
-    powermap = (np.random.randn(imsize2,imsize) * rr**(-powerlaw)+
+    powermap = (np.random.randn(int(imsize2), int(imsize)) * rr**(-powerlaw)+
         np.random.randn(imsize2,imsize) * rr**(-powerlaw) * 1j)
     powermap[powermap!=powermap] = 0
 
@@ -96,7 +97,7 @@ def make_extended(imsize, imsize2=None, powerlaw=2.0):
     return newmap
 
 def make_offset_extended(img, xsh, ysh, noise=1.0, mode='wrap',
-        noise_taper=False):
+                         noise_taper=False):
     noise = np.random.randn(*img.shape)*noise
     if noise_taper:
         noise /= edge_weight(img.shape[0])
