@@ -79,17 +79,21 @@ def make_offset_images(xsh,ysh,imsize, width=3.0, amp=1000.0, noiseamp=1.0,
     return image, new_image, tolerance
 
 def make_extended(imsize, imsize2=None, powerlaw=2.0):
+    imsize = int(imsize)
     if imsize2 is None:
         imsize2=imsize
     yy,xx = np.indices((imsize2,imsize), dtype='float')
-    xcen = imsize/2.-(1.-imsize%2)
-    ycen = imsize2/2.-(1.-imsize2%2)
+    xcen = imsize/2.-(1.-imsize % 2)
+    ycen = imsize2/2.-(1.-imsize2 % 2)
     yy -= ycen
     xx -= xcen
     rr = (xx**2+yy**2)**0.5
     
-    powermap = (np.random.randn(int(imsize2), int(imsize)) * rr**(-powerlaw)+
-        np.random.randn(imsize2,imsize) * rr**(-powerlaw) * 1j)
+    # flag out the bad point to avoid warnings
+    rr[rr == 0] = np.nan
+    
+    powermap = (np.random.randn(imsize2, imsize) * rr**(-powerlaw)+
+                np.random.randn(imsize2, imsize) * rr**(-powerlaw) * 1j)
     powermap[powermap!=powermap] = 0
 
     newmap = np.abs(np.fft.fftshift(np.fft.fft2(powermap)))
