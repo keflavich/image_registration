@@ -51,9 +51,6 @@ def convolvend(array, kernel, boundary='fill', fill_value=0, crop=True,
     kernel: `numpy.ndarray`
           Will be normalized if *normalize_kernel* is set.  Assumed to be
           centered (i.e., shifts may result if your kernel is asymmetric)
-
-    Options
-    -------
     boundary: str, optional
         A flag indicating how to handle boundaries:
             * 'fill' : set values outside the array boundary to fill_value
@@ -80,9 +77,6 @@ def convolvend(array, kernel, boundary='fill', fill_value=0, crop=True,
         normalize_kernel=np.sum means that kernel will be modified to be:
         kernel = kernel / np.sum(kernel).  If True, defaults to
         normalize_kernel = np.sum
-
-    Advanced options
-    ----------------
     fft_pad: bool
         Default on.  Zero-pad image to the nearest 2^n
     psf_pad: bool

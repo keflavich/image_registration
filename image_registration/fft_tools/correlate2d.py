@@ -6,8 +6,8 @@ def correlate2d(im1,im2, boundary='wrap', **kwargs):
     Cross-correlation of two images of arbitrary size.  Returns an image
     cropped to the largest of each dimension of the input images
 
-    Options
-    -------
+    Parameters
+    ----------
     return_fft - if true, return fft(im1)*fft(im2[::-1,::-1]), which is the power
         spectral density
     fftshift - if true, return the shifted psd so that the DC component is in
