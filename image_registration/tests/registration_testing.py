@@ -243,7 +243,6 @@ def do_n_extended_fits(nfits, xsh, ysh, imsize,  gaussfit=False,
 
 
     if unsharp_mask:
-        from AG_fft_tools import smooth
         offsets = []
         for ii in progress(xrange(nfits)):
             inim = image-smooth(image,smoothfactor)
