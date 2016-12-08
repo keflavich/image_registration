@@ -11,7 +11,7 @@ try:
         array = array.astype('complex').copy()
         outarray = array.copy()
         fft_forward = fftw3.Plan(array, outarray, direction='forward',
-                flags=['estimate'], nthreads=nthreads)
+                                 flags=['estimate'], nthreads=nthreads)
         fft_forward.execute()
         return outarray
 
@@ -19,7 +19,7 @@ try:
         array = array.astype('complex').copy()
         outarray = array.copy()
         fft_backward = fftw3.Plan(array, outarray, direction='backward',
-                flags=['estimate'], nthreads=nthreads)
+                                  flags=['estimate'], nthreads=nthreads)
         fft_backward.execute()
         return outarray / np.size(array)
 except ImportError:
@@ -32,14 +32,17 @@ except ImportError:
 # faster, we should add that as an option here... not sure how exactly
 
 
-def convolvend(array, kernel, boundary='fill', fill_value=0,
-        crop=True, return_fft=False, fftshift=True, fft_pad=True,
-        psf_pad=False, interpolate_nan=False, quiet=False,
-        ignore_edge_zeros=False, min_wt=0.0, normalize_kernel=False,
-        use_numpy_fft=not has_fftw, nthreads=1):
+def convolvend(array, kernel, boundary='fill', fill_value=0, crop=True,
+               return_fft=False, fftshift=True, fft_pad=True, psf_pad=False,
+               interpolate_nan=False, quiet=False, ignore_edge_zeros=False,
+               min_wt=0.0, normalize_kernel=False, use_numpy_fft=not has_fftw,
+               nthreads=1):
     """
     Convolve an ndarray with an nd-kernel.  Returns a convolved image with shape =
     array.shape.  Assumes image & kernel are centered.
+
+    Also note that the astropy.convolution convolver is a more up-to-date
+    version of this one.
 
     Parameters
     ----------
@@ -68,7 +71,7 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
     min_wt: float
         If ignoring NANs/zeros, force all grid points with a weight less than
         this value to NAN (the weight of a grid point with *no* ignored
-        neighbors is 1.0).  
+        neighbors is 1.0).
         If `min_wt` == 0.0, then all zero-weight points will be set to zero
         instead of NAN (which they would be otherwise, because 1/0 = nan).
         See the examples below
@@ -189,10 +192,10 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
     array[nanmaskarray] = 0
     nanmaskkernel = (kernel != kernel)
     kernel[nanmaskkernel] = 0
-    if ((nanmaskarray.sum() > 0 or nanmaskkernel.sum() > 0) and not interpolate_nan
-            and not quiet):
+    if (((nanmaskarray.sum() > 0 or nanmaskkernel.sum() > 0) and not
+         interpolate_nan and not quiet)):
         warnings.warn("NOT ignoring nan values even though they are present" +
-                " (they are treated as 0)")
+                      " (they are treated as 0)")
 
     if normalize_kernel is True:
         kernel = kernel / kernel.sum()
@@ -211,8 +214,8 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
 
     if boundary is None:
         WARNING = ("The convolvend version of boundary=None is equivalent" +
-                " to the convolve boundary='fill'.  There is no FFT " +
-                " equivalent to convolve's zero-if-kernel-leaves-boundary" )
+                   " to the convolve boundary='fill'.  There is no FFT " +
+                   " equivalent to convolve's zero-if-kernel-leaves-boundary")
         warnings.warn(WARNING)
         psf_pad = True
     elif boundary == 'fill':
@@ -243,14 +246,14 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
             # add the shape lists (max of a list of length 4) (smaller)
             # also makes the shapes square
             fsize = 2**np.ceil(np.log2(np.max(arrayshape+kernshape)))
-        newshape = np.array([fsize for ii in range(ndim)])
+        newshape = np.array([fsize for ii in range(ndim)], dtype='int')
     else:
         if psf_pad:
             # just add the biggest dimensions
-            newshape = np.array(arrayshape)+np.array(kernshape)
+            newshape = np.array(arrayshape, dtype='int')+np.array(kernshape, dtype='int')
         else:
             newshape = np.array([np.max([imsh, kernsh])
-                for imsh, kernsh in zip(arrayshape, kernshape)])
+                                 for imsh, kernsh in zip(arrayshape, kernshape)], dtype='int')
 
 
     # separate each dimension by the padding size...  this is to determine the
@@ -260,9 +263,9 @@ def convolvend(array, kernel, boundary='fill', fill_value=0,
     for ii, (newdimsize, arraydimsize, kerndimsize) in enumerate(zip(newshape, arrayshape, kernshape)):
         center = newdimsize - (newdimsize+1)//2
         arrayslices += [slice(center - arraydimsize//2,
-            center + (arraydimsize+1)//2)]
+                              center + (arraydimsize+1)//2)]
         kernslices += [slice(center - kerndimsize//2,
-            center + (kerndimsize+1)//2)]
+                             center + (kerndimsize+1)//2)]
 
     bigarray = np.ones(newshape, dtype=np.complex128) * fill_value
     bigkernel = np.zeros(newshape, dtype=np.complex128)
@@ -350,4 +353,4 @@ def test_3d(psf_pad, use_numpy_fft, force_ignore_zeros_off, debug=False, toleran
         assert(np.abs(conv1[15,1,15] - 1./100.) < tolerance)
         assert(np.abs(conv1[15,15,15] - 1./125.) < tolerance)
 
- 
+
