@@ -1,16 +1,13 @@
 from __future__ import print_function
-try: 
-    from AG_fft_tools import correlate2d,fast_ffts
-except ImportError:
-    from image_registration.fft_tools import correlate2d,fast_ffts
+from .fft_tools import correlate2d
 import warnings
 import numpy as np
 
 __all__ = ['cross_correlation_shifts','cross_correlation_shifts_FITS']
 
 def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
-        maxoff=None, verbose=False, gaussfit=False, return_error=False,
-        zeromean=True, **kwargs):
+                             maxoff=None, verbose=False, gaussfit=False,
+                             return_error=False, zeromean=True, **kwargs):
     """ Use cross-correlation and a 2nd order taylor expansion to measure the
     offset between two images
 
