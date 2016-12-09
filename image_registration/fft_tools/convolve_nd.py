@@ -87,7 +87,7 @@ def convolvend(array, kernel, boundary='fill', fill_value=0, crop=True,
         If the images are asymmetric in opposite directions, will return the
         largest image in both directions.
         For example, if an input image has shape [100,3] but a kernel with shape
-      [6,6] is used, the output will be [100,6].
+        [6,6] is used, the output will be [100,6].
     return_fft: bool
         Return the fft(image)*fft(kernel) instead of the convolution (which is
         ifft(fft(image)*fft(kernel))).  Useful for making PSDs.
