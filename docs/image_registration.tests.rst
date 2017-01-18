@@ -4,7 +4,7 @@ tests Package
 :mod:`tests` Package
 --------------------
 
-.. automodule:: image_registration.tests
+.. automodapi:: image_registration.tests
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,7 +12,7 @@ tests Package
 :mod:`registration_testing` Module
 ----------------------------------
 
-.. automodule:: image_registration.tests.registration_testing
+.. automodapi:: image_registration.tests.registration_testing
     :members:
     :undoc-members:
     :show-inheritance:

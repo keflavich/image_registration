@@ -29,6 +29,21 @@ The general goal is to align images that look kind of like these:
     :width: 400px
     :alt: The input image shifted and corrupted with gaussian noise
 
+Quick Example
+-------------
+
+Given two images, shift the second to match the first and check that they are
+the same.  `This notebook
+<https://github.com/keflavich/image_registration/blob/master/examples/Cross%20Correlation.ipynb>`__
+also shows examples.
+
+.. code-block:: python
+
+   from image_registration import chi2_shift
+   from image_registration.fft_tools import shift
+   xoff, yoff, exoff, eyoff = chi2_shift(image, offset_image, noise,
+   ...                                   return_error=True, upsample_factor='auto')
+   corrected_image2 = shift.shiftnd(offset_image, -yoff, -xoff)
 
 Module APIs:
 ------------

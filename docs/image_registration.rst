@@ -6,7 +6,7 @@ image_registration Package
 :mod:`image_registration` Package
 ---------------------------------
 
-.. automodule:: image_registration
+.. automodapi:: image_registration
     :members:
     :undoc-members:
     :show-inheritance:
@@ -14,7 +14,7 @@ image_registration Package
 :mod:`register_images` Module
 -----------------------------
 
-.. automodule:: image_registration.register_images
+.. automodapi:: image_registration.register_images
     :members:
     :undoc-members:
     :show-inheritance:
@@ -25,7 +25,7 @@ image_registration Package
 :mod:`chi2_shifts` Module
 -------------------------
 
-.. automodule:: image_registration.chi2_shifts
+.. automodapi:: image_registration.chi2_shifts
     :members:
     :undoc-members:
     :show-inheritance:
@@ -36,7 +36,7 @@ image_registration Package
 :mod:`cross_correlation_shifts` Module
 --------------------------------------
 
-.. automodule:: image_registration.cross_correlation_shifts
+.. automodapi:: image_registration.cross_correlation_shifts
     :members:
     :undoc-members:
     :show-inheritance:
