@@ -1,5 +1,5 @@
 import numpy as np
-from .. import chi2_shift,chi2_shift_iterzoom
+from ..chi2_shifts import chi2_shift_iterzoom
 try:
     import astropy.io.fits as pyfits
     import astropy.wcs as pywcs
@@ -149,7 +149,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         An error image, intended to correspond to fitsfile2
     register_method : function
         Can be any of the shift functions in :mod:`image_registration`.
-        Defaults to :func:`chi2_shift`
+        Defaults to :func:`chi2_shift_iterzoom`
     return_errors: bool
         Return the errors on each parameter in addition to the fitted offset
     return_cropped_images: bool
