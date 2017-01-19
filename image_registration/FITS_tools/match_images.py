@@ -1,18 +1,13 @@
 import numpy as np
 from ..chi2_shifts import chi2_shift_iterzoom
-try:
-    import astropy.io.fits as pyfits
-    import astropy.wcs as pywcs
-except ImportError:
-    import pyfits
-    import pywcs
+import astropy.wcs as pywcs
 from .load_header import load_data,load_header
 from ..fft_tools.shift import shift2d
 
-def project_to_header(fitsfile, header, use_montage=True, quiet=True,
-                      **kwargs):
+def project_to_header(fitsfile, header, **kwargs):
     """
-    Light wrapper of montage with hcongrid as a backup
+    Reproject an image to a header.  Simple wrapper of
+    reproject.reproject_interp
 
     Parameters
     ----------
@@ -30,48 +25,8 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True,
     np.ndarray image projected to header's coordinates
 
     """
-    try:
-        import montage
-        montageOK=True
-    except ImportError:
-        montageOK=False
-    try:
-        from .hcongrid import hcongrid
-        hcongridOK=True
-    except ImportError:
-        hcongridOK=False
-    import tempfile
-
-    if montageOK and use_montage:
-        temp_headerfile = tempfile.NamedTemporaryFile()
-        header.toTxtFile(temp_headerfile.name)
-
-        if hasattr(fitsfile, 'writeto'):
-            fitsobj = fitsfile
-            fitsfileobj = tempfile.NamedTemporaryFile()
-            fitsfile = fitsfileobj.name
-            fitsobj.writeto(fitsfile)
-
-        outfile = tempfile.NamedTemporaryFile()
-        montage.wrappers.reproject(fitsfile,
-                                   outfile.name,
-                                   temp_headerfile.name,
-                                   exact_size=True,
-                                   silent_cleanup=quiet)
-        image = pyfits.getdata(outfile.name)
-        
-        outfile.close()
-        temp_headerfile.close()
-        try:
-            fitsfileobj.close()
-        except NameError:
-            pass
-    elif hcongridOK:
-        image = hcongrid(load_data(fitsfile),
-                         load_header(fitsfile),
-                         header)
-
-    return image
+    import reproject
+    return reproject.reproject_interp(fitsfile, header, **kwargs)[0]
 
 def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
                return_header=False, use_montage=False, **kwargs):

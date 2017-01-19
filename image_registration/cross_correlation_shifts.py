@@ -212,8 +212,10 @@ def second_derivative(image):
     return dxx,dyy,dxy
 
 def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
-        return_cropped_images=False, quiet=True, sigma_cut=False,
-        register_method=cross_correlation_shifts, **kwargs):
+                                  return_cropped_images=False, quiet=True,
+                                  sigma_cut=False,
+                                  register_method=cross_correlation_shifts,
+                                  **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
     technique.  Requires reproject
@@ -257,7 +259,8 @@ def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
         corr_image2 = image2_projected
 
     verbose = kwargs.pop('verbose') if 'verbose' in kwargs else not quiet
-    xoff,yoff = register_method(corr_image1, corr_image2, verbose=verbose,**kwargs)
+    xoff,yoff = register_method(corr_image1, corr_image2, verbose=verbose, 
+                                return_error=False, **kwargs)
 
     wcs = pywcs.WCS(header)
     try:
