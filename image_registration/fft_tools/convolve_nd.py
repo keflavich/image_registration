@@ -32,6 +32,9 @@ except ImportError:
 # faster, we should add that as an option here... not sure how exactly
 
 
+__all__ = ['convolvend']
+
+
 def convolvend(array, kernel, boundary='fill', fill_value=0, crop=True,
                return_fft=False, fftshift=True, fft_pad=True, psf_pad=False,
                interpolate_nan=False, quiet=False, ignore_edge_zeros=False,

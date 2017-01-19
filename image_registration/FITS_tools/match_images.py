@@ -1,18 +1,16 @@
 import numpy as np
-from .. import chi2_shift,chi2_shift_iterzoom
-try:
-    import astropy.io.fits as pyfits
-    import astropy.wcs as pywcs
-except ImportError:
-    import pyfits
-    import pywcs
-from .load_header import load_data,load_header
+from ..chi2_shifts import chi2_shift_iterzoom
+import astropy.wcs as pywcs
+from .load_header import load_data, load_header
 from ..fft_tools.shift import shift2d
 
-def project_to_header(fitsfile, header, use_montage=True, quiet=True,
-                      **kwargs):
+__all__ = ['project_to_header', 'match_fits', 'register_fits']
+
+
+def project_to_header(fitsfile, header, **kwargs):
     """
-    Light wrapper of montage with hcongrid as a backup
+    Reproject an image to a header.  Simple wrapper of
+    reproject.reproject_interp
 
     Parameters
     ----------
@@ -20,8 +18,6 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True,
         a FITS file name
     header : pyfits.Header
         A pyfits Header instance with valid WCS to project to
-    use_montage : bool
-        Use montage or hcongrid (scipy's map_coordinates)
     quiet : bool
         Silence Montage's output
 
@@ -30,51 +26,12 @@ def project_to_header(fitsfile, header, use_montage=True, quiet=True,
     np.ndarray image projected to header's coordinates
 
     """
-    try:
-        import montage
-        montageOK=True
-    except ImportError:
-        montageOK=False
-    try:
-        from .hcongrid import hcongrid
-        hcongridOK=True
-    except ImportError:
-        hcongridOK=False
-    import tempfile
+    import reproject
+    return reproject.reproject_interp(fitsfile, header, **kwargs)[0]
 
-    if montageOK and use_montage:
-        temp_headerfile = tempfile.NamedTemporaryFile()
-        header.toTxtFile(temp_headerfile.name)
-
-        if hasattr(fitsfile, 'writeto'):
-            fitsobj = fitsfile
-            fitsfileobj = tempfile.NamedTemporaryFile()
-            fitsfile = fitsfileobj.name
-            fitsobj.writeto(fitsfile)
-
-        outfile = tempfile.NamedTemporaryFile()
-        montage.wrappers.reproject(fitsfile,
-                                   outfile.name,
-                                   temp_headerfile.name,
-                                   exact_size=True,
-                                   silent_cleanup=quiet)
-        image = pyfits.getdata(outfile.name)
-        
-        outfile.close()
-        temp_headerfile.close()
-        try:
-            fitsfileobj.close()
-        except NameError:
-            pass
-    elif hcongridOK:
-        image = hcongrid(load_data(fitsfile),
-                         load_header(fitsfile),
-                         header)
-
-    return image
 
 def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
-               return_header=False, use_montage=False, **kwargs):
+               return_header=False, **kwargs):
     """
     Project one FITS file into another's coordinates
     If sigma_cut is used, will try to find only regions that are significant
@@ -90,9 +47,6 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         Optional - can pass a header to projet both images to
     sigma_cut: bool or int
         Perform a sigma-cut on the returned images at this level
-    use_montage: bool
-        Use montage for the reprojection into the same pixel space?  Otherwise,
-        use scipy.
 
     Returns
     -------
@@ -104,10 +58,10 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         header = load_header(fitsfile1)
         image1 = load_data(fitsfile1)
     else: # project image 1 to input header coordinates
-        image1 = project_to_header(fitsfile1, header, use_montage=use_montage)
+        image1 = project_to_header(fitsfile1, header)
 
     # project image 2 to image 1 coordinates
-    image2_projected = project_to_header(fitsfile2, header, use_montage=use_montage)
+    image2_projected = project_to_header(fitsfile2, header)
 
     if image1.shape != image2_projected.shape:
         raise ValueError("Failed to reproject images to same shape.")
@@ -115,7 +69,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
     if sigma_cut:
         corr_image1 = image1*(image1 > image1.std()*sigma_cut)
         corr_image2 = image2_projected*(image2_projected > image2_projected.std()*sigma_cut)
-        OK = (corr_image1==corr_image1)*(corr_image2==corr_image2) 
+        OK = (corr_image1==corr_image1)*(corr_image2==corr_image2)
         if (corr_image1[OK]*corr_image2[OK]).sum() == 0:
             print("Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut)
             corr_image1 = image1
@@ -129,10 +83,11 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         returns = returns + (header,)
     return returns
 
+
 def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
                   register_method=chi2_shift_iterzoom,
                   return_cropped_images=False, return_shifted_image=False,
-                  return_header=False, use_montage=False, **kwargs):
+                  return_header=False, **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
     technique.  Requires montage or hcongrid.
@@ -149,7 +104,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
         An error image, intended to correspond to fitsfile2
     register_method : function
         Can be any of the shift functions in :mod:`image_registration`.
-        Defaults to :func:`chi2_shift`
+        Defaults to :func:`chi2_shift_iterzoom`
     return_errors: bool
         Return the errors on each parameter in addition to the fitted offset
     return_cropped_images: bool
@@ -164,9 +119,6 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     sigma_cut: bool or int
         Perform a sigma-cut before cross-correlating the images to minimize
         noise correlation?
-    use_montage: bool
-        Use montage for the reprojection into the same pixel space?  Otherwise,
-        use scipy.
 
     Returns
     -------
@@ -190,14 +142,14 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
                                                   return_header=True, **kwargs)
 
     if errfile is not None:
-        errimage = project_to_header(errfile, header, use_montage=use_montage, **kwargs)
+        errimage = project_to_header(errfile, header, **kwargs)
     else:
         errimage = None
 
     xoff,yoff,exoff,eyoff = register_method(proj_image1, proj_image2,
                                             err=errimage, return_error=True,
                                             **kwargs)
-    
+
     wcs = pywcs.WCS(header)
     try:
         cdelt = wcs.wcs.cd.diagonal()

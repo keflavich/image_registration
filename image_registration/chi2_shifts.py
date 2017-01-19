@@ -1,3 +1,8 @@
+"""
+Chi^2 shifts
+------------
+Various tools for calculating shifts based on the chi^2 method
+"""
 from .fft_tools import correlate2d,fast_ffts,dftups,upsample_image,zoom,shift
 from . import iterative_zoom
 import warnings

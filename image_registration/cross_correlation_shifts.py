@@ -1,5 +1,6 @@
 from __future__ import print_function
 from .fft_tools import correlate2d
+from .FITS_tools.load_header import load_header, load_data
 import warnings
 import numpy as np
 
@@ -23,10 +24,10 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
     errim1: np.ndarray [optional]
         The pixel-by-pixel error on the reference image
     errim2: np.ndarray [optional]
-        The pixel-by-pixel error on the offset image.  
+        The pixel-by-pixel error on the offset image.
     maxoff: int
         Maximum allowed offset (in pixels).  Useful for low s/n images that you
-        know are reasonably well-aligned, but might find incorrect offsets due to 
+        know are reasonably well-aligned, but might find incorrect offsets due to
         edge noise
     zeromean : bool
         Subtract the mean from each image before performing cross-correlation?
@@ -43,7 +44,7 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
         by a factor of about 1.8, while the gaussian version overestimates
         error by about 1.15.  At low s/n, they both UNDERestimate the error.
         The transition zone occurs at a *total* S/N ~ 1000 (i.e., the total
-        signal in the map divided by the standard deviation of the map - 
+        signal in the map divided by the standard deviation of the map -
         it depends on how many pixels have signal)
 
     **kwargs are passed to correlate2d, which in turn passes them to convolve.
@@ -64,7 +65,7 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
     >>> yoff,xoff = image_registration.cross_correlation_shifts(im1,im2)
     >>> im1_aligned_to_im2 = np.roll(np.roll(im1,int(yoff),1),int(xoff),0)
     >>> assert (im1_aligned_to_im2-im2).sum() == 0
-    
+
 
     """
 
@@ -86,8 +87,8 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
         raise ValueError("Cross-correlation image must have same shape as input images.  This can only be violated if you pass a strange kwarg to correlate2d.")
 
     ylen,xlen = image1.shape
-    xcen = xlen/2-(1-xlen%2) 
-    ycen = ylen/2-(1-ylen%2) 
+    xcen = xlen/2-(1-xlen%2)
+    ycen = ylen/2-(1-ylen%2)
 
     if ccorr.max() == 0:
         warnings.warn("WARNING: No signal found!  Offset is defaulting to 0,0")
@@ -105,11 +106,11 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
 
     if return_error:
         if errim1 is None:
-            errim1 = np.ones(ccorr.shape) * image1[image1==image1].std() 
+            errim1 = np.ones(ccorr.shape) * image1[image1==image1].std()
         if errim2 is None:
-            errim2 = np.ones(ccorr.shape) * image2[image2==image2].std() 
+            errim2 = np.ones(ccorr.shape) * image2[image2==image2].std()
         eccorr =( (correlate2d(errim1**2, image2**2,quiet=quiet,**kwargs)+
-                   correlate2d(errim2**2, image1**2,quiet=quiet,**kwargs))**0.5 
+                   correlate2d(errim2**2, image1**2,quiet=quiet,**kwargs))**0.5
                    / image1.size)
         if maxoff is not None:
             subeccorr = eccorr[ycen-maxoff:ycen+maxoff+1,xcen-maxoff:xcen+maxoff+1]
@@ -117,7 +118,7 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
             subeccorr = eccorr
 
     if gaussfit:
-        try: 
+        try:
             from agpy import gaussfitter
         except ImportError:
             raise ImportError("Couldn't import agpy.gaussfitter; try using cross_correlation_shifts with gaussfit=False")
@@ -129,7 +130,7 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
             pars,epars = gaussfitter.gaussfit(subccorr,return_all=True)
         xshift = maxoff - pars[2] if maxoff is not None else xcen - pars[2]
         yshift = maxoff - pars[3] if maxoff is not None else ycen - pars[3]
-        if verbose: 
+        if verbose:
             print("Gaussian fit pars: ",xshift,yshift,epars[2],epars[3],pars[4],pars[5],epars[4],epars[5])
 
     else:
@@ -157,12 +158,12 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
             #acorr1 = (correlate2d(image1,image1,quiet=quiet,**kwargs) / image1.size)
             #acorr2 = (correlate2d(image2,image2,quiet=quiet,**kwargs) / image2.size)
             #ccorrn = ccorr / eccorr**2 / ccorr.size #/ (errim1.mean()*errim2.mean()) #/ eccorr**2
-            normalization = 1. / ((image1**2).sum()/image1.size) / ((image2**2).sum()/image2.size) 
+            normalization = 1. / ((image1**2).sum()/image1.size) / ((image2**2).sum()/image2.size)
             ccorrn = ccorr * normalization
             exshift = (np.abs(-1 * ccorrn.size * fxx*normalization/ccorrn[ymax,xmax] *
-                    (ccorrn[ymax,xmax]**2/(1-ccorrn[ymax,xmax]**2)))**-0.5) 
+                    (ccorrn[ymax,xmax]**2/(1-ccorrn[ymax,xmax]**2)))**-0.5)
             eyshift = (np.abs(-1 * ccorrn.size * fyy*normalization/ccorrn[ymax,xmax] *
-                    (ccorrn[ymax,xmax]**2/(1-ccorrn[ymax,xmax]**2)))**-0.5) 
+                    (ccorrn[ymax,xmax]**2/(1-ccorrn[ymax,xmax]**2)))**-0.5)
             if np.isnan(exshift):
                 raise ValueError("Error: NAN error!")
 
@@ -211,11 +212,13 @@ def second_derivative(image):
     return dxx,dyy,dxy
 
 def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
-        return_cropped_images=False, quiet=True, sigma_cut=False,
-        register_method=cross_correlation_shifts, **kwargs):
+                                  return_cropped_images=False, quiet=True,
+                                  sigma_cut=False,
+                                  register_method=cross_correlation_shifts,
+                                  **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
-    technique.  Requires montage or hcongrid.
+    technique.  Requires reproject
 
     Parameters
     ----------
@@ -232,34 +235,21 @@ def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
         Perform a sigma-cut before cross-correlating the images to minimize
         noise correlation?
     """
-    import montage
-    try:
-        import astropy.io.fits as pyfits
-        import astropy.wcs as pywcs
-    except ImportError:
-        import pyfits
-        import pywcs
-    import tempfile
+    import reproject
+    import astropy.wcs as pywcs
 
-    header = pyfits.getheader(fitsfile1)
-    temp_headerfile = tempfile.NamedTemporaryFile()
-    header.toTxtFile(temp_headerfile.name)
+    header = load_header(fitsfile1)
 
-    outfile = tempfile.NamedTemporaryFile()
-    montage.wrappers.reproject(fitsfile2, outfile.name, temp_headerfile.name, exact_size=True, silent_cleanup=quiet)
-    image2_projected = pyfits.getdata(outfile.name)
-    image1 = pyfits.getdata(fitsfile1)
-    
-    outfile.close()
-    temp_headerfile.close()
+    image2_projected, _ = reproject.reproject_interp(fitsfile2, header)
+    image1 = load_data(fitsfile1)
 
     if image1.shape != image2_projected.shape:
-        raise ValueError("montage failed to reproject images to same shape.")
+        raise ValueError("Failed to reproject images to same shape.")
 
     if sigma_cut:
         corr_image1 = image1*(image1 > image1.std()*sigma_cut)
         corr_image2 = image2_projected*(image2_projected > image2_projected.std()*sigma_cut)
-        OK = (corr_image1==corr_image1)*(corr_image2==corr_image2) 
+        OK = (corr_image1==corr_image1)*(corr_image2==corr_image2)
         if (corr_image1[OK]*corr_image2[OK]).sum() == 0:
             print("Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut)
             corr_image1 = image1
@@ -269,11 +259,13 @@ def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
         corr_image2 = image2_projected
 
     verbose = kwargs.pop('verbose') if 'verbose' in kwargs else not quiet
-    xoff,yoff = register_method(corr_image1, corr_image2, verbose=verbose,**kwargs)
-    
+    xoff,yoff = register_method(corr_image1, corr_image2, verbose=verbose, 
+                                return_error=False, **kwargs)
+
     wcs = pywcs.WCS(header)
     try:
-        xoff_wcs,yoff_wcs = np.inner( np.array([[xoff,0],[0,yoff]]), wcs.wcs.cd )[[0,1],[0,1]]
+        xoff_wcs,yoff_wcs = np.inner(np.array([[xoff,0],[0,yoff]]),
+                                     wcs.wcs.cd)[[0,1],[0,1]]
     except AttributeError:
         xoff_wcs,yoff_wcs = 0,0
 
@@ -281,6 +273,3 @@ def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
         return xoff,yoff,xoff_wcs,yoff_wcs,image1,image2_projected
     else:
         return xoff,yoff,xoff_wcs,yoff_wcs
-    
-
-

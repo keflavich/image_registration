@@ -29,6 +29,9 @@ except ImportError:
 # the speed varied on machines - YMMV.  If someone finds that scipy's fft is
 # faster, we should add that as an option here... not sure how exactly
 
+__all__ = ['get_ffts']
+
+
 def get_ffts(nthreads=1, use_numpy_fft=not has_fftw):
     """
     Returns fftn,ifftn using either numpy's fft or fftw

@@ -6,42 +6,28 @@ image_registration Package
 :mod:`image_registration` Package
 ---------------------------------
 
-.. automodule:: image_registration
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodapi:: image_registration
 
 :mod:`register_images` Module
 -----------------------------
 
-.. automodule:: image_registration.register_images
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+.. automodapi:: image_registration.register_images
 
 .. autofunction:: register_images
+    :noindex:
 
 :mod:`chi2_shifts` Module
 -------------------------
 
-.. automodule:: image_registration.chi2_shifts
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. _chi2_shift:
-.. autofunction:: chi2_shift
+.. automodapi:: image_registration.chi2_shifts
 
 :mod:`cross_correlation_shifts` Module
 --------------------------------------
 
-.. automodule:: image_registration.cross_correlation_shifts
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. automodapi:: image_registration.cross_correlation_shifts
 
 .. autofunction:: cross_correlation_shifts
+    :noindex:
 
 Subpackages
 -----------
@@ -50,5 +36,4 @@ Subpackages
 
     image_registration.fft_tools
     image_registration.FITS_tools
-    image_registration.tests
 

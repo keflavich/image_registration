@@ -1,12 +1,18 @@
+"""
+Accuracy Tests
+--------------
+Test module to test the accuracy of the offset determination.
+"""
 from ..cross_correlation_shifts import cross_correlation_shifts
 from ..register_images import register_images
 from ..chi2_shifts import chi2_shift
-from ..fft_tools import dftups,upsample_image,shift,smooth
+from ..fft_tools import dftups, upsample_image, shift, smooth
 
 from astropy.tests.helper import pytest
 
 import itertools
 import numpy as np
+
 
 def upsample_ft_raw(buf1ft,buf2ft,zoomfac=2):
     """
@@ -24,10 +30,10 @@ def upsample_ft_raw(buf1ft,buf2ft,zoomfac=2):
     #CClarge[mlarge/4:mlarge/4*3,nlarge/4:nlarge/4*3] = fftshift(buf1ft) * conj(fftshift(buf2ft));
     CClarge[round(mlarge/(zoomfac*2.)):round(mlarge/(zoomfac*2.)*3),round(nlarge/(zoomfac*2.)):round(nlarge/(zoomfac*2.)*3)] = fftshift(buf1ft) * conj(fftshift(buf2ft));
         # note that matlab uses fix which is trunc... ?
-  
-    # Compute crosscorrelation and locate the peak 
+
+    # Compute crosscorrelation and locate the peak
     CC = ifft2(ifftshift(CClarge)); # Calculate cross-correlation
-    
+
     return CC
 
 def chi2(im1, im2, dx, dy, err=None, upsample=1):
@@ -88,10 +94,10 @@ def make_extended(imsize, imsize2=None, powerlaw=2.0):
     yy -= ycen
     xx -= xcen
     rr = (xx**2+yy**2)**0.5
-    
+
     # flag out the bad point to avoid warnings
     rr[rr == 0] = np.nan
-    
+
     powermap = (np.random.randn(imsize2, imsize) * rr**(-powerlaw)+
                 np.random.randn(imsize2, imsize) * rr**(-powerlaw) * 1j)
     powermap[powermap!=powermap] = 0
@@ -182,7 +188,7 @@ def do_n_fits(nfits, xsh, ysh, imsize, gaussfit=False, maxoff=None,
         Size of image (square)
     """
     offsets = [
-        shift_func( 
+        shift_func(
             *make_offset_images(xsh, ysh, imsize, **kwargs)[:2],
             gaussfit=gaussfit, maxoff=maxoff, return_error=return_error)
         for ii in xrange(nfits)]
@@ -223,7 +229,7 @@ def do_n_extended_fits(nfits, xsh, ysh, imsize,  gaussfit=False,
         doplot=False,
         **kwargs):
 
-    try: 
+    try:
         import progressbar
         widgets = [progressbar.FormatLabel('Processed: %(value)d offsets in %(elapsed)s)'), progressbar.Percentage()]
         progress = progressbar.ProgressBar(widgets=widgets)
@@ -235,8 +241,8 @@ def do_n_extended_fits(nfits, xsh, ysh, imsize,  gaussfit=False,
     if zeropad > 0:
         newsize = [s+zeropad for s in image.shape]
         ylen,xlen = newsize
-        xcen = xlen/2-(1-xlen%2) 
-        ycen = ylen/2-(1-ylen%2) 
+        xcen = xlen/2-(1-xlen%2)
+        ycen = ylen/2-(1-ylen%2)
         newim = np.zeros(newsize)
         newim[ycen-image.shape[0]/2:ycen+image.shape[0]/2, xcen-image.shape[1]/2:xcen+image.shape[1]/2] = image
         image = newim
@@ -260,7 +266,7 @@ def do_n_extended_fits(nfits, xsh, ysh, imsize,  gaussfit=False,
             draw()
         for ii in progress(xrange(nfits)):
             offim = make_offset_extended(image, xsh, ysh, noise=noise, **kwargs)
-            offsets.append( shift_func( 
+            offsets.append( shift_func(
                 image,
                 offim,
                 return_error=return_error, **sfkwargs)
@@ -296,7 +302,7 @@ def plot_tests(nfits=25,xsh=1.75,ysh=1.75, imsize=64, amp=10., **kwargs):
 
 def plot_extended_tests(nfits=25,xsh=1.75,ysh=1.75, imsize=64, noise=1.0,
         maxoff=12., zeropad=64, **kwargs):
-    x,y,ex,ey = np.array(do_n_extended_fits(nfits, xsh, ysh, imsize, 
+    x,y,ex,ey = np.array(do_n_extended_fits(nfits, xsh, ysh, imsize,
         maxoff=maxoff, return_error=True, noise=noise, **kwargs)).T
     print(x,y)
     import pylab
@@ -313,7 +319,7 @@ def determine_error_offsets():
     G = np.array([run_tests(1.5,1.5,50,a,True,nfits=200) for a in np.logspace(1.5,3,30)]);
     print("Analytic offset: %g" % (( (A[:,3]/A[:,1]).mean() + (A[:,2]/A[:,0]).mean() )/2. ))
     print("Gaussian offset: %g" % (( (G[:,3]/G[:,1]).mean() + (G[:,2]/G[:,0]).mean() )/2. ))
-    
+
 @pytest.mark.parametrize(('imsize'),sizes)
 def test_upsample(imsize, usfac=2, xsh=2.25, ysh=2.25, noise=0.1, **kwargs):
     image = make_extended(imsize)
@@ -330,10 +336,13 @@ def test_upsample(imsize, usfac=2, xsh=2.25, ysh=2.25, noise=0.1, **kwargs):
     pylab.subplot(224); pylab.imshow(abs(dftus[::-1,::-1])); pylab.contour(raw_us)
 
 def accuracy_plot(xsh=2.25,ysh=-1.35,amp=10000,width=1,imsize=100,usf_range=[1,100]):
+    """
+    Plot for interactive use
+    """
     testg,testgsh,T = make_offset_images(xsh,ysh,imsize,amp=amp,width=width)
     offsets = []
-    for usf in xrange(*usf_range): 
-        dy,dx = dftregistration(np.fft.fft2(testg),np.fft.fft2(testgsh),usfac=usf); 
+    for usf in xrange(*usf_range):
+        dy,dx = dftregistration(np.fft.fft2(testg),np.fft.fft2(testgsh),usfac=usf);
         # offsets are negative...
         offsets.append([xsh+dx,ysh+dy])
 
@@ -343,8 +352,11 @@ def accuracy_plot(xsh=2.25,ysh=-1.35,amp=10000,width=1,imsize=100,usf_range=[1,1
     pylab.plot(np.arange(*usf_range), 1./np.arange(*usf_range), 'k--', label="Theoretical")
 
 def accuracy_plot_extended(xsh=2.25,ysh=-1.35,noise=0.1,imsize=100,usf_range=[1,100]):
+    """
+    Plot for interactive use
+    """
     offsets = []
-    for usf in xrange(*usf_range): 
+    for usf in xrange(*usf_range):
         dy,dx = do_n_extended_fits(1,xsh,ysh, imsize, shift_func=register_images,sfkwargs={'usfac':usf},noise=noise)[0]
         offsets.append([xsh+dx,ysh+dy])
 
@@ -376,14 +388,14 @@ def error_test(xsh=2.25,ysh=-1.35,noise=0.5,imsize=100,usf=101,nsamples=100,maxo
 
 def register_accuracy_test(im1,im2,usf_range=[1,100],**kwargs):
     offsets = []
-    try: 
+    try:
         import progressbar
         widgets = [progressbar.FormatLabel('Processed: %(value)d offsets in %(elapsed)s)'), progressbar.Percentage()]
         progress = progressbar.ProgressBar(widgets=widgets)
     except ImportError:
         def progress(x):
             yield x
-    for usf in progress(xrange(*usf_range)): 
+    for usf in progress(xrange(*usf_range)):
         dy,dx = register_images(im1,im2,usfac=usf,**kwargs)
         offsets.append([dx,dy])
 
@@ -392,7 +404,7 @@ def register_accuracy_test(im1,im2,usf_range=[1,100],**kwargs):
 def register_noise_test(im1,im2, ntests=100, noise=np.std,
         register_method=register_images, return_error=False, **kwargs):
     """
-    Perform tests with noise added to determine the errors on the 
+    Perform tests with noise added to determine the errors on the
     'best-fit' offset
 
     Parameters
@@ -411,7 +423,7 @@ def register_noise_test(im1,im2, ntests=100, noise=np.std,
     except TypeError:
         pass
 
-    try: 
+    try:
         import progressbar
         widgets = [progressbar.FormatLabel('Processed: %(value)d offsets in %(elapsed)s'), progressbar.Percentage()]
         progress = progressbar.ProgressBar(widgets=widgets)
@@ -434,7 +446,7 @@ def register_noise_test(im1,im2, ntests=100, noise=np.std,
 def compare_methods(im1,im2, ntests=100, noise=np.std,
         usfac=201, **kwargs):
     """
-    Perform tests with noise added to determine the errors on the 
+    Perform tests with noise added to determine the errors on the
     'best-fit' offset
 
     Parameters
@@ -453,7 +465,7 @@ def compare_methods(im1,im2, ntests=100, noise=np.std,
     except TypeError:
         pass
 
-    try: 
+    try:
         import progressbar
         widgets = [progressbar.FormatLabel('Processed: %(value)d offsets in %(elapsed)s'), progressbar.Percentage()]
         progress = progressbar.ProgressBar(widgets=widgets)
@@ -515,8 +527,8 @@ def plot_compare_methods(offsets, eoffsets, dx=None, dy=None, fig1=1,
     pylab.clf()
     if dx is not None and dy is not None:
         pylab.plot([dx],[dy],'kx',markersize=30,zorder=50,markeredgewidth=3)
-    pylab.errorbar(means[0],means[1],xerr=emeans[0],yerr=emeans[1],capsize=20,color='r',dash_capstyle='round',solid_capstyle='round',label='DFT')     
-    pylab.errorbar(means[2],means[3],xerr=emeans[2],yerr=emeans[3],capsize=20,color='g',dash_capstyle='round',solid_capstyle='round',label='Taylor')  
+    pylab.errorbar(means[0],means[1],xerr=emeans[0],yerr=emeans[1],capsize=20,color='r',dash_capstyle='round',solid_capstyle='round',label='DFT')
+    pylab.errorbar(means[2],means[3],xerr=emeans[2],yerr=emeans[3],capsize=20,color='g',dash_capstyle='round',solid_capstyle='round',label='Taylor')
     pylab.errorbar(means[4],means[5],xerr=emeans[4],yerr=emeans[5],capsize=20,color='b',dash_capstyle='round',solid_capstyle='round',label='Gaussian')
     pylab.errorbar(means[6],means[7],xerr=emeans[6],yerr=emeans[7],capsize=20,color='m',dash_capstyle='round',solid_capstyle='round',label='$\\chi^2$')
     pylab.errorbar(means[0],means[1],xerr=stds[0],yerr=stds[1],capsize=10,color='r',linestyle='--',linewidth=5)
