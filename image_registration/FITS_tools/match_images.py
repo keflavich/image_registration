@@ -1,8 +1,11 @@
 import numpy as np
 from ..chi2_shifts import chi2_shift_iterzoom
 import astropy.wcs as pywcs
-from .load_header import load_data,load_header
+from .load_header import load_data, load_header
 from ..fft_tools.shift import shift2d
+
+__all__ = ['project_to_header', 'match_fits', 'register_fits']
+
 
 def project_to_header(fitsfile, header, **kwargs):
     """
@@ -25,6 +28,7 @@ def project_to_header(fitsfile, header, **kwargs):
     """
     import reproject
     return reproject.reproject_interp(fitsfile, header, **kwargs)[0]
+
 
 def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
                return_header=False, **kwargs):
@@ -65,7 +69,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
     if sigma_cut:
         corr_image1 = image1*(image1 > image1.std()*sigma_cut)
         corr_image2 = image2_projected*(image2_projected > image2_projected.std()*sigma_cut)
-        OK = (corr_image1==corr_image1)*(corr_image2==corr_image2) 
+        OK = (corr_image1==corr_image1)*(corr_image2==corr_image2)
         if (corr_image1[OK]*corr_image2[OK]).sum() == 0:
             print("Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut)
             corr_image1 = image1
@@ -78,6 +82,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
     if return_header:
         returns = returns + (header,)
     return returns
+
 
 def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
                   register_method=chi2_shift_iterzoom,
@@ -144,7 +149,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     xoff,yoff,exoff,eyoff = register_method(proj_image1, proj_image2,
                                             err=errimage, return_error=True,
                                             **kwargs)
-    
+
     wcs = pywcs.WCS(header)
     try:
         cdelt = wcs.wcs.cd.diagonal()

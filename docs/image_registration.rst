@@ -13,8 +13,8 @@ image_registration Package
 
 .. automodapi:: image_registration.register_images
 
-
 .. autofunction:: register_images
+    :noindex:
 
 :mod:`chi2_shifts` Module
 -------------------------
@@ -23,6 +23,7 @@ image_registration Package
 
 .. _chi2_shift:
 .. autofunction:: chi2_shift
+    :noindex:
 
 :mod:`cross_correlation_shifts` Module
 --------------------------------------
@@ -30,6 +31,7 @@ image_registration Package
 .. automodapi:: image_registration.cross_correlation_shifts
 
 .. autofunction:: cross_correlation_shifts
+    :noindex:
 
 Subpackages
 -----------
@@ -38,5 +40,4 @@ Subpackages
 
     image_registration.fft_tools
     image_registration.FITS_tools
-    image_registration.tests
 

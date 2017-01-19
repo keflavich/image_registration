@@ -48,11 +48,9 @@ also shows examples.
 Module APIs:
 ------------
 
-   :doc:`image_registration` 
+   :doc:`image_registration`
 
    :doc:`image_registration.fft_tools` (and a description of the :doc:`fourier_tools`)
-
-   :doc:`image_registration.tests` 
 
 
    The most successful of the methods implemented here is
@@ -79,9 +77,9 @@ cross-correlated structure (which may be "beam-shaped") instead of the
 cross-correlation shift peak (which may have effectively no shape because it is
 sub-pixel).
 
-The main advantage of the `chi2_shift` approach is that it can return
-*statistical errors* on the best-fit shift.  It is also fast and efficient for
-many image types and sizes.
+The main advantage of the `~image_registration.chi2_shifts.chi2_shift`
+approach is that it can return *statistical errors* on the best-fit shift.
+It is also fast and efficient for many image types and sizes.
 
 Programs implementing these methods in various languages:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,12 +112,12 @@ Programs implementing these methods in various languages:
         way.
 
     `Christoph Gohlke's python fft image registration code <http://www.lfd.uci.edu/~gohlke/code/imreg.py.html>`_ :
-        Allows for rescaling and rotation. 
+        Allows for rescaling and rotation.
 
     Related bibliographic items (with no attached code):
     `"Sub-pixel image registration with a maximum likelihood estimator" <http://adsabs.harvard.edu/abs/2005A&A...443..357G>`_
     The method they describe is statistically equivalent to what I have implemented, though my method measures the *error*
-    on the maximum-likelihood offset in addition to the ML offset.  
+    on the maximum-likelihood offset in addition to the ML offset.
 
 
 .. :mod:`image_registration` Module
@@ -136,19 +134,11 @@ Programs implementing these methods in various languages:
     :members:
     :undoc-members:
 
-.. :mod:`image_registration.tests` Module
-.. --------------------------------------
-
-.. automodule:: image_registration.tests
-    :members:
-    :undoc-members:
-
 .. Contents:
 .. ~~~~~~~~~
 
 .. toctree::
    :maxdepth: 2
-
 
 
 Indices and tables
@@ -160,8 +150,7 @@ Indices and tables
 * :doc:`image_registration.FITS_tools`
 * :doc:`image_registration.fft_tools`
 * :doc:`image_registration`
-* :doc:`image_registration.tests`
-  
+
 .. toctree::
   :maxdepth: 1
 

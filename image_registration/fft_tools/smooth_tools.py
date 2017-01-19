@@ -1,62 +1,62 @@
 import numpy as np
-import types
 from .downsample import downsample as downsample_2d
 from .convolve_nd import convolvend as convolve
 
+
 def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
-        silent=True, psf_pad=True, interp_nan=False, nwidths='max',
-        min_nwidths=6, return_kernel=False, normalize_kernel=np.sum,
-        downsample=False, downsample_factor=None, ignore_edge_zeros=False,
-        **kwargs):
+           silent=True, psf_pad=True, interp_nan=False, nwidths='max',
+           min_nwidths=6, return_kernel=False, normalize_kernel=np.sum,
+           downsample=False, downsample_factor=None, ignore_edge_zeros=False,
+           **kwargs):
     """
     Returns a smoothed image using a gaussian, boxcar, or tophat kernel
 
     Parameters
     ----------
-    kernelwidth:
+    kernelwidth :
         width of kernel in pixels  (see definitions below)
-    kerneltype:
-        gaussian, boxcar, or tophat.  
-        For a gaussian, uses a gaussian with sigma = kernelwidth (in pixels)
-            out to [nwidths]-sigma
-        A boxcar is a kernelwidth x kernelwidth square 
-        A tophat is a flat circle with radius = kernelwidth
-
-    psf_pad: [True]
+    kerneltype : gaussian, boxcar, or tophat
+        * a gaussian, uses a gaussian with sigma = kernelwidth (in pixels)
+          out to [nwidths]-sigma
+        * a boxcar is a kernelwidth x kernelwidth square
+        * a tophat is a flat circle with radius = kernelwidth
+    psf_pad : [True]
         will pad the input image to be the image size + PSF.
         Slows things down but removes edge-wrapping effects (see convolve)
         This option should be set to false if the edges of your image are
         symmetric.
-    interp_nan: [False]
+    interp_nan : [False]
         Will replace NaN points in an image with the
-        smoothed average of its neighbors (you can still simply ignore NaN 
+        smoothed average of its neighbors (you can still simply ignore NaN
         values by setting ignore_nan=True but leaving interp_nan=False)
-    silent: [True]
+    silent : [True]
         turn it off to get verbose statements about kernel types
-    return_kernel: [False]
+    return_kernel : [False]
         If set to true, will return the kernel as the
         second return value
-    nwidths: ['max']
+    nwidths : ['max']
         number of kernel widths wide to make the kernel.  Set to 'max' to
-        match the image shape, otherwise use any integer 
-    min_nwidths: [6]
+        match the image shape, otherwise use any integer
+    min_nwidths : [6]
         minimum number of gaussian widths to make the kernel
         (the kernel will be larger than the image if the image size is <
         min_widths*kernelsize)
-    normalize_kernel:
+    normalize_kernel :
         Should the kernel preserve the map sum (i.e. kernel.sum() = 1)
         or the kernel peak (i.e. kernel.max() = 1) ?  Must be a *function* that can
         operate on a numpy array
-    downsample:
+    downsample :
         downsample after smoothing?
-    downsample_factor:
+    downsample_factor :
         if None, default to kernelwidth
-    ignore_edge_zeros: bool
+    ignore_edge_zeros : bool
         Ignore the zero-pad-created zeros.  This will effectively decrease
         the kernel area on the edges but will not re-normalize the kernel.
         This parameter may result in 'edge-brightening' effects if you're using
         a normalized kernel
 
+    Notes
+    -----
     Note that the kernel is forced to be even sized on each axis to assure no
     offset when smoothing.
     """
@@ -105,6 +105,7 @@ def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
         if return_kernel: return temp,kernel
         else: return temp
 
+
 def make_kernel(kernelshape, kernelwidth=3, kerneltype='gaussian',
         trapslope=None, normalize_kernel=np.sum, force_odd=False):
     """
@@ -121,8 +122,8 @@ def make_kernel(kernelshape, kernelwidth=3, kerneltype='gaussian',
     kerneltype : 'gaussian', 'boxcar', 'tophat', 'brickwall', 'airy', 'trapezoid'
         Defines the type of kernel to be generated.
         For a gaussian, uses a gaussian with sigma = `kernelwidth` (in pixels)
-            i.e. kernel = exp(-r**2 / (2*sigma**2)) where r is the radius 
-        A boxcar is a `kernelwidth` x `kernelwidth` square 
+            i.e. kernel = exp(-r**2 / (2*sigma**2)) where r is the radius
+        A boxcar is a `kernelwidth` x `kernelwidth` square
             e.g. kernel = (x < `kernelwidth`) * (y < `kernelwidth`)
         A tophat is a flat circle with radius = `kernelwidth`
             i.e. kernel = (r < `kernelwidth`)
@@ -134,7 +135,7 @@ def make_kernel(kernelshape, kernelwidth=3, kerneltype='gaussian',
     trapslope : float
         Slope of the trapezoid kernel.  Only used if `kerneltype`=='trapezoid'
     normalize_kernel : function
-        Function to use for kernel normalization 
+        Function to use for kernel normalization
     force_odd : boolean
         If set, forces the kernel to have odd dimensions (needed for convolve
         w/o ffts)
@@ -178,7 +179,7 @@ def make_kernel(kernelshape, kernelwidth=3, kerneltype='gaussian',
                     "airy kernel without this (need the bessel function)")
         rr = np.sum([(x-(x.max())/2.)**2 for x in np.indices(kernelshape)],axis=0)**0.5
         # airy function is first bessel(x) / x  [like the sinc]
-        kernel = j1(rr/kernelwidth) / (rr/kernelwidth) 
+        kernel = j1(rr/kernelwidth) / (rr/kernelwidth)
         # fix NAN @ center
         kernel[rr==0] = 0.5
         kernel /= normalize_kernel(kernel)
