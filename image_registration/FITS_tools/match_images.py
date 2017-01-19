@@ -15,8 +15,6 @@ def project_to_header(fitsfile, header, **kwargs):
         a FITS file name
     header : pyfits.Header
         A pyfits Header instance with valid WCS to project to
-    use_montage : bool
-        Use montage or hcongrid (scipy's map_coordinates)
     quiet : bool
         Silence Montage's output
 
@@ -29,7 +27,7 @@ def project_to_header(fitsfile, header, **kwargs):
     return reproject.reproject_interp(fitsfile, header, **kwargs)[0]
 
 def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
-               return_header=False, use_montage=False, **kwargs):
+               return_header=False, **kwargs):
     """
     Project one FITS file into another's coordinates
     If sigma_cut is used, will try to find only regions that are significant
@@ -45,9 +43,6 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         Optional - can pass a header to projet both images to
     sigma_cut: bool or int
         Perform a sigma-cut on the returned images at this level
-    use_montage: bool
-        Use montage for the reprojection into the same pixel space?  Otherwise,
-        use scipy.
 
     Returns
     -------
@@ -59,10 +54,10 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         header = load_header(fitsfile1)
         image1 = load_data(fitsfile1)
     else: # project image 1 to input header coordinates
-        image1 = project_to_header(fitsfile1, header, use_montage=use_montage)
+        image1 = project_to_header(fitsfile1, header)
 
     # project image 2 to image 1 coordinates
-    image2_projected = project_to_header(fitsfile2, header, use_montage=use_montage)
+    image2_projected = project_to_header(fitsfile2, header)
 
     if image1.shape != image2_projected.shape:
         raise ValueError("Failed to reproject images to same shape.")
@@ -87,7 +82,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
 def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
                   register_method=chi2_shift_iterzoom,
                   return_cropped_images=False, return_shifted_image=False,
-                  return_header=False, use_montage=False, **kwargs):
+                  return_header=False, **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
     technique.  Requires montage or hcongrid.
@@ -119,9 +114,6 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
     sigma_cut: bool or int
         Perform a sigma-cut before cross-correlating the images to minimize
         noise correlation?
-    use_montage: bool
-        Use montage for the reprojection into the same pixel space?  Otherwise,
-        use scipy.
 
     Returns
     -------
@@ -145,7 +137,7 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
                                                   return_header=True, **kwargs)
 
     if errfile is not None:
-        errimage = project_to_header(errfile, header, use_montage=use_montage, **kwargs)
+        errimage = project_to_header(errfile, header, **kwargs)
     else:
         errimage = None
 
