@@ -1,3 +1,8 @@
+"""
+Accuracy Tests
+--------------
+Test module to test the accuracy of the offset determination.
+"""
 from ..cross_correlation_shifts import cross_correlation_shifts
 from ..register_images import register_images
 from ..chi2_shifts import chi2_shift
@@ -330,6 +335,9 @@ def test_upsample(imsize, usfac=2, xsh=2.25, ysh=2.25, noise=0.1, **kwargs):
     pylab.subplot(224); pylab.imshow(abs(dftus[::-1,::-1])); pylab.contour(raw_us)
 
 def accuracy_plot(xsh=2.25,ysh=-1.35,amp=10000,width=1,imsize=100,usf_range=[1,100]):
+    """
+    Plot for interactive use
+    """
     testg,testgsh,T = make_offset_images(xsh,ysh,imsize,amp=amp,width=width)
     offsets = []
     for usf in xrange(*usf_range): 
@@ -343,6 +351,9 @@ def accuracy_plot(xsh=2.25,ysh=-1.35,amp=10000,width=1,imsize=100,usf_range=[1,1
     pylab.plot(np.arange(*usf_range), 1./np.arange(*usf_range), 'k--', label="Theoretical")
 
 def accuracy_plot_extended(xsh=2.25,ysh=-1.35,noise=0.1,imsize=100,usf_range=[1,100]):
+    """
+    Plot for interactive use
+    """
     offsets = []
     for usf in xrange(*usf_range): 
         dy,dx = do_n_extended_fits(1,xsh,ysh, imsize, shift_func=register_images,sfkwargs={'usfac':usf},noise=noise)[0]
