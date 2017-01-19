@@ -48,11 +48,9 @@ also shows examples.
 Module APIs:
 ------------
 
-   :doc:`image_registration` 
+   :doc:`image_registration`
 
    :doc:`image_registration.fft_tools` (and a description of the :doc:`fourier_tools`)
-
-   :doc:`image_registration.tests` 
 
 
    The most successful of the methods implemented here is
@@ -114,12 +112,12 @@ Programs implementing these methods in various languages:
         way.
 
     `Christoph Gohlke's python fft image registration code <http://www.lfd.uci.edu/~gohlke/code/imreg.py.html>`_ :
-        Allows for rescaling and rotation. 
+        Allows for rescaling and rotation.
 
     Related bibliographic items (with no attached code):
     `"Sub-pixel image registration with a maximum likelihood estimator" <http://adsabs.harvard.edu/abs/2005A&A...443..357G>`_
     The method they describe is statistically equivalent to what I have implemented, though my method measures the *error*
-    on the maximum-likelihood offset in addition to the ML offset.  
+    on the maximum-likelihood offset in addition to the ML offset.
 
 
 .. :mod:`image_registration` Module
@@ -136,19 +134,11 @@ Programs implementing these methods in various languages:
     :members:
     :undoc-members:
 
-.. :mod:`image_registration.tests` Module
-.. --------------------------------------
-
-.. automodule:: image_registration.tests
-    :members:
-    :undoc-members:
-
 .. Contents:
 .. ~~~~~~~~~
 
 .. toctree::
    :maxdepth: 2
-
 
 
 Indices and tables
@@ -160,8 +150,7 @@ Indices and tables
 * :doc:`image_registration.FITS_tools`
 * :doc:`image_registration.fft_tools`
 * :doc:`image_registration`
-* :doc:`image_registration.tests`
-  
+
 .. toctree::
   :maxdepth: 1
 
