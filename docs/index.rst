@@ -77,9 +77,9 @@ cross-correlated structure (which may be "beam-shaped") instead of the
 cross-correlation shift peak (which may have effectively no shape because it is
 sub-pixel).
 
-The main advantage of the `chi2_shift` approach is that it can return
-*statistical errors* on the best-fit shift.  It is also fast and efficient for
-many image types and sizes.
+The main advantage of the `~image_registration.chi2_shifts.chi2_shift`
+approach is that it can return *statistical errors* on the best-fit shift.
+It is also fast and efficient for many image types and sizes.
 
 Programs implementing these methods in various languages:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

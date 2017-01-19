@@ -1,13 +1,14 @@
-from .fft_tools import correlate2d,fast_ffts
-from .fft_tools import dftups,upsample_image,shift
+from .fft_tools import correlate2d, fast_ffts
+from .fft_tools import dftups, upsample_image, shift
 import warnings
 import numpy as np
 
 __all__ = ['register_images']
 
+
 def register_images(im1, im2, usfac=1, return_registered=False,
-        return_error=False, zeromean=True, DEBUG=False, maxoff=None,
-        nthreads=1, use_numpy_fft=False):
+                    return_error=False, zeromean=True, DEBUG=False, maxoff=None,
+                    nthreads=1, use_numpy_fft=False):
     """
     Sub-pixel image registration (see dftregistration for lots of details)
 
@@ -15,7 +16,7 @@ def register_images(im1, im2, usfac=1, return_registered=False,
     ----------
     im1 : np.ndarray
     im2 : np.ndarray
-        The images to register. 
+        The images to register.
     usfac : int
         upsampling factor; governs accuracy of fit (1/usfac is best accuracy)
     return_registered : bool
@@ -74,40 +75,40 @@ def register_images(im1, im2, usfac=1, return_registered=False,
     return output
 
 
-def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
-        return_error=False, zeromean=True, DEBUG=False, maxoff=None,
-        nthreads=1, use_numpy_fft=False):
+def dftregistration(buf1ft, buf2ft, usfac=1, return_registered=False,
+                    return_error=False, zeromean=True, DEBUG=False, maxoff=None,
+                    nthreads=1, use_numpy_fft=False):
     """
     translated from matlab:
     http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html
 
     Efficient subpixel image registration by crosscorrelation. This code
     gives the same precision as the FFT upsampled cross correlation in a
-    small fraction of the computation time and with reduced memory 
+    small fraction of the computation time and with reduced memory
     requirements. It obtains an initial estimate of the crosscorrelation peak
     by an FFT and then refines the shift estimation by upsampling the DFT
-    only in a small neighborhood of that estimate by means of a 
+    only in a small neighborhood of that estimate by means of a
     matrix-multiply DFT. With this procedure all the image points are used to
     compute the upsampled crosscorrelation.
     Manuel Guizar - Dec 13, 2007
 
-    Portions of this code were taken from code written by Ann M. Kowalczyk 
-    and James R. Fienup. 
-    J.R. Fienup and A.M. Kowalczyk, "Phase retrieval for a complex-valued 
-    object by using a low-resolution image," J. Opt. Soc. Am. A 7, 450-458 
+    Portions of this code were taken from code written by Ann M. Kowalczyk
+    and James R. Fienup.
+    J.R. Fienup and A.M. Kowalczyk, "Phase retrieval for a complex-valued
+    object by using a low-resolution image," J. Opt. Soc. Am. A 7, 450-458
     (1990).
 
     Citation for this algorithm:
-    Manuel Guizar-Sicairos, Samuel T. Thurman, and James R. Fienup, 
-    "Efficient subpixel image registration algorithms," Opt. Lett. 33, 
+    Manuel Guizar-Sicairos, Samuel T. Thurman, and James R. Fienup,
+    "Efficient subpixel image registration algorithms," Opt. Lett. 33,
     156-158 (2008).
 
     Inputs
-    buf1ft    Fourier transform of reference image, 
+    buf1ft    Fourier transform of reference image,
            DC in (1,1)   [DO NOT FFTSHIFT]
-    buf2ft    Fourier transform of image to register, 
+    buf2ft    Fourier transform of image to register,
            DC in (1,1) [DO NOT FFTSHIFT]
-    usfac     Upsampling factor (integer). Images will be registered to 
+    usfac     Upsampling factor (integer). Images will be registered to
            within 1/usfac of a pixel. For example usfac = 20 means the
            images will be registered within 1/20 of a pixel. (default = 1)
 
@@ -130,14 +131,14 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
     # Compute error for no pixel shift
     if usfac == 0:
         raise ValueError("Upsample Factor must be >= 1")
-        CCmax = sum(sum(buf1ft * conj(buf2ft))); 
+        CCmax = sum(sum(buf1ft * conj(buf2ft)));
         rfzero = sum(abs(buf1ft)**2);
-        rgzero = sum(abs(buf2ft)**2); 
-        error = 1.0 - CCmax * conj(CCmax)/(rgzero*rfzero); 
+        rgzero = sum(abs(buf2ft)**2);
+        error = 1.0 - CCmax * conj(CCmax)/(rgzero*rfzero);
         error = sqrt(abs(error));
-        diffphase=arctan2(imag(CCmax),real(CCmax)); 
+        diffphase=arctan2(imag(CCmax),real(CCmax));
         output=[error,diffphase];
-            
+
     # Whole-pixel shift - Compute crosscorrelation by an IFFT and locate the
     # peak
     elif usfac == 1:
@@ -145,20 +146,20 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
         CC = ifft2(buf1ft * conj(buf2ft));
         if maxoff is None:
             rloc,cloc = np.unravel_index(abs(CC).argmax(), CC.shape)
-            CCmax=CC[rloc,cloc]; 
+            CCmax=CC[rloc,cloc];
         else:
             # set the interior of the shifted array to zero
             # (i.e., ignore it)
             CC[maxoff:-maxoff,:] = 0
             CC[:,maxoff:-maxoff] = 0
             rloc,cloc = np.unravel_index(abs(CC).argmax(), CC.shape)
-            CCmax=CC[rloc,cloc]; 
+            CCmax=CC[rloc,cloc];
         rfzero = sum(abs(buf1ft)**2)/(m*n);
-        rgzero = sum(abs(buf2ft)**2)/(m*n); 
+        rgzero = sum(abs(buf2ft)**2)/(m*n);
         error = 1.0 - CCmax * conj(CCmax)/(rgzero*rfzero);
         error = sqrt(abs(error));
-        diffphase=arctan2(imag(CCmax),real(CCmax)); 
-        md2 = fix(m/2); 
+        diffphase=arctan2(imag(CCmax),real(CCmax));
+        md2 = fix(m/2);
         nd2 = fix(n/2);
         if rloc > md2:
             row_shift = rloc - m;
@@ -171,10 +172,10 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             col_shift = cloc;
         #output=[error,diffphase,row_shift,col_shift];
         output=[row_shift,col_shift]
-        
+
     # Partial-pixel shift
     else:
-        
+
         if DEBUG: import pylab
         # First upsample by a factor of 2 to obtain initial estimate
         # Embed Fourier data in a 2x larger array
@@ -185,19 +186,19 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
         #CClarge[m-fix(m/2):m+fix((m-1)/2)+1,n-fix(n/2):n+fix((n-1)/2)+1] = fftshift(buf1ft) * conj(fftshift(buf2ft));
         CClarge[round(mlarge/4.):round(mlarge/4.*3),round(nlarge/4.):round(nlarge/4.*3)] = fftshift(buf1ft) * conj(fftshift(buf2ft));
         # note that matlab uses fix which is trunc... ?
-      
-        # Compute crosscorrelation and locate the peak 
+
+        # Compute crosscorrelation and locate the peak
         CC = ifft2(ifftshift(CClarge)); # Calculate cross-correlation
         if maxoff is None:
             rloc,cloc = np.unravel_index(abs(CC).argmax(), CC.shape)
-            CCmax=CC[rloc,cloc]; 
+            CCmax=CC[rloc,cloc];
         else:
             # set the interior of the shifted array to zero
             # (i.e., ignore it)
             CC[maxoff:-maxoff,:] = 0
             CC[:,maxoff:-maxoff] = 0
             rloc,cloc = np.unravel_index(abs(CC).argmax(), CC.shape)
-            CCmax=CC[rloc,cloc]; 
+            CCmax=CC[rloc,cloc];
 
         if DEBUG:
             pylab.figure(1)
@@ -211,9 +212,9 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             pylab.imshow(real(CC)/real(ups)); pylab.title("Ratio upsampled/dftupsampled")
             print("Upsample by 2 peak: ",rloc,cloc," using dft version: ",np.unravel_index(abs(ups).argmax(), ups.shape))
             #print np.unravel_index(ups.argmax(),ups.shape)
-        
+
         # Obtain shift in original pixel grid from the position of the
-        # crosscorrelation peak 
+        # crosscorrelation peak
         [m,n] = shape(CC); md2 = trunc(m/2); nd2 = trunc(n/2);
         if rloc > md2 :
             row_shift2 = rloc - m;
@@ -233,8 +234,8 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             # Initial shift estimate in upsampled grid
             zoom_factor=1.5
             if DEBUG: print(row_shift2, col_shift2)
-            row_shift0 = round(row_shift2*usfac)/usfac; 
-            col_shift0 = round(col_shift2*usfac)/usfac;     
+            row_shift0 = round(row_shift2*usfac)/usfac;
+            col_shift0 = round(col_shift2*usfac)/usfac;
             dftshift = trunc(ceil(usfac*zoom_factor)/2); #% Center of output array at dftshift+1
             if DEBUG: print('dftshift,rs,cs,zf:',dftshift, row_shift0, col_shift0, usfac*zoom_factor)
             # Matrix multiply DFT around the current shift estimate
@@ -243,8 +244,8 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             upsampled = dftups(
                     (buf2ft * conj(buf1ft)),
                     ceil(usfac*zoom_factor),
-                    ceil(usfac*zoom_factor), 
-                    usfac, 
+                    ceil(usfac*zoom_factor),
+                    usfac,
                     roff,
                     coff)
             #CC = conj(dftups(buf2ft.*conj(buf1ft),ceil(usfac*1.5),ceil(usfac*1.5),usfac,...
@@ -261,9 +262,9 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
                 yy,xx = np.indices([m*usfac,n*usfac],dtype='float')
                 pylab.contour(yy/usfac/2.-0.5+1,xx/usfac/2.-0.5-1, np.abs(dftups((buf2ft*conj(buf1ft)),m*usfac,n*usfac,usfac)))
                 pylab.subplot(224); pylab.imshow(np.abs(dftups((buf2ft*conj(buf1ft)),ceil(usfac*zoom_factor),ceil(usfac*zoom_factor),usfac))); pylab.title('unshifted ups')
-            # Locate maximum and map back to original pixel grid 
-            rloc,cloc = np.unravel_index(abs(CC).argmax(), CC.shape) 
-            rloc0,cloc0 = np.unravel_index(abs(CC).argmax(), CC.shape) 
+            # Locate maximum and map back to original pixel grid
+            rloc,cloc = np.unravel_index(abs(CC).argmax(), CC.shape)
+            rloc0,cloc0 = np.unravel_index(abs(CC).argmax(), CC.shape)
             CCmax = CC[rloc,cloc]
             #[max1,loc1] = CC.max(axis=0), CC.argmax(axis=0)
             #[max2,loc2] = max1.max(),max1.argmax()
@@ -271,13 +272,13 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             #cloc=loc2;
             #CCmax = CC[rloc,cloc];
             rg00 = dftups(buf1ft * conj(buf1ft),1,1,usfac)/(md2*nd2*usfac**2);
-            rf00 = dftups(buf2ft * conj(buf2ft),1,1,usfac)/(md2*nd2*usfac**2);  
+            rf00 = dftups(buf2ft * conj(buf2ft),1,1,usfac)/(md2*nd2*usfac**2);
             #if DEBUG: print rloc,row_shift,cloc,col_shift,dftshift
             rloc = rloc - dftshift #+ 1 # +1 # questionable/failed hack + 1;
             cloc = cloc - dftshift #+ 1 # -1 # questionable/failed hack - 1;
             #if DEBUG: print rloc,row_shift,cloc,col_shift,dftshift
             row_shift = row_shift0 + rloc/usfac;
-            col_shift = col_shift0 + cloc/usfac;    
+            col_shift = col_shift0 + cloc/usfac;
             #if DEBUG: print rloc/usfac,row_shift,cloc/usfac,col_shift
             if DEBUG: print("Off by: ",(0.25 - float(rloc)/usfac)*usfac , (-0.25 - float(cloc)/usfac)*usfac )
             if DEBUG: print("correction was: ",rloc/usfac, cloc/usfac)
@@ -286,7 +287,7 @@ def dftregistration(buf1ft,buf2ft,usfac=1, return_registered=False,
             if DEBUG: print( rloc,cloc,row_shift,col_shift,CCmax,dftshift,rloc0,cloc0)
 
         # If upsampling = 2, no additional pixel shift refinement
-        else:    
+        else:
             rg00 = sum(sum( buf1ft * conj(buf1ft) ))/m/n;
             rf00 = sum(sum( buf2ft * conj(buf2ft) ))/m/n;
             row_shift = row_shift2

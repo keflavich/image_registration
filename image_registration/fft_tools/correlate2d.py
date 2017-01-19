@@ -1,6 +1,9 @@
 import numpy as np
 from .convolve_nd import convolvend as convolve
 
+__all__ = ['correlate2d']
+
+
 def correlate2d(im1,im2, boundary='wrap', **kwargs):
     """
     Cross-correlation of two images of arbitrary size.  Returns an image
@@ -14,7 +17,7 @@ def correlate2d(im1,im2, boundary='wrap', **kwargs):
         the center of the image
     pad - Default on.  Zero-pad image to the nearest 2^n
     crop - Default on.  Return an image of the size of the largest input image.
-        If the images are asymmetric in opposite directions, will return the largest 
+        If the images are asymmetric in opposite directions, will return the largest
         image in both directions.
     boundary: str, optional
         A flag indicating how to handle boundaries:
