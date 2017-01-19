@@ -21,10 +21,6 @@ image_registration Package
 
 .. automodapi:: image_registration.chi2_shifts
 
-.. _chi2_shift:
-.. autofunction:: chi2_shift
-    :noindex:
-
 :mod:`cross_correlation_shifts` Module
 --------------------------------------
 
