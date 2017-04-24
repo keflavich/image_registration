@@ -1,6 +1,7 @@
 CHANGES
 -------
 
+0.2.3 - April 24, 2017.  Update astropy helpers and some minor doc fixes
 0.2.2 - Dec 8, 2016: minor bugfixes, first release in a long while.  Version
         actually specified.
 0.2.1 - Use scipy.stats.nanmean if np.nanmean unavailable
