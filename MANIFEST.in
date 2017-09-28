@@ -1,3 +1,9 @@
 include README.rst
 include CHANGES
 include LICENSE
+
+# Ensure we can bootstrap the install
+
+include ez_setup.py
+include ah_bootstrap.py
+include setup.cfg
