@@ -4,6 +4,8 @@ include LICENSE
 
 # Ensure we can bootstrap the install
 
+include REQUIREMENTS
+
 include ez_setup.py
 include ah_bootstrap.py
 include setup.cfg
