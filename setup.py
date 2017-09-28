@@ -37,6 +37,10 @@ AUTHOR_EMAIL = metadata.get('author_email', '')
 LICENSE = metadata.get('license', 'unknown')
 URL = metadata.get('url', 'http://astropy.org')
 
+# Get requirements from REQUIREMENTS
+with open("REQUIREMENTS", "r") as fh:
+    REQUIREMENTS = fh.readlines()
+
 # Get the long description from the package's docstring
 __import__(PACKAGENAME)
 package = sys.modules[PACKAGENAME]
@@ -106,7 +110,7 @@ setup(name=PACKAGENAME,
       version=VERSION,
       description=DESCRIPTION,
       scripts=scripts,
-      install_requires=['astropy'],
+      install_requires=REQUIREMENTS,
       author=AUTHOR,
       author_email=AUTHOR_EMAIL,
       license=LICENSE,
