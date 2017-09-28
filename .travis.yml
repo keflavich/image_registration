@@ -43,10 +43,7 @@ env:
 matrix:
     include:
 
-        # Do a coverage test in Python 2. This requires the latest
-        # development version of Astropy, which fixes some issues with
-        # coverage testing in affiliated packages.
-        - python: 2.7
+        - python: 3.6
           env: ASTROPY_VERSION=development SETUP_CMD='test --coverage'
 
         # Check for sphinx doc build warnings - we do this first because it
