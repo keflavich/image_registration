@@ -36,7 +36,7 @@ def montecarlo_test_offsets(xsh, ysh, imsize, noise_taper=False, noise=0.5, nsam
 
     results = [test_measure_offsets(xsh, ysh, imsize, noise_taper=noise_taper,
                                     noise=noise, **kwargs)
-                for ii in xrange(nsamples)]
+                for ii in range(nsamples)]
 
     xoff,yoff,exoff,eyoff = zip(*results)
 
@@ -64,7 +64,7 @@ def montecarlo_tests_of_imsize(xsh,ysh,imsizerange=[15,105,5],noise=0.5,
 
     means_of_imsize = []
     stds_of_imsize = []
-    for imsize in xrange(*imsizerange):
+    for imsize in range(*imsizerange):
         print "Image Size = %i.  " % imsize,
         xoff,yoff,exoff,eyoff,means,stds = plot_montecarlo_test_offsets(xsh,
                             ysh, imsize, noise=noise, name=namepre+"%i "%imsize,  **kwargs)
@@ -168,7 +168,7 @@ def monte_carlo_tests_of_both(xsh,ysh,noiselevels, imsizes, figstart=12,
     pl.title("$\mu_y$ stds")
     pl.pcolormesh(centers_to_edges(noiselevels),centers_to_edges(imsizes),stds[:,:,1])
 
-    for ii in xrange(1,5):
+    for ii in range(1,5):
         pl.subplot(2,2,ii)
         pl.xlabel("Noise Level")
         pl.ylabel("Image Size")

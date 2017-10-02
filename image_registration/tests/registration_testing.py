@@ -191,7 +191,7 @@ def do_n_fits(nfits, xsh, ysh, imsize, gaussfit=False, maxoff=None,
         shift_func(
             *make_offset_images(xsh, ysh, imsize, **kwargs)[:2],
             gaussfit=gaussfit, maxoff=maxoff, return_error=return_error)
-        for ii in xrange(nfits)]
+        for ii in range(nfits)]
 
     return offsets
 
@@ -212,7 +212,7 @@ def do_n_fits_register(nfits, xsh, ysh, imsize, usfac=10,
         Size of image (square)
     """
     offsets = []
-    for ii in xrange(nfits):
+    for ii in range(nfits):
         im1,im2,temp = make_offset_images(xsh, ysh, imsize, **kwargs)
         xoff,yoff,reg = register_images(
             im1, im2,
@@ -250,7 +250,7 @@ def do_n_extended_fits(nfits, xsh, ysh, imsize,  gaussfit=False,
 
     if unsharp_mask:
         offsets = []
-        for ii in progress(xrange(nfits)):
+        for ii in progress(range(nfits)):
             inim = image-smooth(image,smoothfactor)
             offim = make_offset_extended(image, xsh, ysh, noise=noise, **kwargs)
             offim -= smooth(offim,smoothfactor)
@@ -264,7 +264,7 @@ def do_n_extended_fits(nfits, xsh, ysh, imsize,  gaussfit=False,
             pylab.subplot(223); pylab.imshow(abs(ifft2((fft2(image)*conj(fft2(offim))))))
             pylab.subplot(224); pylab.imshow(abs(ifft2((fft2(image-image.mean())*conj(fft2(offim-offim.mean()))))))
             draw()
-        for ii in progress(xrange(nfits)):
+        for ii in progress(range(nfits)):
             offim = make_offset_extended(image, xsh, ysh, noise=noise, **kwargs)
             offsets.append( shift_func(
                 image,
@@ -341,7 +341,7 @@ def accuracy_plot(xsh=2.25,ysh=-1.35,amp=10000,width=1,imsize=100,usf_range=[1,1
     """
     testg,testgsh,T = make_offset_images(xsh,ysh,imsize,amp=amp,width=width)
     offsets = []
-    for usf in xrange(*usf_range):
+    for usf in range(*usf_range):
         dy,dx = dftregistration(np.fft.fft2(testg),np.fft.fft2(testgsh),usfac=usf);
         # offsets are negative...
         offsets.append([xsh+dx,ysh+dy])
@@ -356,7 +356,7 @@ def accuracy_plot_extended(xsh=2.25,ysh=-1.35,noise=0.1,imsize=100,usf_range=[1,
     Plot for interactive use
     """
     offsets = []
-    for usf in xrange(*usf_range):
+    for usf in range(*usf_range):
         dy,dx = do_n_extended_fits(1,xsh,ysh, imsize, shift_func=register_images,sfkwargs={'usfac':usf},noise=noise)[0]
         offsets.append([xsh+dx,ysh+dy])
 
@@ -379,7 +379,7 @@ def error_test(xsh=2.25,ysh=-1.35,noise=0.5,imsize=100,usf=101,nsamples=100,maxo
     print("Mean x,y: ",offsets.mean(axis=0),"Real x,y: ",xsh,ysh)
     print("Mean x,y - true x,y: ",offsets.mean(axis=0)-np.array([xsh,ysh]))
     print("Mean x,y - true x,y / std: ",(offsets.mean(axis=0)-np.array([xsh,ysh]))/offsets.std(axis=0))
-    signal = 3.05 * imsize**2 # empirical: plot(array([5,25,50,75,100,125,150]),array([mean([make_extended(jj).sum() for i in xrange(100)]) for jj in [5,25,50,75,100,125,150]])/array([5,25,50,75,100,125,150])**2)
+    signal = 3.05 * imsize**2 # empirical: plot(array([5,25,50,75,100,125,150]),array([mean([make_extended(jj).sum() for i in range(100)]) for jj in [5,25,50,75,100,125,150]])/array([5,25,50,75,100,125,150])**2)
     noise = 0.8 * imsize**2 * noise
     print("Signal / Noise: ", signal / noise)
 
@@ -395,7 +395,7 @@ def register_accuracy_test(im1,im2,usf_range=[1,100],**kwargs):
     except ImportError:
         def progress(x):
             yield x
-    for usf in progress(xrange(*usf_range)):
+    for usf in progress(range(*usf_range)):
         dy,dx = register_images(im1,im2,usfac=usf,**kwargs)
         offsets.append([dx,dy])
 
@@ -432,7 +432,7 @@ def register_noise_test(im1,im2, ntests=100, noise=np.std,
             yield x
 
     offsets = []
-    for test_number in progress(xrange(ntests)):
+    for test_number in progress(range(ntests)):
         extra_noise = np.random.randn(*im2.shape) * noise
         if return_error:
             dx,dy,edx,edy = register_method(im1,im2+extra_noise,return_error=True,**kwargs)
@@ -475,7 +475,7 @@ def compare_methods(im1,im2, ntests=100, noise=np.std,
 
     offsets = []
     eoffsets = []
-    for test_number in progress(xrange(ntests)):
+    for test_number in progress(range(ntests)):
         extra_noise = np.random.randn(*im2.shape) * noise
         dxr, dyr, edxr, edyr = register_images(im1, im2+extra_noise, usfac=usfac,
                 return_error=True, **kwargs)
