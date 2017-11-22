@@ -102,7 +102,7 @@ def make_extended(imsize, imsize2=None, powerlaw=2.0):
                 np.random.randn(imsize2, imsize) * rr**(-powerlaw) * 1j)
     powermap[powermap!=powermap] = 0
 
-    newmap = np.abs(np.fft.fftshift(np.fft.fft2(powermap)))**0.5
+    newmap = np.abs(np.fft.fftshift(np.fft.fft2(powermap**0.5)))
 
     return newmap
 
