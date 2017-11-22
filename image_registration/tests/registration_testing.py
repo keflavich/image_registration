@@ -98,8 +98,8 @@ def make_extended(imsize, imsize2=None, powerlaw=2.0):
     # flag out the bad point to avoid warnings
     rr[rr == 0] = np.nan
 
-    powermap = (np.random.randn(imsize2, imsize) * rr**(-powerlaw)+
-                np.random.randn(imsize2, imsize) * rr**(-powerlaw) * 1j)
+    powermap = (np.random.randn(imsize2, imsize) * rr**(-powerlaw/2.)+
+                np.random.randn(imsize2, imsize) * rr**(-powerlaw/2.) * 1j)
     powermap[powermap!=powermap] = 0
 
     newmap = np.abs(np.fft.fftshift(np.fft.fft2(powermap)))
