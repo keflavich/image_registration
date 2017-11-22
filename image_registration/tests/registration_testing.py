@@ -85,6 +85,15 @@ def make_offset_images(xsh,ysh,imsize, width=3.0, amp=1000.0, noiseamp=1.0,
     return image, new_image, tolerance
 
 def make_extended(imsize, imsize2=None, powerlaw=2.0):
+    """
+    Create a synthetic image based on a power-law noise distribution.
+    See also https://github.com/Astroua/TurbuStat/blob/master/turbustat/tests/_testing_data.py#L181
+
+    Math:
+        PSD = FT(x)^2
+        therefore
+        x = iFT( PSD^(1/2) )
+    """
     imsize = int(imsize)
     if imsize2 is None:
         imsize2=imsize
