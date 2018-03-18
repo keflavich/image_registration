@@ -1,12 +1,13 @@
 import numpy as np
 from .downsample import downsample as downsample_2d
-from .convolve_nd import convolvend as convolve
+#from .convolve_nd import convolvend as convolve
+from astropy.convolution import convolve_fft as convolve
 
 
 def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
            silent=True, psf_pad=True, interp_nan=False, nwidths='max',
            min_nwidths=6, return_kernel=False, normalize_kernel=np.sum,
-           downsample=False, downsample_factor=None, ignore_edge_zeros=False,
+           downsample=False, downsample_factor=None,
            **kwargs):
     """
     Returns a smoothed image using a gaussian, boxcar, or tophat kernel
@@ -49,11 +50,6 @@ def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
         downsample after smoothing?
     downsample_factor :
         if None, default to kernelwidth
-    ignore_edge_zeros : bool
-        Ignore the zero-pad-created zeros.  This will effectively decrease
-        the kernel area on the edges but will not re-normalize the kernel.
-        This parameter may result in 'edge-brightening' effects if you're using
-        a normalized kernel
 
     Notes
     -----
@@ -86,13 +82,14 @@ def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
     # convolve does this already temp[bad] = 0
 
     # kwargs parsing to avoid duplicate keyword passing
-    #if not kwargs.has_key('ignore_edge_zeros'): kwargs['ignore_edge_zeros']=True
-    if not kwargs.has_key('interpolate_nan'): kwargs['interpolate_nan']=interp_nan
+    if not kwargs.has_key('interpolate_nan'):
+        kwargs['interpolate_nan']=interp_nan
 
     # No need to normalize - normalization is dealt with in this code
     temp = convolve(temp,kernel,psf_pad=psf_pad, normalize_kernel=False,
-            ignore_edge_zeros=ignore_edge_zeros, **kwargs)
-    if interp_nan is False: temp[bad] = image[bad]
+                    **kwargs)
+    if interp_nan is False:
+        temp[bad] = image[bad]
 
     if temp.shape != image.shape:
         raise ValueError("Output image changed size; this is completely impossible.")
@@ -107,7 +104,7 @@ def smooth(image, kernelwidth=3, kerneltype='gaussian', trapslope=None,
 
 
 def make_kernel(kernelshape, kernelwidth=3, kerneltype='gaussian',
-        trapslope=None, normalize_kernel=np.sum, force_odd=False):
+                trapslope=None, normalize_kernel=np.sum, force_odd=False):
     """
     Create a smoothing kernel for use with `convolve` or `convolve_fft`
 
