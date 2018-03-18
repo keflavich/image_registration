@@ -56,7 +56,7 @@ matrix:
 
         # Try older numpy versions (>=1.7)
         - python: 2.7
-          env: NUMPY_VERSION=1.7 SETUP_CMD='test'
+          env: NUMPY_VERSION=1.8 SETUP_CMD='test'
 
 before_install:
 
