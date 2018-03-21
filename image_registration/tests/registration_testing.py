@@ -127,7 +127,7 @@ def make_offset_extended(img, xsh, ysh, noise=1.0, mode='wrap',
 
 def edge_weight(imsize, smoothsize=5, power=2):
     img = np.ones([imsize,imsize])
-    smimg = smooth(img, smoothsize, ignore_edge_zeros=False)
+    smimg = smooth(img, smoothsize)
     return smimg**power
 
 
@@ -583,6 +583,28 @@ if doplots:
     # errorbar(compare_offsets[:,0].mean(),compare_offsets[:,2].mean(),xerr=compare_offsets[:,0].std(),yerr=compare_offsets[:,2].std(),marker='x',linestyle='none')
     # plot(compare_offsets[:,1],compare_offsets[:,3],'.')
     # errorbar(compare_offsets[:,1].mean(),compare_offsets[:,3].mean(),xerr=compare_offsets[:,1].std(),yerr=compare_offsets[:,3].std(),marker='x',linestyle='none')
+
+def test_issue19():
+    imsize=128
+    xsh = 3
+    ysh = -3.5
+    noise = 0.1
+    noise_taper = False
+    image = make_extended(imsize)
+    offset_image = make_offset_extended(image, xsh, ysh, noise=noise, noise_taper=noise_taper)
+    if noise_taper:
+        noise = noise/edge_weight(imsize)
+    else:
+        noise = noise
+    xoff,yoff,exoff,eyoff = chi2_shift(image,offset_image,noise,return_error=True,upsample_factor='auto')
+
+    shifted_image_data2 = shift.shiftnd(offset_image, (-yoff, -xoff))
+
+    # not a very good test, since the data are random, but good enough?
+    assert np.abs(shifted_image_data2-image).sum() < noise * image.size * 2
+    assert np.abs(shifted_image_data2-image).sum() < np.abs(offset_image-image).sum()
+    
+
 
 if __name__ == "__main__":
     import line_profiler

@@ -54,9 +54,9 @@ matrix:
         - python: 3.6
           env: ASTROPY_VERSION=development SETUP_CMD='test'
 
-        # Try older numpy versions (>=1.7)
+        # Try older numpy versions (>=1.12)
         - python: 2.7
-          env: NUMPY_VERSION=1.7 SETUP_CMD='test'
+          env: NUMPY_VERSION=1.12 SETUP_CMD='test'
 
 before_install:
 
