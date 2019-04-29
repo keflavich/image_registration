@@ -1,6 +1,7 @@
 import numpy as np
 from ..chi2_shifts import chi2_shift_iterzoom
 import astropy.wcs as pywcs
+from astropy import stats
 from .load_header import load_data, load_header
 from ..fft_tools.shift import shift2d
 
@@ -31,6 +32,7 @@ def project_to_header(fitsfile, header, **kwargs):
 
 
 def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
+               use_mad_std=True,
                return_header=False, **kwargs):
     """
     Project one FITS file into another's coordinates
@@ -47,6 +49,8 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         Optional - can pass a header to projet both images to
     sigma_cut: bool or int
         Perform a sigma-cut on the returned images at this level
+    use_mad_std : bool
+        Use mad_std instead of std dev for stddev estimation
 
     Returns
     -------
@@ -67,8 +71,10 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         raise ValueError("Failed to reproject images to same shape.")
 
     if sigma_cut:
-        corr_image1 = image1*(image1 > image1.std()*sigma_cut)
-        corr_image2 = image2_projected*(image2_projected > image2_projected.std()*sigma_cut)
+        std1 = stats.mad_std(image1, ignore_nan=True) if use_mad_std else np.nanstd(image1)
+        std2 = stats.mad_std(image2_projected, ignore_nan=True) if use_mad_std else np.nanstd(image2_projected)
+        corr_image1 = image1*(image1 > std1*sigma_cut)
+        corr_image2 = image2_projected*(image2_projected > std2*sigma_cut)
         OK = (corr_image1==corr_image1)*(corr_image2==corr_image2)
         if (corr_image1[OK]*corr_image2[OK]).sum() == 0:
             print("Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut)
@@ -87,7 +93,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
 def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
                   register_method=chi2_shift_iterzoom,
                   return_cropped_images=False, return_shifted_image=False,
-                  return_header=False, **kwargs):
+                  return_header=False, sigma_cut=None, **kwargs):
     """
     Determine the shift between two FITS images using the cross-correlation
     technique.  Requires montage or hcongrid.
@@ -139,7 +145,9 @@ def register_fits(fitsfile1, fitsfile2, errfile=None, return_error=True,
 
     """
     proj_image1, proj_image2, header = match_fits(fitsfile1, fitsfile2,
-                                                  return_header=True, **kwargs)
+                                                  return_header=True,
+                                                  sigma_cut=sigma_cut,
+                                                  **kwargs)
 
     if errfile is not None:
         errimage = project_to_header(errfile, header, **kwargs)
