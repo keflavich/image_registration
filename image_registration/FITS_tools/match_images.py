@@ -75,7 +75,7 @@ def match_fits(fitsfile1, fitsfile2, header=None, sigma_cut=False,
         std2 = stats.mad_std(image2_projected, ignore_nan=True) if use_mad_std else np.nanstd(image2_projected)
         corr_image1 = image1*(image1 > std1*sigma_cut)
         corr_image2 = image2_projected*(image2_projected > std2*sigma_cut)
-        OK = (corr_image1==corr_image1)*(corr_image2==corr_image2)
+        OK = np.isfinite(corr_image1) & np.isfinite(corr_image2)
         if (corr_image1[OK]*corr_image2[OK]).sum() == 0:
             print("Could not use sigma_cut of %f because it excluded all valid data" % sigma_cut)
             corr_image1 = image1
