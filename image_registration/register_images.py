@@ -184,7 +184,7 @@ def dftregistration(buf1ft, buf2ft, usfac=1, return_registered=False,
         nlarge=n*2;
         CClarge=zeros([mlarge,nlarge], dtype='complex');
         #CClarge[m-fix(m/2):m+fix((m-1)/2)+1,n-fix(n/2):n+fix((n-1)/2)+1] = fftshift(buf1ft) * conj(fftshift(buf2ft));
-        CClarge[round(mlarge/4.):round(mlarge/4.*3),round(nlarge/4.):round(nlarge/4.*3)] = fftshift(buf1ft) * conj(fftshift(buf2ft));
+        CClarge[int(m-np.fix(m/2)):int(m+np.fix((m-1)/2)+1),int(n-np.fix(n/2)):int(n+np.fix((n-1)/2)+1)] = fftshift(buf1ft) * conj(fftshift(buf2ft))
         # note that matlab uses fix which is trunc... ?
 
         # Compute crosscorrelation and locate the peak
