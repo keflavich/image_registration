@@ -43,7 +43,7 @@ also shows examples.
    from image_registration.fft_tools import shift
    xoff, yoff, exoff, eyoff = chi2_shift(image, offset_image, noise,
    ...                                   return_error=True, upsample_factor='auto')
-   corrected_image2 = shift.shiftnd(offset_image, -yoff, -xoff)
+   corrected_image2 = shift.shiftnd(offset_image, (-yoff, -xoff))
 
 Module APIs:
 ------------
