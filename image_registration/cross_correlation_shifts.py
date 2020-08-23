@@ -79,8 +79,7 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
     image1 = np.nan_to_num(image1)
     image2 = np.nan_to_num(image2)
 
-    quiet = kwargs.pop('quiet') if 'quiet' in kwargs else not verbose
-    ccorr = (correlate2d(image1,image2,quiet=quiet,**kwargs) / image1.size)
+    ccorr = (correlate2d(image1,image2,**kwargs) / image1.size)
     # allow for NaNs set by convolve (i.e., ignored pixels)
     ccorr[ccorr!=ccorr] = 0
     if ccorr.shape != image1.shape:
@@ -109,8 +108,8 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
             errim1 = np.ones(ccorr.shape) * image1[image1==image1].std()
         if errim2 is None:
             errim2 = np.ones(ccorr.shape) * image2[image2==image2].std()
-        eccorr =( (correlate2d(errim1**2, image2**2,quiet=quiet,**kwargs)+
-                   correlate2d(errim2**2, image1**2,quiet=quiet,**kwargs))**0.5
+        eccorr =( (correlate2d(errim1**2, image2**2,**kwargs)+
+                   correlate2d(errim2**2, image1**2,**kwargs))**0.5
                    / image1.size)
         if maxoff is not None:
             subeccorr = eccorr[ycen-maxoff:ycen+maxoff+1,xcen-maxoff:xcen+maxoff+1]
@@ -155,8 +154,8 @@ def cross_correlation_shifts(image1, image2, errim1=None, errim2=None,
         # Zucker error
 
         if return_error:
-            #acorr1 = (correlate2d(image1,image1,quiet=quiet,**kwargs) / image1.size)
-            #acorr2 = (correlate2d(image2,image2,quiet=quiet,**kwargs) / image2.size)
+            #acorr1 = (correlate2d(image1,image1,**kwargs) / image1.size)
+            #acorr2 = (correlate2d(image2,image2,**kwargs) / image2.size)
             #ccorrn = ccorr / eccorr**2 / ccorr.size #/ (errim1.mean()*errim2.mean()) #/ eccorr**2
             normalization = 1. / ((image1**2).sum()/image1.size) / ((image2**2).sum()/image2.size)
             ccorrn = ccorr * normalization
@@ -212,8 +211,9 @@ def second_derivative(image):
     return dxx,dyy,dxy
 
 def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
-                                  return_cropped_images=False, quiet=True,
+                                  return_cropped_images=False,
                                   sigma_cut=False,
+                                  verbose=False,
                                   register_method=cross_correlation_shifts,
                                   **kwargs):
     """
@@ -229,8 +229,7 @@ def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
     return_cropped_images: bool
         Returns the images used for the analysis in addition to the measured
         offsets
-    quiet: bool
-        Silence messages?
+
     sigma_cut: bool or int
         Perform a sigma-cut before cross-correlating the images to minimize
         noise correlation?
@@ -258,7 +257,6 @@ def cross_correlation_shifts_FITS(fitsfile1, fitsfile2,
         corr_image1 = image1
         corr_image2 = image2_projected
 
-    verbose = kwargs.pop('verbose') if 'verbose' in kwargs else not quiet
     xoff,yoff = register_method(corr_image1, corr_image2, verbose=verbose, 
                                 return_error=False, **kwargs)
 
