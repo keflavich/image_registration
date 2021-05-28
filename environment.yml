@@ -1,4 +1,4 @@
-name: img_registration
+name: image_registration
 channels:
   - defaults
   - conda-forge
