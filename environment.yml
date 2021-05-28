@@ -1,0 +1,20 @@
+name: image_registration
+channels:
+  - defaults
+  - conda-forge
+  - anaconda
+dependencies:
+  - pip:
+    - astropy==4.2.1
+    - cycler==0.10.0
+    - fits-tools==0.2
+    - image-registration==0.2.4
+    - kiwisolver==1.3.1
+    - matplotlib==3.4.2
+    - numpy==1.20.3
+    - pillow==8.2.0
+    - pyerfa==2.0.0
+    - pyparsing==2.4.7
+    - python-dateutil==2.8.1
+    - six==1.16.0
+    - pytest== 6.2.4
