@@ -1,23 +1,9 @@
 name: img_registration
 channels:
   - defaults
-  - alex-marty
   - conda-forge
   - anaconda
-  - pytorch
 dependencies:
-  - ca-certificates=2021.4.13=haa95532_1
-  - certifi=2020.12.5=py39haa95532_0
-  - openssl=1.1.1k=h2bbff1b_0
-  - pip=21.1.2=pyhd8ed1ab_0
-  - python=3.9.5=h6244533_3
-  - setuptools=52.0.0=py39haa95532_0
-  - sqlite=3.35.5=h8ffe710_0
-  - tzdata=2021a=he74cb21_0
-  - vc=14.2=h21ff451_1
-  - vs2015_runtime=14.28.29325=h5e1d092_4
-  - wheel=0.36.2=pyhd3eb1b0_0
-  - wincertstore=0.2=py39h2bbff1b_0
   - pip:
     - astropy==4.2.1
     - cycler==0.10.0
@@ -31,3 +17,4 @@ dependencies:
     - pyparsing==2.4.7
     - python-dateutil==2.8.1
     - six==1.16.0
+    - pytest== 6.2.4
