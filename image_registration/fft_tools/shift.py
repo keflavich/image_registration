@@ -98,8 +98,8 @@ def shiftnd(data, offset, phase=0, nthreads=1, use_numpy_fft=False,
         data = np.nan_to_num(data)
 
     freq_grid = np.sum(
-        [off*np.fft.fftfreq(nx)[ 
-            tuple([np.newaxis]*dim + [slice(None)] + [np.newaxis]*(data.ndim-dim-1)])
+        [off*np.fft.fftfreq(nx)[
+            tuple([np.newaxis]*dim + [slice(None)] + [np.newaxis]*(data.ndim-dim-1))])
             for dim,(off,nx) in enumerate(zip(offset,data.shape))],
         axis=0)
 
