@@ -50,3 +50,5 @@ distribute-*.tar.gz
 
 # Mac OSX
 .DS_Store
+
+image_registration/version.py
