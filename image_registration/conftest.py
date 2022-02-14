@@ -1,34 +1,38 @@
-# this contains imports plugins that configure py.test for astropy tests.
-# by importing them here in conftest.py they are discoverable by py.test
-# no matter how it is invoked within the source tree.
+"""Configure Test Suite.
 
-from astropy.tests.pytest_plugins import *
+This file is used to configure the behavior of pytest when using the Astropy
+test infrastructure. It needs to live inside the package in order for it to
+get picked up when running the tests inside an interpreter using
+`image_registrations.test()`.
 
-## Uncomment the following line to treat all DeprecationWarnings as
-## exceptions
-# enable_deprecations_as_exceptions()
+"""
 
-## Uncomment and customize the following lines to add/remove entries
-## from the list of packages for which version numbers are displayed
-## when running the tests
-# try:
-#     PYTEST_HEADER_MODULES['Astropy'] = 'astropy'
-#     PYTEST_HEADER_MODULES['scikit-image'] = 'skimage'
-#     del PYTEST_HEADER_MODULES['h5py']
-# except NameError:  # needed to support Astropy < 1.0
-#     pass
+import os
 
-## Uncomment the following lines to display the version number of the
-## package rather than the version number of Astropy in the top line when
-## running the tests.
-# import os
-#
-## This is to figure out the affiliated package version, rather than
-## using Astropy's
-# from . import version
-#
-# try:
-#     packagename = os.path.basename(os.path.dirname(__file__))
-#     TESTED_VERSIONS[packagename] = version.version
-# except NameError:   # Needed to support Astropy <= 1.0.0
-#     pass
+try:
+    from pytest_astropy_header.display import PYTEST_HEADER_MODULES, TESTED_VERSIONS
+    ASTROPY_HEADER = True
+except ImportError:
+    ASTROPY_HEADER = False
+
+
+def pytest_configure(config):
+    """Configure Pytest with Astropy.
+
+    Parameters
+    ----------
+    config : pytest configuration
+
+    """
+    if ASTROPY_HEADER:
+
+        config.option.astropy_header = True
+
+        # Customize the following lines to add/remove entries from the list of
+        # packages for which version numbers are displayed when running the tests.
+        PYTEST_HEADER_MODULES.pop('Pandas', None)
+        PYTEST_HEADER_MODULES['scikit-image'] = 'skimage'
+
+        from . import __version__
+        packagename = os.path.basename(os.path.dirname(__file__))
+        TESTED_VERSIONS[packagename] = __version__
