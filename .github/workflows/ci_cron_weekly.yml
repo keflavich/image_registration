@@ -1,0 +1,27 @@
+# GitHub Actions workflow that runs on a cron schedule.
+
+name: Cron Scheduled CI Tests
+
+on:
+  schedule:
+    # run at 6am UTC on Mondays
+    - cron: '0 6 * * 1'
+
+jobs:
+  # Testing links in documents is a good example of something to run on a schedule
+  # to catch links that stop working for some reason.
+  doc_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python to build docs with sphinx
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install base dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox
+    - name: Check links in docs using tox
+      run: |
+        tox -e linkcheck
