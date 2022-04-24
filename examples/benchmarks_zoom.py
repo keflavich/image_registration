@@ -106,20 +106,20 @@ for imsize in imsizes:
     #grid_timer_cubic = timeit.Timer("gtest=si.griddata(points,imflat,(xx-0.5,yy-0.5), method='cubic')",
     #        setup=setup)
 
-    print "imsize %i fourier zoom " % imsize,
-    zoomtimings['fourier_zoom'].append( np.min(fzoom_timer.repeat(3,10)) )
-    print "imsize %i map_coordinates zoom " % imsize,
-    zoomtimings['map_coordinates'].append( np.min(mapzoom_timer.repeat(3,10)) )
-    print "imsize %i skimage zoom " % imsize,
-    zoomtimings['skimage_zoom'].append( np.min(skimagezoom_timer.repeat(3,10)) )
+    print ("imsize %i fourier zoom " % imsize,
+    zoomtimings['fourier_zoom'].append( np.min(fzoom_timer.repeat(3,10)) ))
+    print ("imsize %i map_coordinates zoom " % imsize,
+    zoomtimings['map_coordinates'].append( np.min(mapzoom_timer.repeat(3,10)) ))
+    print ("imsize %i skimage zoom " % imsize,
+    zoomtimings['skimage_zoom'].append( np.min(skimagezoom_timer.repeat(3,10)) ))
     #zoomtimings['griddata_nearest'].append( np.min(grid_timer_nearest.repeat(3,10)) )
     #zoomtimings['griddata_linear'].append( np.min(grid_timer_linear.repeat(3,10)) )
     #zoomtimings['griddata_cubic'].append( np.min(grid_timer_cubic.repeat(3,10)) )
-    print "imsize %i done, %f seconds" % (imsize,time.time()-t0)
+    print ("imsize %i done, %f seconds" % (imsize,time.time()-t0))
 
-print "%10s " % "imsize"," ".join(["%16s" % t for t in zoomtimings.keys()])
+print ("%10s " % "imsize"," ".join(["%16s" % t for t in zoomtimings.keys()]))
 for ii,sz in enumerate(imsizes):
-    print "%10i " % sz," ".join(["%16.6g" % t[ii] for t in zoomtimings.values()])
+    print ("%10i " % sz," ".join(["%16.6g" % t[ii] for t in zoomtimings.values()]))
 
 
 import scipy.optimize as scopt
