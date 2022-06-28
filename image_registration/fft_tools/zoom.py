@@ -98,7 +98,7 @@ def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
         # slice(None) = ":" or "get everything"
         # [None] = newaxis = add a blank axis on this dim
         dims = [None]*ii + [slice(None)] + [None]*(inp.ndim-1-ii)
-        outarr[ii] = outarr_d[dims]
+        outarr[ii] = outarr_d[tuple(dims)]
 
     # temporary hack
     if inp.ndim == 1:
