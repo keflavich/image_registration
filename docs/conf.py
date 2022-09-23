@@ -143,21 +143,6 @@ man_pages = [('index', project.lower(), project + u' Documentation',
               [author], 1)]
 
 
-# -- Options for the edit_on_github extension ---------------------------------
-
-if eval(setup_cfg.get('edit_on_github')):
-    extensions += ['astropy_helpers.sphinx.ext.edit_on_github']
-
-    versionmod = __import__(setup_cfg['package_name'] + '.version')
-    edit_on_github_project = setup_cfg['github_project']
-    # FAILS: if versionmod.version.release:
-    # FAILS:     edit_on_github_branch = "v" + versionmod.version.version
-    # FAILS: else:
-    edit_on_github_branch = "master"
-
-    edit_on_github_source_root = ""
-    edit_on_github_doc_root = "docs"
-
 # -- Resolving issue number to links in changelog -----------------------------
 github_issues_url = 'https://github.com/{0}/issues/'.format(setup_cfg['github_project'])
 
