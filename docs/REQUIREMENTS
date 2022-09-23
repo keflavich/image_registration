@@ -1,5 +1,5 @@
-FITS_tools
 matplotlib
+FITS_tools
 astropy
 scipy
 pytest
