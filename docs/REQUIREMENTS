@@ -1,0 +1,6 @@
+FITS_tools
+matplotlib
+astropy
+scipy
+pytest
+sphinx-astropy
