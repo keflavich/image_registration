@@ -3,3 +3,4 @@ matplotlib
 astropy
 scipy
 pytest
+setuptools>=42.0.0

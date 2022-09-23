@@ -4,3 +4,4 @@ astropy
 scipy
 pytest
 sphinx-astropy
+setuptools>=42.0.0
