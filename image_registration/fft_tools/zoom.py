@@ -116,7 +116,7 @@ def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
     else:
         return result
 
-def zoomnd(inp, offsets=(), middle_convention=np.float, **kwargs):
+def zoomnd(inp, offsets=(), middle_convention=float, **kwargs):
     """
     Zoom in to the center of a 1D or 2D array using Fourier upsampling
     (in principle, should work on N-dimensions, but does not at present!)
