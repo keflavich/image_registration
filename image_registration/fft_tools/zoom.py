@@ -52,7 +52,7 @@ def zoom1d(inp, usfac=1, outsize=None, offset=0, nthreads=1,
         return result
 
 def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
-        use_numpy_fft=False, return_real=True, return_xouts=False):
+                  use_numpy_fft=False, return_real=True, return_xouts=False):
     """
     Zoom in on a 1D or 2D array using Fourier upsampling
     (in principle, should work on N-dimensions, but does not at present!)
@@ -83,10 +83,11 @@ def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
     """
 
     inshape = inp.shape
-    if outshape is None: outshape=inshape
+    if outshape is None:
+        outshape = inshape
 
-    outarr = np.zeros((inp.ndim,)+tuple(outshape),dtype='float')
-    for ii,(insize, outsize, target) in enumerate(zip(inshape,outshape,coordinates)):
+    outarr = np.zeros((inp.ndim,)+tuple(outshape), dtype='float')
+    for ii, (insize, outsize, target) in enumerate(zip(inshape, outshape, coordinates)):
         # output array should cover 1/usfac *  the range of the input
         # it should go from 1/2.-1/usfac to 1/2+1/usfac
         # plus whatever offset is specified
@@ -102,8 +103,10 @@ def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
 
     # temporary hack
     if inp.ndim == 1:
-        result = scale.fourier_interp1d(inp, outarr.squeeze(), nthreads=nthreads,
-                use_numpy_fft=use_numpy_fft, return_real=return_real)
+        result = scale.fourier_interp1d(inp, outarr.squeeze(),
+                                        nthreads=nthreads,
+                                        use_numpy_fft=use_numpy_fft,
+                                        return_real=return_real)
     elif inp.ndim == 2:
         result = scale.fourier_interp2d(inp, outarr, nthreads=nthreads,
                                         use_numpy_fft=use_numpy_fft,
@@ -112,7 +115,7 @@ def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
         raise NotImplementedError("Can't do more than 2D yet")
 
     if return_xouts:
-        return outarr,result
+        return outarr, result
     else:
         return result
 
@@ -165,7 +168,7 @@ def zoomnd(inp, offsets=(), middle_convention=float, **kwargs):
     # outsize is always 1+(highest index of input)
 
     middlepix = [middle_convention((insize-1)/2.) + off
-                 for insize,off in zip(inp.shape,offsets)]
+                 for insize, off in zip(inp.shape, offsets)]
 
     return zoom_on_pixel(inp, middlepix, **kwargs)
 

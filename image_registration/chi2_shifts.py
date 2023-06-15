@@ -29,7 +29,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
           & = & \Sigma_{ij} \left[ X_{ij}^2/\sigma_{ij}^2 - 2X_{ij}Y_{ij}(dx,dy)/\sigma_{ij}^2 + Y_{ij}(dx,dy)^2/\sigma_{ij}^2 \\right]  \\\\
 
 
-    Equation 2-4: blahha
+    Equation 2-4:
 
     .. math::
        :nowrap:
@@ -62,6 +62,14 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     Technically, only terms 2 and 3 has any effect on the resulting image,
     since term 1 is the same for all shifts, and the quantity of interest is
     :math:`\Delta \chi^2` when determining the best-fit shift and error.
+
+    The resulting shifts are limited to an accuracy of +/-0.5 pixels in the
+    upsampled image frame.  That is not a Gaussian uncertainty but a quantized
+    limit: the best solution will always be +/-0.5 pixels offset because we're
+    zooming in on an even grid, so the "best" position is required to be a
+    discrete pixel center.  If you're looking at an image with exactly zero
+    shift, it will have exactly +/- 1/usfac/2 systematic error in the resulting
+    solution.
 
 
     Parameters
@@ -128,10 +136,10 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     >>> dx2,dy2,edx2,edy2 = chi2_shift(image, shifted2, upsample_factor='auto')
 
     """
-    chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
-                                       nthreads=nthreads, zeromean=zeromean,
-                                       use_numpy_fft=use_numpy_fft,
-                                       return_all=True, reduced=False)
+    chi2, term1, term2, term3 = chi2n_map(im1, im2, err, boundary=boundary,
+                                          nthreads=nthreads, zeromean=zeromean,
+                                          use_numpy_fft=use_numpy_fft,
+                                          return_all=True, reduced=False)
     ymax, xmax = np.unravel_index(chi2.argmin(), chi2.shape)
 
     # needed for ffts
@@ -139,12 +147,15 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     im2 = np.nan_to_num(im2)
 
     ylen, xlen = im1.shape
+
+    # this is the center pixel - it's an integer pixel ID (not the center
+    # coordinate)
     xcen = xlen/2 - (1 if xlen % 2 == 0 else 0.5)
     ycen = ylen/2 - (1 if ylen % 2 == 0 else 0.5)
 
     # original shift calculation
-    yshift = ymax-ycen # shift im2 by these numbers to get im1
-    xshift = xmax-xcen
+    yshift = ymax - ycen # shift im2 by these numbers to get im1
+    xshift = xmax - xcen
 
     if verbose:
         print("Coarse xmax/ymax = %i,%i, for offset %f,%f" % (xmax, ymax, xshift, yshift))
@@ -219,7 +230,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
 
     # BELOW IS TO COMPUTE THE ERROR
 
-    errx_low,errx_high,erry_low,erry_high = chi2map_to_errors(chi2_ups, upsample_factor)
+    errx_low, errx_high, erry_low, erry_high = chi2map_to_errors(chi2_ups, upsample_factor)
 
     yshift_corr = yshifts_corrections.flat[chi2_ups.argmin()]-ycen
     xshift_corr = xshifts_corrections.flat[chi2_ups.argmin()]-xcen
