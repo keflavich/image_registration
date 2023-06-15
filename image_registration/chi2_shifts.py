@@ -199,9 +199,11 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
             s1 = zoom_factor*upsample_factor
             s2 = zoom_factor*upsample_factor
 
-    (yshifts_corrections,xshifts_corrections),chi2_ups = zoom.zoomnd(chi2,
-            usfac=upsample_factor, outshape=[s1,s2], offsets=[yshift,xshift],
-            return_xouts=True)
+    (yshifts_corrections, xshifts_corrections), chi2_ups = zoom.zoomnd(chi2,
+                                                                       usfac=upsample_factor,
+                                                                       outshape=[s1, s2],
+                                                                       offsets=[yshift, xshift],
+                                                                       return_xouts=True)
 
     # deltachi2 is not reduced deltachi2
     deltachi2_ups = (chi2_ups - chi2_ups.min())

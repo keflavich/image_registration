@@ -94,7 +94,7 @@ def zoom_on_pixel(inp, coordinates, usfac=1, outshape=None, nthreads=1,
         outarr_d = np.linspace(target - (outsize-1.)/usfac/2.,
                                target + (outsize-1.)/usfac/2.,
                                outsize)
-        
+
         # slice(None) = ":" or "get everything"
         # [None] = newaxis = add a blank axis on this dim
         dims = [None]*ii + [slice(None)] + [None]*(inp.ndim-1-ii)
@@ -137,7 +137,7 @@ def zoomnd(inp, offsets=(), middle_convention=float, **kwargs):
     outshape : int
         Number of pixels in output array
         (passed to :func:`zoom_on_pixel`)
-    
+
     Other Parameters
     ----------------
     return_xouts : bool
