@@ -138,16 +138,16 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     im1 = np.nan_to_num(im1)
     im2 = np.nan_to_num(im2)
 
-    ylen,xlen = im1.shape
-    xcen = xlen/2-(1-xlen%2)
-    ycen = ylen/2-(1-ylen%2)
+    ylen, xlen = im1.shape
+    xcen = xlen/2 - (1 if xlen % 2 == 0 else 0.5)
+    ycen = ylen/2 - (1 if ylen % 2 == 0 else 0.5)
 
     # original shift calculation
     yshift = ymax-ycen # shift im2 by these numbers to get im1
     xshift = xmax-xcen
 
     if verbose:
-        print("Coarse xmax/ymax = %i,%i, for offset %f,%f" % (xmax,ymax,xshift,yshift))
+        print("Coarse xmax/ymax = %i,%i, for offset %f,%f" % (xmax, ymax, xshift, yshift))
 
     # below is sub-pixel zoom-in stuff
 
@@ -167,7 +167,7 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         m_auto = 2.6088233328527037 # slightly >1 sigma
 
     # biggest scale = where chi^2/n ~ 9 or 11.8 for M=2?
-    if upsample_factor=='auto':
+    if upsample_factor == 'auto':
         # deltachi2 is not reduced deltachi2
         deltachi2_lowres = (chi2 - chi2.min())
         if verbose:
