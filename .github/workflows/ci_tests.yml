@@ -22,15 +22,20 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: Code style checks
-            os: ubuntu-latest
-            python: 3.x
-            toxenv: codestyle
-
           - name: Python 3.7 with minimal dependencies
             os: ubuntu-latest
             python: 3.7
             toxenv: py37-test
+
+          - name: Python 3.9 with minimal dependencies
+            os: ubuntu-latest
+            python: 3.9
+            toxenv: py39-test
+
+          - name: Python 3.10 with minimal dependencies
+            os: ubuntu-latest
+            python: 3.10
+            toxenv: py310-test
 
           - name: Python 3.8 with all optional dependencies and coverage checking
             os: ubuntu-latest
@@ -46,6 +51,11 @@ jobs:
             os: windows-latest
             python: 3.8
             toxenv: py38-test-alldeps
+
+          # - name: Code style checks
+          #   os: ubuntu-latest
+          #   python: 3.x
+          #   toxenv: codestyle
 
           # - name: Python 3.7 with oldest supported version of all dependencies
           #   os: ubuntu-16.04
