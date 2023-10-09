@@ -1,7 +1,6 @@
 from . import fast_ffts
 import numpy as np
 from . import scale
-from matplotlib import docstring
 
 def zoom1d(inp, usfac=1, outsize=None, offset=0, nthreads=1,
         use_numpy_fft=False, return_xouts=False, return_real=True):
