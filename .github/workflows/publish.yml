@@ -27,14 +27,13 @@ jobs:
       name: pypi
       url: https://pypi.org/p/image_registration
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:
       - uses: actions/download-artifact@v3
         with:
           name: artifact
           path: dist
-    # retrieve your distributions here
 
     - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
