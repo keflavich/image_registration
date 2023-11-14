@@ -15,7 +15,7 @@ def print_timing(func):
         t1 = time.time()
         res = func(*arg,**kwargs)
         t2 = time.time()
-        print '%s took %0.5g s' % (func.func_name, (t2-t1))
+        print('%s took %0.5g s' % (func.__name__, (t2-t1)))
         return res
     return wrapper
 
@@ -38,7 +38,7 @@ def montecarlo_test_offsets(xsh, ysh, imsize, noise_taper=False, noise=0.5, nsam
                                     noise=noise, **kwargs)
                 for ii in range(nsamples)]
 
-    xoff,yoff,exoff,eyoff = zip(*results)
+    xoff,yoff,exoff,eyoff = list(zip(*results))
 
     return xoff,yoff,exoff,eyoff
 
@@ -65,7 +65,7 @@ def montecarlo_tests_of_imsize(xsh,ysh,imsizerange=[15,105,5],noise=0.5,
     means_of_imsize = []
     stds_of_imsize = []
     for imsize in range(*imsizerange):
-        print "Image Size = %i.  " % imsize,
+        print("Image Size = %i.  " % imsize, end=' ')
         xoff,yoff,exoff,eyoff,means,stds = plot_montecarlo_test_offsets(xsh,
                             ysh, imsize, noise=noise, name=namepre+"%i "%imsize,  **kwargs)
         means_of_imsize.append(means)
@@ -92,8 +92,8 @@ def montecarlo_tests_of_imsize(xsh,ysh,imsizerange=[15,105,5],noise=0.5,
     pl.ylabel("Ratio of measured to monte-carlo error")
     pl.title("Noise Level = %f" % noise)
 
-    print "Ratio mean measure X error to monte-carlo X standard dev: ", np.mean(exmeans/xstds)
-    print "Ratio mean measure Y error to monte-carlo Y standard dev: ", np.mean(eymeans/ystds)
+    print("Ratio mean measure X error to monte-carlo X standard dev: ", np.mean(exmeans/xstds))
+    print("Ratio mean measure Y error to monte-carlo Y standard dev: ", np.mean(eymeans/ystds))
 
     return np.array(means_of_imsize).T,np.array(stds_of_imsize).T
 
@@ -105,7 +105,7 @@ def monte_carlo_tests_of_noiselevel(xsh,ysh,noiselevels,imsize=25, figstart=0, c
     means_of_noise = []
     stds_of_noise = []
     for noise in noiselevels:
-        print "Noise Level = %f.  " % noise,
+        print("Noise Level = %f.  " % noise, end=' ')
         xoff,yoff,exoff,eyoff,means,stds = plot_montecarlo_test_offsets(xsh,
                             ysh, imsize, noise=noise, name=namepre+"%0.2f "%noise,  **kwargs)
         means_of_noise.append(means)
@@ -132,8 +132,8 @@ def monte_carlo_tests_of_noiselevel(xsh,ysh,noiselevels,imsize=25, figstart=0, c
     pl.ylabel("Ratio of measured to monte-carlo error")
     pl.title("Image Size = %i" % imsize)
 
-    print "Ratio mean measure X error to monte-carlo X standard dev: ", np.mean(exmeans/xstds)
-    print "Ratio mean measure Y error to monte-carlo Y standard dev: ", np.mean(eymeans/ystds)
+    print("Ratio mean measure X error to monte-carlo X standard dev: ", np.mean(exmeans/xstds))
+    print("Ratio mean measure Y error to monte-carlo Y standard dev: ", np.mean(eymeans/ystds))
 
     return np.array(means_of_noise).T,np.array(stds_of_noise).T
 
