@@ -23,6 +23,7 @@ jobs:
   pypi-publish:
     name: Upload release to PyPI
     runs-on: ubuntu-latest
+    needs: [build_sdist_and_wheel]
     environment:
       name: pypi
       url: https://pypi.org/p/image_registration
