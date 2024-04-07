@@ -30,22 +30,27 @@ jobs:
           - name: Python 3.10 with minimal dependencies
             os: ubuntu-latest
             python: 3.10
-            toxenv: py37-test
+            toxenv: py310-test
+
+          - name: Python 3.12 with minimal dependencies
+            os: ubuntu-latest
+            python: 3.12
+            toxenv: py312-test
 
           - name: Python 3.11 with all optional dependencies and coverage checking
             os: ubuntu-latest
             python: 3.11
-            toxenv: py38-test-alldeps-cov
+            toxenv: py311-test-alldeps-cov
 
           - name: macOS - Python 3.11 with all optional dependencies
             os: macos-latest
             python: 3.11
-            toxenv: py38-test-alldeps
+            toxenv: py311-test-alldeps
 
           - name: Windows - Python 3.11 with all optional dependencies
             os: windows-latest
             python: 3.11
-            toxenv: py38-test-alldeps
+            toxenv: py311-test-alldeps
 
           # - name: Python 3.10 with oldest supported version of all dependencies
           #   os: ubuntu-16.04
@@ -55,7 +60,7 @@ jobs:
           # - name: Python 3.11 with latest dev versions of key dependencies
           #   os: ubuntu-latest
           #   python: 3.11
-          #   toxenv: py38-test-devdeps
+          #   toxenv: py311-test-devdeps
 
           # - name: Test building of Sphinx docs
           #   os: ubuntu-latest
