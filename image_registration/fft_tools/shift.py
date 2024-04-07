@@ -98,13 +98,13 @@ def shiftnd(data, offset, phase=0, nthreads=1, use_numpy_fft=False,
         data = np.nan_to_num(data)
 
     freq_grid = sum(
-        np.array([off*np.fft.fftfreq(nx)[
+            [off*np.fft.fftfreq(nx)[
             tuple(
                 [np.newaxis]*dim + [slice(None)] + [np.newaxis]*(data.ndim-dim-1)
                 )
             ]
-            for dim,(off,nx) in enumerate(zip(offset,data.shape))],
-        )
+            for dim,(off,nx) in enumerate(zip(offset,data.shape))]
+    )
 
     kernel = np.exp(-1j*2*np.pi*freq_grid-1j*phase)
 
