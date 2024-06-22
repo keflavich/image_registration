@@ -23,17 +23,6 @@ xoff, yoff, exoff, eyoff = chi2_shift(image, offset_image)
 corrected_image2 = shift.shiftnd(offset_image, (-yoff, -xoff))
 ```
 
-### Requirements:
-Install the following version of the packages to replicate this repository:
-- FITS_tools==0.2
-- matplotlib==3.4.2
-- astropy==4.2.1
-  
-For the following packages latest version should work:
-- scipy
-- pytest
-
-To replicate in conda you can use environment.yml given in repository
 
 ### Acknowledgments:
 - Borrows heavily from
