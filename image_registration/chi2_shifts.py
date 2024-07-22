@@ -13,7 +13,7 @@ __all__ = ['chi2_shift','chi2_shift_iterzoom','chi2n_map']
 def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
                nthreads=1, use_numpy_fft=False, zeromean=False, nfitted=2,
                verbose=False, return_error=True, return_chi2array=False,
-               max_auto_size=512, max_nsig=1.1):
+               max_auto_size=512, max_nsig=1.1, allow_huge=False):
     """
     Find the offsets between image 1 and image 2 using the DFT upsampling method
     (http://www.mathworks.com/matlabcentral/fileexchange/18401-efficient-subpixel-image-registration-by-cross-correlation/content/html/efficient_subpixel_registration.html)
@@ -108,6 +108,9 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
         Should probably always be 2.
     max_auto_size : int
         Maximum zoom image size to create when using auto-upsampling
+    allow_huge : bool, optional
+        Allow huge arrays in the FFT?  If False, will raise an exception if the
+        array or kernel size is >1 GB.
 
 
     Returns
@@ -139,7 +142,8 @@ def chi2_shift(im1, im2, err=None, upsample_factor='auto', boundary='wrap',
     chi2, term1, term2, term3 = chi2n_map(im1, im2, err, boundary=boundary,
                                           nthreads=nthreads, zeromean=zeromean,
                                           use_numpy_fft=use_numpy_fft,
-                                          return_all=True, reduced=False)
+                                          return_all=True, reduced=False,
+                                          allow_huge=allow_huge)
     ymax, xmax = np.unravel_index(chi2.argmin(), chi2.shape)
 
     # needed for ffts
@@ -391,7 +395,8 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
     chi2,term1,term2,term3 = chi2n_map(im1, im2, err, boundary=boundary,
                                        nthreads=nthreads, zeromean=zeromean,
                                        use_numpy_fft=use_numpy_fft,
-                                       return_all=True, reduced=False)
+                                       return_all=True, reduced=False,
+                                       allow_huge=allow_huge)
     # at this point, the chi2 map contains ALL of the information!
 
     # below is sub-pixel zoom-in stuff
@@ -427,7 +432,8 @@ def chi2_shift_iterzoom(im1, im2, err=None, upsample_factor='auto',
     return returns
 
 def chi2n_map(im1, im2, err=None, boundary='wrap', nthreads=1, zeromean=False,
-              use_numpy_fft=False, return_all=False, reduced=False):
+              use_numpy_fft=False, return_all=False, reduced=False,
+              allow_huge=False):
     """
     Parameters
     ----------
@@ -448,6 +454,9 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nthreads=1, zeromean=False,
     reduced : bool
         Return the reduced :math:`\chi^2` array, or unreduced?
         (assumes 2 degrees of freedom for the fit)
+    allow_huge : bool, optional
+        Allow huge arrays in the FFT?  If False, will raise an exception if the
+        array or kernel size is >1 GB.
 
     Returns
     -------
@@ -483,7 +492,8 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nthreads=1, zeromean=False,
 
         # we want im1 first, because it's first down below
         term3 = correlate2d(im1**2, 1./err**2, boundary=boundary,
-                            nthreads=nthreads, use_numpy_fft=use_numpy_fft)
+                            nthreads=nthreads, use_numpy_fft=use_numpy_fft,
+                            allow_huge=allow_huge)
 
     else: # scalar error is OK
         if err is None:
@@ -495,7 +505,8 @@ def chi2n_map(im1, im2, err=None, boundary='wrap', nthreads=1, zeromean=False,
 
     # ORDER MATTERS! cross-correlate im1,im2 not im2,im1
     term2 = -2 * correlate2d(im1,im2/err**2, boundary=boundary,
-                             nthreads=nthreads, use_numpy_fft=use_numpy_fft)
+                             nthreads=nthreads, use_numpy_fft=use_numpy_fft,
+                             allow_huge=allow_huge)
 
     chi2 = term1 + term2 + term3
 
