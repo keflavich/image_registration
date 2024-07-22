@@ -603,6 +603,26 @@ def test_issue19():
     # not a very good test, since the data are random, but good enough?
     assert np.abs(shifted_image_data2-image).sum() < noise * image.size * 2
     assert np.abs(shifted_image_data2-image).sum() < np.abs(offset_image-image).sum()
+
+
+@pytest.mark.parametrize("allow_huge", [False, True])
+def test_issue_60(allow_huge):
+    imsize = 10000
+    xsh = 3
+    ysh = -3.5
+    image, new_image, tolerance = make_offset_images(xsh, ysh, imsize)
+
+    try:
+        xoff, yoff = chi2_shift(image, new_image, return_error=False,
+                                allow_huge=allow_huge)
+    except ValueError:
+        assert not allow_huge, \
+            (f"ValueError: Image size {imsize} is too large for "
+             f"chi2_shift with allow_huge = False")
+    else:
+        assert allow_huge, f"ValueError not raised for image size {imsize}"
+        assert abs(xoff - xsh) < tolerance, "x offset is outside of tolerance"
+        assert abs(yoff - ysh) < tolerance, "y offset is outside of tolerance"
     
 
 
